@@ -1,0 +1,132 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: "Nunito", sans-serif;
+  --font-serif: "Nunito", sans-serif;
+  
+  --color-duo-orange: #ff8900;
+  --color-duo-orange-dark: #cc6d00;
+  --color-duo-red: #ff4b4b;
+  --color-duo-red-dark: #cc3c3c;
+  --color-duo-yellow: #ffc800;
+  --color-duo-yellow-dark: #cca000;
+  --color-duo-text: #3c3c3c;
+  --color-duo-text-light: #777777;
+  --color-duo-border: #e5e5e5;
+  --color-duo-border-dark: #d7d7d7;
+  --color-duo-bg: #ffffff;
+  --color-duo-bg-sec: #f7f7f7;
+}
+
+html, body, #root {
+  min-height: 100%;
+  background-color: var(--color-duo-bg);
+  color: var(--color-duo-text);
+  font-family: var(--font-sans);
+}
+
+html.dark, html.dark body, html.dark #root {
+  background-color: #111111;
+  color: #eeeeee;
+  --color-duo-border: #333333;
+  --color-duo-border-dark: #222222;
+  --color-duo-text: #eeeeee;
+  --color-duo-text-light: #aaaaaa;
+  --color-duo-bg: #111111;
+  --color-duo-bg-sec: #1a1a1a;
+}
+
+@layer components {
+  .btn-ghost {
+    @apply bg-transparent text-[var(--color-duo-text-light)] flex items-center justify-center transition-all outline-none select-none p-2 hover:bg-[var(--color-duo-bg-sec)];
+    border-radius: 9999px;
+  }
+  .btn-ghost:active {
+    transform: scale(0.95);
+  }
+  .btn-primary {
+    @apply bg-[var(--color-duo-orange)] text-white font-bold flex items-center justify-center transition-all outline-none select-none shadow-md hover:shadow-lg hover:-translate-y-0.5;
+    border-radius: 9999px;
+  }
+  .btn-primary:active {
+    transform: translateY(1px);
+    box-shadow: none;
+  }
+  .btn-primary:disabled {
+    @apply bg-stone-300 dark:bg-zinc-700 text-stone-500 dark:text-zinc-500 cursor-not-allowed shadow-none transform-none;
+  }
+  .btn-secondary {
+    @apply bg-transparent text-[var(--color-duo-orange)] font-bold flex items-center justify-center transition-all outline-none select-none border-2 border-[var(--color-duo-border)] hover:bg-[var(--color-duo-bg-sec)];
+    border-radius: 9999px;
+  }
+  .btn-secondary:active {
+    transform: translateY(1px);
+  }
+  .btn-outline {
+    @apply bg-[var(--color-duo-bg)] text-[var(--color-duo-text)] font-bold flex items-center justify-center transition-all outline-none select-none border-2 border-[var(--color-duo-border)] hover:bg-[var(--color-duo-bg-sec)];
+    border-radius: 9999px;
+  }
+  .btn-outline:active {
+    transform: translateY(1px);
+  }
+  .btn-icon {
+    @apply bg-[var(--color-duo-bg-sec)] text-[var(--color-duo-text-light)] flex items-center justify-center transition-all outline-none select-none border-2 border-[var(--color-duo-border)] border-b-4 hover:text-[var(--color-duo-orange)];
+    border-radius: 9999px;
+  }
+  .btn-icon:active {
+    @apply border-b-2;
+    transform: translateY(2px);
+  }
+  .duo-card {
+    @apply bg-[var(--color-duo-bg)] transition-all border-2 border-[var(--color-duo-border)] border-b-4;
+    border-radius: 20px;
+  }
+  .duo-card-interactive {
+    @apply bg-[var(--color-duo-bg)] transition-all cursor-pointer select-none border-2 border-[var(--color-duo-border)] border-b-4 hover:border-b-4 hover:border-[var(--color-duo-orange)]/30;
+    border-radius: 20px;
+  }
+  .duo-card-interactive:active {
+    @apply border-b-2;
+    transform: translateY(2px);
+  }
+  .duo-modal {
+    @apply bg-white/95 dark:bg-[#111111]/95 backdrop-blur-xl shadow-2xl;
+    border-radius: 32px;
+    border: 1px solid var(--color-duo-border);
+  }
+  .duo-badge {
+    @apply font-bold uppercase;
+    border-radius: 12px;
+    border: 1px solid var(--color-duo-border);
+  }
+  .duo-title {
+    @apply font-black tracking-tight text-[var(--color-duo-text)];
+  }
+}
+/* Custom progress bar styles */
+.duo-progress-container {
+  @apply w-full bg-[var(--color-duo-border)] rounded-full h-3 overflow-hidden relative;
+}
+.duo-progress-bar {
+  @apply bg-[var(--color-duo-orange)] h-full rounded-full transition-all duration-300 ease-out;
+}
+.duo-progress-highlight {
+  @apply absolute top-0 left-2 right-2 h-1 bg-white/30 rounded-full pointer-events-none;
+}
+/* Base input */
+.duo-input {
+  @apply bg-[var(--color-duo-bg-sec)] border border-[var(--color-duo-border)] rounded-full px-5 py-3 text-[var(--color-duo-text)] w-full outline-none transition-all;
+}
+.duo-input:focus {
+  @apply border-[var(--color-duo-orange)] bg-[var(--color-duo-bg)] shadow-sm ring-2 ring-[var(--color-duo-orange)]/20;
+}
+
+
+.text-outline-dark {
+  text-shadow: 0 1px 4px rgba(0,0,0,0.8), 0 2px 12px rgba(0,0,0,0.6), 0 0 30px rgba(0,0,0,0.5);
+}
+.text-outline-light {
+  text-shadow: 0 1px 4px rgba(255,255,255,1), 0 2px 12px rgba(255,255,255,0.8), 0 0 30px rgba(255,255,255,0.6);
+}

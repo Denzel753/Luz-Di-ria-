@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <!-- White rounded badge container matching status bar reference style -->
+  <rect x="8" y="8" width="112" height="112" rx="28" fill="#FFFFFF" stroke="#E4E4E7" stroke-width="2"/>
+  
+  <!-- Stylized Lamp (Lâmpada) Silhouette in dark color -->
+  <g fill="#09090B">
+    <!-- Bulb Body -->
+    <path d="M64,24 A32,32 0 0,0 32,56 C32,71 40,82 50,90 L50,98 C50,101 53,104 56,104 L72,104 C75,104 78,101 78,98 L78,90 C88,82 96,71 96,56 A32,32 0 0,0 64,24 Z"/>
+    <!-- Base stripes -->
+    <path d="M54,108 H74 A2,2 0 0,1 76,110 V110 A2,2 0 0,1 74,112 H54 A2,2 0 0,1 52,110 V110 A2,2 0 0,1 54,108 Z" fill="#27272A"/>
+  </g>
+  
+  <!-- Inner Glow / Filament cross lines inside bulb for crisp detail -->
+  <path d="M64,42 V64 M53,53 H75" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round"/>
+</svg>

@@ -1,7 +1,4 @@
-<<<<<<< HEAD
 import React from 'react';
-=======
->>>>>>> 7becaadd69e4e155ea267758c4f52deac4eb57c9
 import { useState } from 'react';
 import { ArrowLeft, Book, Sun, Star, HeartHandshake, Coins, Users, RefreshCw, Heart, Flame, Shield, User, BookOpen, BookText, ScrollText, TrendingUp, CloudRain, HandHeart, Eye, Check } from 'lucide-react';
 import { TOPICS } from '../data';
@@ -33,11 +30,7 @@ interface RandomVerseSelectorProps {
   onShowVerse: (topicId: string) => void;
 }
 
-<<<<<<< HEAD
 export const RandomVerseSelector = React.memo(function RandomVerseSelector({ isOpen, onClose, onShowVerse }: RandomVerseSelectorProps) {
-=======
-export function RandomVerseSelector({ isOpen, onClose, onShowVerse }: RandomVerseSelectorProps) {
->>>>>>> 7becaadd69e4e155ea267758c4f52deac4eb57c9
   const [selectedTopic, setSelectedTopic] = useState('all');
 
   
@@ -94,8 +87,4 @@ export function RandomVerseSelector({ isOpen, onClose, onShowVerse }: RandomVers
       </div>
     </div>
   );
-<<<<<<< HEAD
 });
-=======
-}
->>>>>>> 7becaadd69e4e155ea267758c4f52deac4eb57c9

@@ -1,7 +1,4 @@
-<<<<<<< HEAD
 import React from 'react';
-=======
->>>>>>> 7becaadd69e4e155ea267758c4f52deac4eb57c9
 import { useRef, useState } from 'react';
 import { Image as ImageIcon, X, Palette, Upload, Image } from 'lucide-react';
 import { AppSettings } from '../types';
@@ -14,11 +11,7 @@ interface BackgroundModalProps {
   onSettingsChange: (settings: AppSettings) => void;
 }
 
-<<<<<<< HEAD
 export const BackgroundModal = React.memo(function BackgroundModal({ isOpen, onClose, settings, onSettingsChange }: BackgroundModalProps) {
-=======
-export function BackgroundModal({ isOpen, onClose, settings, onSettingsChange }: BackgroundModalProps) {
->>>>>>> 7becaadd69e4e155ea267758c4f52deac4eb57c9
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [showColorPicker, setShowColorPicker] = useState(false);
 
@@ -184,8 +177,4 @@ export function BackgroundModal({ isOpen, onClose, settings, onSettingsChange }:
       </div>
     </div>
   );
-<<<<<<< HEAD
 });
-=======
-}
->>>>>>> 7becaadd69e4e155ea267758c4f52deac4eb57c9

@@ -1,7 +1,4 @@
-<<<<<<< HEAD
 import React from 'react';
-=======
->>>>>>> 7becaadd69e4e155ea267758c4f52deac4eb57c9
 import { useState, useEffect, useMemo } from 'react';
 import { Search as SearchIcon, ArrowLeft, BookOpen, Book, ChevronDown, Loader2 } from 'lucide-react';
 import { Verse } from '../types';
@@ -108,11 +105,7 @@ const HighlightedText = ({ text, query }: { text: string; query: string }) => {
   );
 };
 
-<<<<<<< HEAD
 export const SearchModal = React.memo(function SearchModal({ isOpen, onClose, onSelectVerse, bibleVersion, onChangeBibleVersion }: SearchModalProps) {
-=======
-export function SearchModal({ isOpen, onClose, onSelectVerse, bibleVersion, onChangeBibleVersion }: SearchModalProps) {
->>>>>>> 7becaadd69e4e155ea267758c4f52deac4eb57c9
   const [query, setQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
 
@@ -307,22 +300,14 @@ export function SearchModal({ isOpen, onClose, onSelectVerse, bibleVersion, onCh
           <ArrowLeft className="w-6 h-6 text-[var(--color-duo-text)]" />
         </button>
         <div className="flex-1 relative">
-<<<<<<< HEAD
           <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--color-duo-text-light)]" />
-=======
-          <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--color-duo-text-light)]" />
->>>>>>> 7becaadd69e4e155ea267758c4f52deac4eb57c9
           <input
             autoFocus
             type="text"
             placeholder="Buscar palavra-chave..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-<<<<<<< HEAD
             className="duo-input !pl-12 py-3"
-=======
-            className="duo-input pl-10 py-3"
->>>>>>> 7becaadd69e4e155ea267758c4f52deac4eb57c9
           />
         </div>
       </header>
@@ -398,11 +383,7 @@ export function SearchModal({ isOpen, onClose, onSelectVerse, bibleVersion, onCh
                   className="bg-white dark:bg-zinc-900 p-5 rounded-[20px] border border-[var(--color-duo-border)] shadow-sm cursor-pointer hover:border-amber-300 dark:hover:border-amber-700 transition-all duration-[180ms] ease-[cubic-bezier(0.34,1.56,0.64,1)] active:scale-[0.98] group"
                 >
                   <p className="text-xs text-[var(--color-duo-orange)] font-bold uppercase tracking-widest mb-2 group-hover:text-amber-500">{v.reference}</p>
-<<<<<<< HEAD
                   <p className="text-[15px] sm:text-base text-[var(--color-duo-text)] font-sans font-bold tracking-tight leading-relaxed line-clamp-2 custom-verse-text verse-size-sm">{v.text}</p>
-=======
-                  <p className="text-sm text-[var(--color-duo-text)] font-sans font-bold tracking-tight leading-relaxed line-clamp-2 custom-verse-text verse-size-sm">{v.text}</p>
->>>>>>> 7becaadd69e4e155ea267758c4f52deac4eb57c9
                 </div>
               ))}
             </div>
@@ -427,11 +408,7 @@ export function SearchModal({ isOpen, onClose, onSelectVerse, bibleVersion, onCh
                     className="bg-white dark:bg-zinc-900 p-5 rounded-[20px] border border-[var(--color-duo-border)] shadow-sm cursor-pointer hover:border-amber-300 dark:hover:border-amber-700 transition-all duration-[180ms] ease-[cubic-bezier(0.34,1.56,0.64,1)] active:scale-[0.98] group"
                   >
                     <p className="text-xs text-[var(--color-duo-orange)] font-bold uppercase tracking-widest mb-2 group-hover:text-amber-500">{v.reference}</p>
-<<<<<<< HEAD
                     <p className="text-[15px] sm:text-base text-[var(--color-duo-text)] font-sans font-bold tracking-tight leading-relaxed custom-verse-text verse-size-sm">
-=======
-                    <p className="text-sm text-[var(--color-duo-text)] font-sans font-bold tracking-tight leading-relaxed custom-verse-text verse-size-sm">
->>>>>>> 7becaadd69e4e155ea267758c4f52deac4eb57c9
                       <HighlightedText text={v.text} query={query} />
                     </p>
                   </div>
@@ -443,9 +420,5 @@ export function SearchModal({ isOpen, onClose, onSelectVerse, bibleVersion, onCh
       </div>
     </div>
   );
-<<<<<<< HEAD
 });
-=======
-}
->>>>>>> 7becaadd69e4e155ea267758c4f52deac4eb57c9
 

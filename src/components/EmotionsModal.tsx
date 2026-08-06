@@ -1,7 +1,4 @@
-<<<<<<< HEAD
 import React from 'react';
-=======
->>>>>>> 7becaadd69e4e155ea267758c4f52deac4eb57c9
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Heart, Loader2, AlertCircle } from 'lucide-react';
@@ -30,11 +27,7 @@ const emotionFallbacks: Record<string, { ref: string; text: string }> = {
   "Sozinho": { ref: "Josué 1:9", text: "Não fui eu que ordenei a você? Seja forte e corajoso! Não se apavore nem desanime, pois o Senhor, o seu Deus, estará com você por onde você andar." }
 };
 
-<<<<<<< HEAD
 export const EmotionsModal = React.memo(function EmotionsModal({ isOpen, onClose, onSelectVerse, bibleVersion }: EmotionsModalProps) {
-=======
-export function EmotionsModal({ isOpen, onClose, onSelectVerse, bibleVersion }: EmotionsModalProps) {
->>>>>>> 7becaadd69e4e155ea267758c4f52deac4eb57c9
   const [loadingEmotion, setLoadingEmotion] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -223,8 +216,4 @@ export function EmotionsModal({ isOpen, onClose, onSelectVerse, bibleVersion }: 
       )}
     </AnimatePresence>
   );
-<<<<<<< HEAD
 });
-=======
-}
->>>>>>> 7becaadd69e4e155ea267758c4f52deac4eb57c9

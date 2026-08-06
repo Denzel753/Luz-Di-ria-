@@ -3,10 +3,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { Shuffle, Star, Network, Youtube, Copy, Check, Book, BookOpen } from "lucide-react";
 import { StreakModal } from "./components/StreakModal";
 import { Header } from "./components/Header";
-<<<<<<< HEAD
 import { BottomNav } from "./components/BottomNav";
-=======
->>>>>>> 7becaadd69e4e155ea267758c4f52deac4eb57c9
 import { Drawer } from "./components/Drawer";
 import { Settings } from "./components/Settings";
 import { VerseDisplay } from "./components/VerseDisplay";
@@ -840,19 +837,11 @@ export default function App() {
                             ? '"Oswald", sans-serif'
                             : "inherit"
       };
-<<<<<<< HEAD
       font-size: calc(1.05rem * ${appFontScale});
     }
     .app-custom-font .text-xs { font-size: calc(0.75rem * ${appFontScale}) !important; }
     .app-custom-font .text-sm { font-size: calc(1.05rem * ${appFontScale}) !important; }
     .app-custom-font .text-base { font-size: calc(1.05rem * ${appFontScale}) !important; }
-=======
-      font-size: calc(1rem * ${appFontScale});
-    }
-    .app-custom-font .text-xs { font-size: calc(0.75rem * ${appFontScale}) !important; }
-    .app-custom-font .text-sm { font-size: calc(0.875rem * ${appFontScale}) !important; }
-    .app-custom-font .text-base { font-size: calc(1rem * ${appFontScale}) !important; }
->>>>>>> 7becaadd69e4e155ea267758c4f52deac4eb57c9
     .app-custom-font .text-lg { font-size: calc(1.125rem * ${appFontScale}) !important; }
     .app-custom-font .text-xl { font-size: calc(1.25rem * ${appFontScale}) !important; }
     .app-custom-font .text-2xl { font-size: calc(1.5rem * ${appFontScale}) !important; }
@@ -919,28 +908,16 @@ export default function App() {
     }
 
     .verse-size-sm {
-<<<<<<< HEAD
       font-size: calc(1.05rem * ${appFontScale}) !important;
-=======
-      font-size: calc(0.875rem * ${appFontScale}) !important;
->>>>>>> 7becaadd69e4e155ea267758c4f52deac4eb57c9
       line-height: 1.625 !important;
     }
 
     .verse-size-sm-md-base {
-<<<<<<< HEAD
       font-size: calc(1.05rem * ${appFontScale}) !important;
       line-height: 1.625 !important;
     }
     @media (min-width: 768px) {
       .verse-size-sm-md-base { font-size: calc(1.05rem * ${appFontScale}) !important; }
-=======
-      font-size: calc(0.875rem * ${appFontScale}) !important;
-      line-height: 1.625 !important;
-    }
-    @media (min-width: 768px) {
-      .verse-size-sm-md-base { font-size: calc(1rem * ${appFontScale}) !important; }
->>>>>>> 7becaadd69e4e155ea267758c4f52deac4eb57c9
     }
   `;
 
@@ -953,11 +930,7 @@ export default function App() {
   }, [currentVerse, addToast]);
   const handleSwapRandom = useCallback(() => handleSetCurrentVerse(getNextRandomVerse('all', settings)), [settings, handleSetCurrentVerse, getNextRandomVerse]);
   
-<<<<<<< HEAD
   const handleCopy = useCallback(async () => {
-=======
-  const handleCopy = async () => {
->>>>>>> 7becaadd69e4e155ea267758c4f52deac4eb57c9
     try {
       await navigator.clipboard.writeText(`${currentVerse.text}\n\n— ${currentVerse.reference}`);
       setCopied(true);
@@ -966,25 +939,15 @@ export default function App() {
     } catch (err) {
       console.error('Failed to copy', err);
     }
-<<<<<<< HEAD
   }, [currentVerse, addToast]);
 
 const handleOpenYoutube = useCallback(() => {
-=======
-  };
-
-  const handleOpenYoutube = () => {
->>>>>>> 7becaadd69e4e155ea267758c4f52deac4eb57c9
     if (!navigator.onLine) {
       addToast('error', 'Você está offline. Conecte-se à internet para buscar pregações no YouTube.');
       return;
     }
     window.open(`https://www.youtube.com/results?search_query=${encodeURIComponent(currentVerse.reference + ' pregação')}`, '_blank');
-<<<<<<< HEAD
   }, [currentVerse.reference, addToast]);
-=======
-  };
->>>>>>> 7becaadd69e4e155ea267758c4f52deac4eb57c9
 
   const handleMenuClick = useCallback(() => setIsDrawerOpen(true), []);
   const handleSettingsClick = useCallback(() => setIsSettingsOpen(true), []);
@@ -995,7 +958,6 @@ const handleOpenYoutube = useCallback(() => {
   const handleEmotionsClick = useCallback(() => setIsEmotionsOpen(true), []);
   const handleAboutClick = useCallback(() => setIsAboutOpen(true), []);
 
-<<<<<<< HEAD
   
   const openStreakModal = useCallback(() => setShowStreakModal(true), []);
   const closeStreakModal = useCallback(() => setShowStreakModal(false), []);
@@ -1117,8 +1079,6 @@ const handleOpenYoutube = useCallback(() => {
     setIsAboutOpen(true);
   }, []);
 
-=======
->>>>>>> 7becaadd69e4e155ea267758c4f52deac4eb57c9
   return (
     <div className="h-screen w-full flex flex-col overflow-hidden font-sans select-none bg-[var(--color-duo-bg-sec)] app-custom-font">
       <AnimatePresence>
@@ -1131,11 +1091,7 @@ const handleOpenYoutube = useCallback(() => {
       )}
       <Header
         streak={streakDays}
-<<<<<<< HEAD
         onStreakClick={openStreakModal}
-=======
-        onStreakClick={() => setShowStreakModal(true)}
->>>>>>> 7becaadd69e4e155ea267758c4f52deac4eb57c9
         onMenuClick={handleMenuClick}
         onSettingsClick={handleSettingsClick}
         onRandomClick={handleRandomClick}
@@ -1145,7 +1101,6 @@ const handleOpenYoutube = useCallback(() => {
         onEmotionsClick={handleEmotionsClick}
         onAboutClick={handleAboutClick}
         enableQuotes={settings.enableQuotes}
-<<<<<<< HEAD
         onToggleQuotes={handleToggleQuotes}
       />
 
@@ -1164,57 +1119,12 @@ const handleOpenYoutube = useCallback(() => {
       <StreakModal
         isOpen={showStreakModal}
         onClose={closeStreakModal}
-=======
-        onToggleQuotes={(enabled) => {
-          const newSettings = { ...settings, enableQuotes: enabled };
-          setSettings(newSettings);
-          settingsRef.current = newSettings;
-          try {
-            localStorage.setItem('bible-app-settings', JSON.stringify(newSettings));
-          } catch (e) {
-            console.error('Failed to save settings', e);
-          }
-        }}
-      />
-
-            {/* Bottom Tab Bar */}
-      <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[95%] max-w-md bg-white/80 dark:bg-[#1c1c1e]/80 backdrop-blur-2xl border border-white/20 dark:border-white/10 rounded-[32px] shadow-xl flex items-center justify-around py-2 px-2 z-40">
-        <button onClick={toggleFavorite} className="flex flex-col items-center gap-1 p-2 text-[var(--color-duo-text)] opacity-70 group-hover:opacity-100 hover:text-[var(--color-duo-orange)] transition-colors group">
-          <Star className={`w-7 h-7 group-hover:scale-110 transition-all duration-[180ms] ease-[cubic-bezier(0.34,1.56,0.64,1)] ${favoriteVerses.some((v) => v.id === currentVerse.id) ? 'fill-[var(--color-duo-orange)] text-[var(--color-duo-orange)]' : ''}`} />
-          <span className="text-[11px] font-bold tracking-wide">Favorito</span>
-        </button>
-        <button onClick={handleSwapRandom} className="flex flex-col items-center gap-1 p-2 text-[var(--color-duo-text)] opacity-70 group-hover:opacity-100 hover:text-[var(--color-duo-orange)] transition-colors group">
-          <Shuffle className="w-7 h-7 group-hover:scale-110 transition-transform duration-[180ms] ease-[cubic-bezier(0.34,1.56,0.64,1)]" />
-          <span className="text-[11px] font-bold tracking-wide">Sortear</span>
-        </button>
-        <button onClick={handleOpenCrossReferences} className="flex flex-col items-center gap-1 p-2 text-[var(--color-duo-text)] opacity-70 group-hover:opacity-100 hover:text-[var(--color-duo-orange)] transition-colors group">
-          <Network className="w-7 h-7 group-hover:scale-110 transition-transform duration-[180ms] ease-[cubic-bezier(0.34,1.56,0.64,1)]" />
-          <span className="text-[11px] font-bold tracking-wide">Conexões</span>
-        </button>
-        <button onClick={handleOpenYoutube} className="flex flex-col items-center gap-1 p-2 text-[var(--color-duo-text)] opacity-70 group-hover:opacity-100 hover:text-[var(--color-duo-orange)] transition-colors group">
-          <Youtube className="w-7 h-7 group-hover:scale-110 transition-transform duration-[180ms] ease-[cubic-bezier(0.34,1.56,0.64,1)]" />
-          <span className="text-[11px] font-bold tracking-wide">Youtube</span>
-        </button>
-        <button onClick={handleCopy} className="flex flex-col items-center gap-1 p-2 text-[var(--color-duo-text)] opacity-70 group-hover:opacity-100 hover:text-[var(--color-duo-orange)] transition-colors group">
-          {copied ? <Check className="w-7 h-7 text-green-500" /> : <Copy className="w-7 h-7 group-hover:scale-110 transition-transform duration-[180ms] ease-[cubic-bezier(0.34,1.56,0.64,1)]" />}
-          <span className="text-[11px] font-bold tracking-wide">{copied ? 'Copiado' : 'Copiar'}</span>
-        </button>
-      </nav>
-
-      <StreakModal
-        isOpen={showStreakModal}
-        onClose={() => setShowStreakModal(false)}
->>>>>>> 7becaadd69e4e155ea267758c4f52deac4eb57c9
         streak={streakDays}
       />
       <Drawer
         bibleVersion={settings.bibleVersion}
         isOpen={isDrawerOpen}
-<<<<<<< HEAD
         onClose={closeDrawer}
-=======
-        onClose={() => setIsDrawerOpen(false)}
->>>>>>> 7becaadd69e4e155ea267758c4f52deac4eb57c9
         recentVerses={recentVerses}
         favoriteVerses={favoriteVerses}
         onSelectVerse={handleSetCurrentVerse}
@@ -1232,7 +1142,6 @@ const handleOpenYoutube = useCallback(() => {
 
       <Settings
         isOpen={isSettingsOpen}
-<<<<<<< HEAD
         onClose={closeSettings}
         settings={settings}
         onSettingsChange={setSettings}
@@ -1251,104 +1160,6 @@ const handleOpenYoutube = useCallback(() => {
       <CrossReferencesModal
         isOpen={isCrossReferencesOpen}
         onClose={closeCrossReferences}
-=======
-        onClose={() => setIsSettingsOpen(false)}
-        settings={settings}
-        onSettingsChange={setSettings}
-        onOpenAbout={() => {
-          setIsSettingsOpen(false);
-          setIsAboutOpen(true);
-        }}
-        onShowToast={addToast}
-        onTestPopup={() => {
-          setIsSettingsOpen(false);
-          setGiantPopupVerse(
-            getNextRandomVerse("all", settings),
-          );
-          // Test flash
-          if (settings.flashLed) {
-            let count = 0;
-            const flashInterval = setInterval(() => {
-              setIsFlashing((prev) => !prev);
-              count++;
-              if (count > 5) {
-                clearInterval(flashInterval);
-                setIsFlashing(false);
-              }
-            }, 150);
-          }
-          // Test sound and vibration
-          try {
-            const soundType = settings.sound;
-            if (soundType && soundType !== "Silencioso") {
-              const AudioContext =
-                window.AudioContext || (window as any).webkitAudioContext;
-              if (AudioContext) {
-                const ctx = new AudioContext();
-                const playTone = (
-                  freq: number,
-                  type: OscillatorType,
-                  duration: number,
-                  startTime: number,
-                ) => {
-                  const osc = ctx.createOscillator();
-                  const gain = ctx.createGain();
-                  osc.type = type;
-                  osc.frequency.setValueAtTime(
-                    freq,
-                    ctx.currentTime + startTime,
-                  );
-                  osc.connect(gain);
-                  gain.connect(ctx.destination);
-                  gain.gain.setValueAtTime(0, ctx.currentTime + startTime);
-                  gain.gain.linearRampToValueAtTime(
-                    0.5,
-                    ctx.currentTime + startTime + 0.05,
-                  );
-                  gain.gain.exponentialRampToValueAtTime(
-                    0.01,
-                    ctx.currentTime + startTime + duration,
-                  );
-                  osc.start(ctx.currentTime + startTime);
-                  osc.stop(ctx.currentTime + startTime + duration);
-                };
-                if (soundType === "Sino") {
-                  playTone(880, "sine", 1, 0);
-                  playTone(1108.73, "sine", 1, 0.2);
-                } else if (soundType === "Harpa") {
-                  playTone(523.25, "triangle", 0.5, 0);
-                  playTone(659.25, "triangle", 0.5, 0.1);
-                  playTone(783.99, "triangle", 0.5, 0.2);
-                  playTone(1046.5, "triangle", 1, 0.3);
-                } else if (soundType === "Celeste") {
-                  playTone(1046.5, "sine", 0.8, 0);
-                  playTone(1318.51, "sine", 0.8, 0.15);
-                  playTone(1567.98, "sine", 1.5, 0.3);
-                } else {
-                  playTone(880, "sine", 0.5, 0);
-                }
-              }
-            }
-          } catch (e) {}
-          if (settings.vibrate && navigator.vibrate) {
-            try {
-              navigator.vibrate([200, 100, 200]);
-            } catch (e) {}
-          }
-        }}
-      />
-      <BackgroundModal
-        isOpen={isBackgroundModalOpen}
-        onClose={() => setIsBackgroundModalOpen(false)}
-        settings={settings}
-        onSettingsChange={setSettings}
-      />
-      <AboutModal isOpen={isAboutOpen} onClose={() => setIsAboutOpen(false)} />
-
-      <CrossReferencesModal
-        isOpen={isCrossReferencesOpen}
-        onClose={() => setIsCrossReferencesOpen(false)}
->>>>>>> 7becaadd69e4e155ea267758c4f52deac4eb57c9
         verse={currentVerse}
         onSelectVerse={handleSetCurrentVerse}
         bibleVersion={settings.bibleVersion}
@@ -1356,52 +1167,28 @@ const handleOpenYoutube = useCallback(() => {
 
       <RandomVerseSelector
         isOpen={isRandomSelectorOpen}
-<<<<<<< HEAD
         onClose={closeRandomSelector}
         onShowVerse={handleShowRandomVerse}
-=======
-        onClose={() => setIsRandomSelectorOpen(false)}
-        onShowVerse={(topicId) =>
-          handleSetCurrentVerse(getNextRandomVerse(topicId, settings))
-        }
->>>>>>> 7becaadd69e4e155ea267758c4f52deac4eb57c9
       />
 
       <SearchModal
         isOpen={isSearchOpen}
-<<<<<<< HEAD
         onClose={closeSearch}
         onSelectVerse={handleSetCurrentVerse}
         bibleVersion={settings.bibleVersion}
         onChangeBibleVersion={handleChangeBibleVersion}
-=======
-        onClose={() => setIsSearchOpen(false)}
-        onSelectVerse={handleSetCurrentVerse}
-        bibleVersion={settings.bibleVersion}
-        onChangeBibleVersion={(version) =>
-          setSettings({ ...settings, bibleVersion: version })
-        }
->>>>>>> 7becaadd69e4e155ea267758c4f52deac4eb57c9
       />
 
       <EmotionsModal
         isOpen={isEmotionsOpen}
-<<<<<<< HEAD
         onClose={closeEmotions}
-=======
-        onClose={() => setIsEmotionsOpen(false)}
->>>>>>> 7becaadd69e4e155ea267758c4f52deac4eb57c9
         onSelectVerse={handleSetCurrentVerse}
         bibleVersion={settings.bibleVersion}
       />
 
       <ShareModal
         isOpen={isShareModalOpen}
-<<<<<<< HEAD
         onClose={closeShareModal}
-=======
-        onClose={() => setIsShareModalOpen(false)}
->>>>>>> 7becaadd69e4e155ea267758c4f52deac4eb57c9
         onShareText={handleShareText}
         onShareImage={handleShareImage}
         onDownloadImage={handleDownloadImage}
@@ -1411,11 +1198,7 @@ const handleOpenYoutube = useCallback(() => {
 
       <PermissionModal
         isOpen={isPermissionModalOpen}
-<<<<<<< HEAD
         onClose={closePermissionModal}
-=======
-        onClose={() => setIsPermissionModalOpen(false)}
->>>>>>> 7becaadd69e4e155ea267758c4f52deac4eb57c9
         onGrant={handlePermissionsGranted}
       />
 

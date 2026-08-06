@@ -1,4 +1,7 @@
+<<<<<<< HEAD
 import React from 'react';
+=======
+>>>>>>> 7becaadd69e4e155ea267758c4f52deac4eb57c9
 import { motion, AnimatePresence } from 'motion/react';
 import { Flame, X, Check, Calendar, Award } from 'lucide-react';
 
@@ -8,7 +11,11 @@ interface StreakModalProps {
   streak: number;
 }
 
+<<<<<<< HEAD
 export const StreakModal = React.memo(function StreakModal({ isOpen, onClose, streak }: StreakModalProps) {
+=======
+export function StreakModal({ isOpen, onClose, streak }: StreakModalProps) {
+>>>>>>> 7becaadd69e4e155ea267758c4f52deac4eb57c9
   // Generate a mock history for the last 7 days (today is the last one)
   const days = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
   const todayIndex = new Date().getDay();
@@ -143,4 +150,8 @@ export const StreakModal = React.memo(function StreakModal({ isOpen, onClose, st
       )}
     </AnimatePresence>
   );
+<<<<<<< HEAD
 });
+=======
+}
+>>>>>>> 7becaadd69e4e155ea267758c4f52deac4eb57c9

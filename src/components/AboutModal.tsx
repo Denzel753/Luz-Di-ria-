@@ -1,4 +1,7 @@
+<<<<<<< HEAD
 import React from 'react';
+=======
+>>>>>>> 7becaadd69e4e155ea267758c4f52deac4eb57c9
 
 import { X, Lightbulb, Mail, Code, Info } from 'lucide-react';
 
@@ -7,7 +10,11 @@ interface AboutModalProps {
   onClose: () => void;
 }
 
+<<<<<<< HEAD
 export const AboutModal = React.memo(function AboutModal({ isOpen, onClose }: AboutModalProps) {
+=======
+export function AboutModal({ isOpen, onClose }: AboutModalProps) {
+>>>>>>> 7becaadd69e4e155ea267758c4f52deac4eb57c9
   if (!isOpen) return null;
   return (
     <div className="fixed inset-0 bg-black/60 z-[60] flex items-center justify-center p-4 md:p-6 backdrop-blur-sm animate-in fade-in duration-[320ms] ease-out">
@@ -81,4 +88,8 @@ export const AboutModal = React.memo(function AboutModal({ isOpen, onClose }: Ab
       </div>
     </div>
   );
+<<<<<<< HEAD
 });
+=======
+}
+>>>>>>> 7becaadd69e4e155ea267758c4f52deac4eb57c9

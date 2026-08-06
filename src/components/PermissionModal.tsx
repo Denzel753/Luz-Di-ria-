@@ -1,4 +1,7 @@
+<<<<<<< HEAD
 import React from 'react';
+=======
+>>>>>>> 7becaadd69e4e155ea267758c4f52deac4eb57c9
 import { useState, useEffect } from 'react';
 import { Bell, Battery, AlertCircle } from 'lucide-react';
 
@@ -8,7 +11,11 @@ interface PermissionModalProps {
   onGrant: () => void;
 }
 
+<<<<<<< HEAD
 export const PermissionModal = React.memo(function PermissionModal({ isOpen, onClose, onGrant }: PermissionModalProps) {
+=======
+export function PermissionModal({ isOpen, onClose, onGrant }: PermissionModalProps) {
+>>>>>>> 7becaadd69e4e155ea267758c4f52deac4eb57c9
   const [notifGranted, setNotifGranted] = useState(false);
   const [batteryGranted, setBatteryGranted] = useState(false);
 
@@ -96,4 +103,8 @@ export const PermissionModal = React.memo(function PermissionModal({ isOpen, onC
       </div>
     </div>
   );
+<<<<<<< HEAD
 });
+=======
+}
+>>>>>>> 7becaadd69e4e155ea267758c4f52deac4eb57c9

@@ -1,4 +1,7 @@
+<<<<<<< HEAD
 import React from 'react';
+=======
+>>>>>>> 7becaadd69e4e155ea267758c4f52deac4eb57c9
 
 import { Verse } from '../types';
 import { Star, Clock, X } from 'lucide-react';
@@ -13,7 +16,11 @@ interface DrawerProps {
   bibleVersion: string;
 }
 
+<<<<<<< HEAD
 export const Drawer = React.memo(function Drawer({ isOpen, onClose, recentVerses, favoriteVerses, onSelectVerse, onRemoveFavorite, bibleVersion }: DrawerProps) {
+=======
+export function Drawer({ isOpen, onClose, recentVerses, favoriteVerses, onSelectVerse, onRemoveFavorite, bibleVersion }: DrawerProps) {
+>>>>>>> 7becaadd69e4e155ea267758c4f52deac4eb57c9
   return (
     <>
       {/* Backdrop */}
@@ -53,7 +60,11 @@ export const Drawer = React.memo(function Drawer({ isOpen, onClose, recentVerses
                    onSelectVerse(v);
                    onClose();
                  }}>
+<<<<<<< HEAD
                    <p className="text-[15px] sm:text-base text-[var(--color-duo-text)] line-clamp-2 leading-relaxed font-sans font-bold tracking-tight  custom-verse-text verse-size-sm">{v.text}</p>
+=======
+                   <p className="text-sm text-[var(--color-duo-text)] line-clamp-2 leading-relaxed font-sans font-bold tracking-tight  custom-verse-text verse-size-sm">{v.text}</p>
+>>>>>>> 7becaadd69e4e155ea267758c4f52deac4eb57c9
                    <p className="text-xs text-[var(--color-duo-orange)] dark:text-amber-500 mt-2 font-medium tracking-wide uppercase flex items-center gap-1.5 flex-wrap">
                      {v.reference} 
                      {v.id.startsWith('q') ? (
@@ -115,7 +126,11 @@ export const Drawer = React.memo(function Drawer({ isOpen, onClose, recentVerses
                     </p>
                     <p className="text-[10px] text-[var(--color-duo-text-light)] font-medium uppercase tracking-wider">{displayDate}</p>
                   </div>
+<<<<<<< HEAD
                   <p className="text-[15px] sm:text-base text-[var(--color-duo-text)] line-clamp-2 leading-relaxed font-sans font-bold tracking-tight  custom-verse-text verse-size-sm">{v.text}</p>
+=======
+                  <p className="text-sm text-[var(--color-duo-text)] line-clamp-2 leading-relaxed font-sans font-bold tracking-tight  custom-verse-text verse-size-sm">{v.text}</p>
+>>>>>>> 7becaadd69e4e155ea267758c4f52deac4eb57c9
                 </div>
               );
             })
@@ -124,4 +139,8 @@ export const Drawer = React.memo(function Drawer({ isOpen, onClose, recentVerses
       </div>
     </>
   );
+<<<<<<< HEAD
 });
+=======
+}
+>>>>>>> 7becaadd69e4e155ea267758c4f52deac4eb57c9

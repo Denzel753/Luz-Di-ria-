@@ -1,4 +1,7 @@
+<<<<<<< HEAD
 import React from 'react';
+=======
+>>>>>>> 7becaadd69e4e155ea267758c4f52deac4eb57c9
 import { useState, useEffect } from 'react';
 import { ArrowLeft, Network, Loader2, Book } from 'lucide-react';
 import { getCrossReferences } from '../data';
@@ -16,7 +19,11 @@ interface CrossReferencesModalProps {
 let cachedExtensiveRefs: Record<string, string[]> | null = null;
 let extensiveRefsFetchPromise: Promise<Record<string, string[]>> | null = null;
 
+<<<<<<< HEAD
 export const CrossReferencesModal = React.memo(function CrossReferencesModal({ isOpen, onClose, verse, onSelectVerse, bibleVersion }: CrossReferencesModalProps) {
+=======
+export function CrossReferencesModal({ isOpen, onClose, verse, onSelectVerse, bibleVersion }: CrossReferencesModalProps) {
+>>>>>>> 7becaadd69e4e155ea267758c4f52deac4eb57c9
   const [extensiveRefs, setExtensiveRefs] = useState<{reference: string, text: string}[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const crossRefs = getCrossReferences(verse.reference, verse.text, bibleVersion);
@@ -95,7 +102,11 @@ export const CrossReferencesModal = React.memo(function CrossReferencesModal({ i
             <h2 className="text-sm font-semibold text-[var(--color-duo-text)]">{verse.reference}</h2>
             <span className="text-[10px] font-bold px-1.5 py-0.5 bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-400 rounded uppercase tracking-wider">NVI</span>
           </div>
+<<<<<<< HEAD
           <p className="text-[15px] sm:text-base text-[var(--color-duo-text)] font-sans font-bold tracking-tight  line-clamp-3 custom-verse-text verse-size-sm">{verse.text}</p>
+=======
+          <p className="text-sm text-[var(--color-duo-text)] font-sans font-bold tracking-tight  line-clamp-3 custom-verse-text verse-size-sm">{verse.text}</p>
+>>>>>>> 7becaadd69e4e155ea267758c4f52deac4eb57c9
         </div>
 
         {/* Extensive Database References */}
@@ -130,7 +141,11 @@ export const CrossReferencesModal = React.memo(function CrossReferencesModal({ i
                       <p className="text-xs text-[var(--color-duo-orange)] font-bold uppercase tracking-widest group-hover:text-amber-500">{v.reference}</p>
                       <span className="text-[10px] font-bold px-1.5 py-0.5 bg-[var(--color-duo-border)] text-[var(--color-duo-text-light)] rounded uppercase tracking-wider">NVI</span>
                     </div>
+<<<<<<< HEAD
                     <p className="text-[15px] sm:text-base text-[var(--color-duo-text)] font-sans font-bold tracking-tight leading-relaxed custom-verse-text verse-size-sm">{v.text}</p>
+=======
+                    <p className="text-sm text-[var(--color-duo-text)] font-sans font-bold tracking-tight leading-relaxed custom-verse-text verse-size-sm">{v.text}</p>
+>>>>>>> 7becaadd69e4e155ea267758c4f52deac4eb57c9
                   </div>
                 ))}
               </div>
@@ -163,7 +178,11 @@ export const CrossReferencesModal = React.memo(function CrossReferencesModal({ i
                     <p className="text-xs text-[var(--color-duo-orange)] font-bold uppercase tracking-widest group-hover:text-amber-500">{v.reference}</p>
                     <span className="text-[10px] font-bold px-1.5 py-0.5 bg-[var(--color-duo-border)] text-[var(--color-duo-text-light)] rounded uppercase tracking-wider">NVI</span>
                   </div>
+<<<<<<< HEAD
                   <p className="text-[15px] sm:text-base text-[var(--color-duo-text)] font-sans font-bold tracking-tight leading-relaxed custom-verse-text verse-size-sm">{v.text}</p>
+=======
+                  <p className="text-sm text-[var(--color-duo-text)] font-sans font-bold tracking-tight leading-relaxed custom-verse-text verse-size-sm">{v.text}</p>
+>>>>>>> 7becaadd69e4e155ea267758c4f52deac4eb57c9
                 </div>
               ))}
             </div>
@@ -178,4 +197,8 @@ export const CrossReferencesModal = React.memo(function CrossReferencesModal({ i
       </div>
     </div>
   );
+<<<<<<< HEAD
 });
+=======
+}
+>>>>>>> 7becaadd69e4e155ea267758c4f52deac4eb57c9

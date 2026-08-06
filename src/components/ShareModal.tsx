@@ -1,4 +1,7 @@
+<<<<<<< HEAD
 import React from 'react';
+=======
+>>>>>>> 7becaadd69e4e155ea267758c4f52deac4eb57c9
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Type, Image as Share2, Download, Check } from 'lucide-react';
 
@@ -12,7 +15,11 @@ interface ShareModalProps {
   hasDownloaded: boolean;
 }
 
+<<<<<<< HEAD
 export const ShareModal = React.memo(function ShareModal({ 
+=======
+export function ShareModal({ 
+>>>>>>> 7becaadd69e4e155ea267758c4f52deac4eb57c9
   isOpen, 
   onClose, 
   onShareText, 
@@ -105,4 +112,8 @@ export const ShareModal = React.memo(function ShareModal({
       )}
     </AnimatePresence>
   );
+<<<<<<< HEAD
 });
+=======
+}
+>>>>>>> 7becaadd69e4e155ea267758c4f52deac4eb57c9

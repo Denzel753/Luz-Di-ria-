@@ -1,28 +1,36 @@
 #!/usr/bin/env python3
-"""Corrige conflito de versões Kotlin no build.gradle do Capacitor."""
-import sys
+"""Corrige conflito de versões Kotlin no projeto Capacitor (app/build.gradle)."""
+import sys, os
 
-p = 'android/build.gradle'
-try:
-    content = open(p).read()
-except FileNotFoundError:
-    print(f'ERRO: {p} não encontrado')
+# O bloco de resolução precisa ir no app/build.gradle, onde o Gradle resolve
+# as dependências do módulo :app (onde ocorre o checkDebugDuplicateClasses).
+targets = ['android/app/build.gradle', 'app/build.gradle']
+found = None
+for t in targets:
+    if os.path.exists(t):
+        found = t
+        break
+
+if not found:
+    print('ERRO: app/build.gradle não encontrado')
     sys.exit(1)
 
+content = open(found).read()
+
 fix = """
-// Fix: força versão única do Kotlin stdlib (conflito jdk7/jdk8)
+// Fix: elimina conflito de Kotlin stdlib duplicado (jdk7/jdk8 antigos)
 configurations.all {
+    exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-jdk7'
+    exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-jdk8'
     resolutionStrategy {
         force 'org.jetbrains.kotlin:kotlin-stdlib:1.8.22'
-        force 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.22'
-        force 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.22'
     }
 }
 """
 
-if 'force org.jetbrains.kotlin:kotlin-stdlib' not in content:
+if 'kotlin-stdlib-jdk7' not in content:
     content += fix
-    open(p, 'w').write(content)
-    print('Kotlin force aplicado em', p)
+    open(found, 'w').write(content)
+    print(f'Fix aplicado em {found}')
 else:
-    print('Fix já aplicado anteriormente')
+    print('Fix já presente')

@@ -1,0 +1,527 @@
+import { useEffect, useState } from 'react';
+import { ArrowLeft, Bell, Clock, Smartphone, Zap, Palette, RefreshCw, BookOpen, Download, Bug,  } from 'lucide-react';
+import { AppSettings } from '../types';
+import { AndroidNative } from '../AndroidNative';
+import { playNotificationSound } from '../audio';
+import { UpdateIntervalModal } from './UpdateIntervalModal';
+import { logger } from '../utils/logger';
+
+interface SettingsProps {
+  onTestPopup?: () => void;
+  isOpen: boolean;
+  onClose: () => void;
+  settings: AppSettings;
+  onSettingsChange: (newSettings: AppSettings) => void;
+  onOpenAbout?: () => void;
+  onShowToast?: (type: 'success' | 'info' | 'error', message: string) => void;
+}
+
+export function Settings({ isOpen, onClose, settings, onSettingsChange, onTestPopup, onShowToast }: SettingsProps) {
+  const [isIntervalModalOpen, setIsIntervalModalOpen] = useState(false);
+  const [permissionStatus, setPermissionStatus] = useState("default");
+
+  useEffect(() => {
+    if ('Notification' in window) {
+      setPermissionStatus(Notification.permission);
+    }
+  }, []);
+
+
+  const handleExportLogs = () => {
+    const logs = logger.exportLogs();
+    const body = `Aqui estão os logs de erro do app Luz Diária:\n\n${logs}`;
+    window.location.href = `mailto:victorjuca@proton.me?subject=Luz Diária - Logs de Erro&body=${encodeURIComponent(body)}`;
+  };
+
+  const handleToggleNotification = async (checked: boolean) => {
+    if (checked && 'Notification' in window) {
+      if (Notification.permission !== 'granted') {
+        const permission = await Notification.requestPermission();
+        setPermissionStatus(permission);
+        if (permission === 'granted') {
+           onSettingsChange({ ...settings, dailyNotification: true });
+        } else {
+           if (onShowToast) onShowToast('error', 'Permissão para notificações foi negada pelo navegador.');
+           else alert("Permissão para notificações foi negada pelo navegador.");
+        }
+      } else {
+         onSettingsChange({ ...settings, dailyNotification: true });
+      }
+    } else {
+      onSettingsChange({ ...settings, dailyNotification: false });
+    }
+  };
+
+  
+
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
+
+  if (!isOpen) return null;
+  return (
+    <div className="fixed inset-0 bg-[var(--color-duo-bg-sec)] z-50 flex flex-col">
+      {showResetConfirm && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="duo-modal w-full max-w-sm p-6 shadow-2xl animate-in zoom-in-95 duration-200">
+            <h3 className="text-lg font-bold text-[var(--color-duo-text)] mb-2">Redefinir tudo?</h3>
+            <p className="text-sm text-[var(--color-duo-text-light)] mb-6 leading-relaxed">
+              Isso apagará todas as suas notas, favoritos e configurações permanentemente. Esta ação não pode ser desfeita.
+            </p>
+            <div className="flex gap-3">
+              <button 
+                onClick={() => setShowResetConfirm(false)}
+                className="btn-outline flex-1 py-4 px-4 gap-2"
+              >
+                Cancelar
+              </button>
+              <button 
+                onClick={() => {
+                  localStorage.clear();
+                  window.location.reload();
+                }}
+                className="btn-primary !bg-[var(--color-duo-red)] !border-[var(--color-duo-red)] !border-b-[var(--color-duo-red-dark)] flex-1 py-4 px-4 gap-2"
+              >
+                Sim, Limpar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      <header className="bg-[var(--color-duo-bg)] h-16 flex items-center px-4 border-b-2 border-[var(--color-duo-border)] text-[var(--color-duo-text)] gap-4 shadow-sm z-10 shrink-0">
+        <button onClick={onClose} className="btn-ghost">
+          <ArrowLeft className="w-5 h-5 text-[var(--color-duo-text-light)]" />
+        </button>
+        <h1 className="text-[19px] font-medium tracking-tight text-[var(--color-duo-text)]">Configurações</h1>
+      </header>
+      
+      <div className="flex-1 overflow-y-auto p-4 sm:p-6">
+        <div className="max-w-2xl mx-auto space-y-6 pb-12">
+          
+          
+          {/* Versão da Bíblia */}
+          <section className="duo-card overflow-hidden p-0 mb-6">
+            <div className="px-5 py-3 bg-[var(--color-duo-bg-sec)] border-b-2 border-[var(--color-duo-border)] flex items-center gap-2">
+              <BookOpen className="w-4 h-4 text-[var(--color-duo-orange)]" />
+              <h2 className="text-[var(--color-duo-orange)] text-xs font-bold uppercase tracking-wider">Tradução da Bíblia</h2>
+            </div>
+            <div className="px-5 py-4">
+              <p className="text-[var(--color-duo-text)] text-[15px] font-medium mb-3">Selecione a versão</p>
+              <select 
+                className="duo-input cursor-pointer appearance-none"
+                value={settings.bibleVersion || 'NVI'}
+                onChange={(e) => onSettingsChange({...settings, bibleVersion: e.target.value})}
+              >
+                <option value="NVI">Nova Versão Internacional (NVI)</option>
+                <option value="ARC">Almeida Revista e Corrigida (ARC)</option>
+                <option value="NTLH">Nova Tradução na Linguagem de Hoje (NTLH)</option>
+                <option value="NAA">Nova Almeida Atualizada (NAA)</option>
+              </select>
+            </div>
+          </section>
+
+
+          {/* Aparência e Leitura */}
+          <section className="duo-card overflow-hidden p-0">
+            <div className="px-5 py-3 bg-[var(--color-duo-bg-sec)] border-b-2 border-[var(--color-duo-border)] flex items-center gap-2">
+              <Palette className="w-4 h-4 text-[var(--color-duo-orange)]" />
+              <h2 className="text-[var(--color-duo-orange)] text-xs font-bold uppercase tracking-wider">Aparência e Leitura</h2>
+            </div>
+            
+            <div className="px-5">
+
+              <div className="py-4 flex flex-wrap items-center justify-between gap-4 border-b-2 border-[var(--color-duo-border)] cursor-pointer group" onClick={() => handleToggleNotification(!settings.dailyNotification)}>
+                <div className="flex items-center gap-3 flex-1">
+                  <Bell className="w-5 h-5 text-[var(--color-duo-text-light)] shrink-0" />
+                  <div>
+                    <p className="text-[var(--color-duo-text)] text-[15px] font-medium group-hover:text-[var(--color-duo-orange)] transition-colors">Notificações Diárias</p>
+                    <p className="text-[var(--color-duo-text-light)] text-[13px] mt-0.5">Status: {permissionStatus === 'granted' ? 'Ativo' : permissionStatus === 'denied' ? 'Bloqueado' : 'Não Solicitado'}</p>
+                  </div>
+                </div>
+                <input 
+                  type="checkbox" 
+                  className="w-5 h-5 text-[var(--color-duo-orange)] rounded border-[var(--color-duo-border)] focus:ring-amber-500 accent-amber-600 cursor-pointer shrink-0"
+                  checked={settings.dailyNotification}
+                  onChange={(e) => handleToggleNotification(e.target.checked)}
+                />
+              </div>
+
+              <div className="py-4 border-b-2 border-[var(--color-duo-border)]">
+                <p className="text-[var(--color-duo-text)] text-[15px] font-medium mb-3">Tema do Aplicativo</p>
+                <div className="flex flex-col gap-3">
+                  <label className="flex items-center gap-3 cursor-pointer group">
+                    <input 
+                      type="radio"
+                      name="theme"
+                      className="w-5 h-5 text-[var(--color-duo-orange)] focus:ring-amber-500 accent-amber-600 cursor-pointer"
+                      checked={settings.theme === 'light'}
+                      onChange={() => onSettingsChange({...settings, theme: 'light'})}
+                    />
+                    <span className="text-stone-700 dark:text-zinc-300 text-[15px] group-hover:text-stone-900 dark:group-hover:text-white transition-colors">Claro</span>
+                  </label>
+                  <label className="flex items-center gap-3 cursor-pointer group">
+                    <input 
+                      type="radio"
+                      name="theme"
+                      className="w-5 h-5 text-[var(--color-duo-orange)] focus:ring-amber-500 accent-amber-600 cursor-pointer"
+                      checked={settings.theme === 'dark'}
+                      onChange={() => onSettingsChange({...settings, theme: 'dark'})}
+                    />
+                    <span className="text-stone-700 dark:text-zinc-300 text-[15px] group-hover:text-stone-900 dark:group-hover:text-white transition-colors">Escuro</span>
+                  </label>
+                  <label className="flex items-center gap-3 cursor-pointer group">
+                    <input 
+                      type="radio"
+                      name="theme"
+                      className="w-5 h-5 text-[var(--color-duo-orange)] focus:ring-amber-500 accent-amber-600 cursor-pointer"
+                      checked={settings.theme === 'system'}
+                      onChange={() => onSettingsChange({...settings, theme: 'system'})}
+                    />
+                    <span className="text-stone-700 dark:text-zinc-300 text-[15px] group-hover:text-stone-900 dark:group-hover:text-white transition-colors">Padrão do sistema</span>
+                  </label>
+                </div>
+              </div>
+
+              <div className="py-4 border-b-2 border-[var(--color-duo-border)]">
+                <p className="text-[var(--color-duo-text)] text-[15px] font-medium mb-3">Fonte Geral do Aplicativo</p>
+                <select 
+                  className="duo-input cursor-pointer appearance-none mb-4"
+                  value={settings.appFontFamily || 'sans'}
+                  onChange={(e) => onSettingsChange({...settings, appFontFamily: e.target.value})}
+                >
+                  <option value="sans">Sans Serif (Padrão)</option>
+                  <option value="serif">Serif</option>
+                  <option value="mono">Monospace</option>
+                  <option value="inter">Inter</option>
+                  <option value="roboto">Roboto</option>
+                  <option value="lora">Lora</option>
+                  <option value="merriweather">Merriweather</option>
+                  <option value="playfair">Playfair Display</option>
+                  <option value="montserrat">Montserrat</option>
+                  <option value="oswald">Oswald</option>
+                </select>
+
+                <div className="flex items-center justify-between mb-4">
+                  <p className="text-stone-700 dark:text-zinc-300 text-[14px]">Tamanho da Fonte (Geral): {settings.appFontSize || 100}%</p>
+                </div>
+                <input 
+                  type="range" 
+                  min="50" max="200" step="10"
+                  value={settings.appFontSize || 100}
+                  onChange={(e) => onSettingsChange({...settings, appFontSize: parseInt(e.target.value)})}
+                  className="w-full accent-amber-600"
+                />
+                <p className="text-xs text-[var(--color-duo-text-light)] mt-2 leading-relaxed">
+                  Esta opção afeta os botões, menus e textos descritivos, melhorando a acessibilidade.
+                </p>
+              </div>
+
+              <div className="py-4 border-b-2 border-[var(--color-duo-border)]">
+                <p className="text-[var(--color-duo-text)] text-[15px] font-medium mb-3">Fonte do Versículo</p>
+                <select 
+                  className="duo-input cursor-pointer appearance-none mb-4"
+                  value={settings.verseFontFamily || 'sans'}
+                  onChange={(e) => onSettingsChange({...settings, verseFontFamily: e.target.value})}
+                >
+                  <option value="sans">Sans Serif (Padrão)</option>
+                  <option value="serif">Serif</option>
+                  <option value="mono">Monospace</option>
+                  <option value="inter">Inter</option>
+                  <option value="roboto">Roboto</option>
+                  <option value="lora">Lora</option>
+                  <option value="merriweather">Merriweather</option>
+                  <option value="playfair">Playfair Display</option>
+                  <option value="montserrat">Montserrat</option>
+                  <option value="oswald">Oswald</option>
+                </select>
+
+                <div className="flex items-center justify-between mb-4">
+                  <p className="text-stone-700 dark:text-zinc-300 text-[14px]">Tamanho da Fonte: {settings.verseFontSize || 100}%</p>
+                </div>
+                <input 
+                  type="range" 
+                  min="50" max="200" step="10"
+                  value={settings.verseFontSize || 100}
+                  onChange={(e) => onSettingsChange({...settings, verseFontSize: parseInt(e.target.value)})}
+                  className="w-full accent-amber-600 mb-6"
+                />
+
+                <div className="flex gap-4">
+                  <label className="flex items-center gap-2 cursor-pointer group">
+                    <input 
+                      type="checkbox"
+                      className="w-5 h-5 text-[var(--color-duo-orange)] rounded border-[var(--color-duo-border)] focus:ring-amber-500 accent-amber-600 cursor-pointer"
+                      checked={settings.verseFontWeight === 'bold'}
+                      onChange={(e) => onSettingsChange({...settings, verseFontWeight: e.target.checked ? 'bold' : 'normal'})}
+                    />
+                    <span className="text-stone-700 dark:text-zinc-300 text-[15px] font-bold group-hover:text-stone-900 dark:group-hover:text-white transition-colors">Negrito</span>
+                  </label>
+
+                  <label className="flex items-center gap-2 cursor-pointer group">
+                    <input 
+                      type="checkbox"
+                      className="w-5 h-5 text-[var(--color-duo-orange)] rounded border-[var(--color-duo-border)] focus:ring-amber-500 accent-amber-600 cursor-pointer"
+                      checked={settings.verseFontStyle === 'italic'}
+                      onChange={(e) => onSettingsChange({...settings, verseFontStyle: e.target.checked ? 'italic' : 'normal'})}
+                    />
+                    <span className="text-stone-700 dark:text-zinc-300 text-[15px]  group-hover:text-stone-900 dark:group-hover:text-white transition-colors">Itálico</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Notificações */}
+          <section className="duo-card overflow-hidden p-0">
+            <div className="px-5 py-3 bg-[var(--color-duo-bg-sec)] border-b-2 border-[var(--color-duo-border)] flex items-center gap-2">
+              <Bell className="w-4 h-4 text-[var(--color-duo-orange)]" />
+              <h2 className="text-[var(--color-duo-orange)] text-xs font-bold uppercase tracking-wider">Notificações</h2>
+            </div>
+            
+            <div className="px-5">
+
+              <div className="py-4 flex flex-wrap items-center justify-between gap-4 border-b-2 border-[var(--color-duo-border)] cursor-pointer group" onClick={() => setIsIntervalModalOpen(true)}>
+                <div className="flex items-center gap-3 flex-1">
+                  <RefreshCw className="w-5 h-5 text-[var(--color-duo-text-light)]" />
+                  <div>
+                    <p className="text-[var(--color-duo-text)] text-[15px] font-medium group-hover:text-[var(--color-duo-orange)] transition-colors">Intervalo de atualização</p>
+                    <p className="text-[var(--color-duo-text-light)] text-[13px] mt-0.5">
+                      {settings.updateInterval === 1440 ? 'Diário' : 
+                       settings.updateInterval === 60 ? 'De hora em hora' : 
+                       settings.updateInterval === 240 ? 'A cada 4 horas' : 
+                       settings.updateInterval === 360 ? 'A cada 6 horas' : 
+                       settings.updateInterval === 720 ? 'A cada 12 horas' : 
+                       settings.updateInterval % 1440 === 0 ? `A cada ${settings.updateInterval / 1440} dias` :
+                       settings.updateInterval % 60 === 0 ? `A cada ${settings.updateInterval / 60} horas` :
+                       `A cada ${settings.updateInterval || 1440} minutos`}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="py-4 flex flex-col gap-3 border-b-2 border-[var(--color-duo-border)]">
+                <div className="flex items-center gap-3 mb-1">
+                  <Clock className="w-5 h-5 text-[var(--color-duo-text-light)] shrink-0" />
+                  <div className="flex-1">
+                    <p className="text-[var(--color-duo-text)] text-[15px] font-medium">Horário das notificações</p>
+                    <p className="text-[var(--color-duo-text-light)] text-[13px] mt-0.5">Defina o período para receber versículos</p>
+                  </div>
+                </div>
+                <div className="flex flex-wrap items-center gap-4 pl-0 sm:pl-8 mt-1">
+                  <div className="flex flex-col gap-1.5 flex-1 min-w-[120px]">
+                    <span className="text-xs font-medium text-[var(--color-duo-text-light)] uppercase tracking-wider">Início</span>
+                    <input 
+                      type="time" 
+                      value={settings.notificationStartTime || '08:00'}
+                      onChange={(e) => onSettingsChange({...settings, notificationStartTime: e.target.value})}
+                      className="w-full bg-[var(--color-duo-bg-sec)] border border-[var(--color-duo-border)] text-[var(--color-duo-text)] rounded-[12px] px-3 py-1.5 text-sm focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+                    />
+                  </div>
+                  <div className="text-stone-300 dark:text-zinc-600 font-medium mt-5 hidden sm:block">-</div>
+                  <div className="flex flex-col gap-1.5 flex-1 min-w-[120px]">
+                    <span className="text-xs font-medium text-[var(--color-duo-text-light)] uppercase tracking-wider">Término</span>
+                    <input 
+                      type="time" 
+                      value={settings.notificationEndTime || '22:00'}
+                      onChange={(e) => onSettingsChange({...settings, notificationEndTime: e.target.value})}
+                      className="w-full bg-[var(--color-duo-bg-sec)] border border-[var(--color-duo-border)] text-[var(--color-duo-text)] rounded-[12px] px-3 py-1.5 text-sm focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="py-4 flex flex-col gap-3 border-b-2 border-[var(--color-duo-border)]">
+                <div className="flex items-center justify-between gap-4 cursor-pointer" onClick={() => onSettingsChange({...settings, showPopup: !settings.showPopup})}>
+                  <div className="flex-1 pr-2">
+                    <p className="text-[var(--color-duo-text)] text-[15px] font-medium">Mostrar pop-up gigante na tela</p>
+                    <p className="text-[var(--color-duo-text-light)] text-[13px] mt-0.5">A notificação padrão será recebida silenciosamente</p>
+                  </div>
+                  <input 
+                    type="checkbox" 
+                    className="w-5 h-5 text-[var(--color-duo-orange)] rounded border-[var(--color-duo-border)] focus:ring-amber-500 accent-amber-600 cursor-pointer shrink-0"
+                    checked={settings.showPopup}
+                    onChange={(e) => onSettingsChange({...settings, showPopup: e.target.checked})}
+                  />
+                </div>
+                {settings.showPopup && onTestPopup && (
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); onTestPopup(); }}
+                    className="btn-outline self-start text-sm py-2 px-3 gap-2 mt-2"
+                  >
+                    Testar Pop-up
+                  </button>
+                )}
+              </div>
+
+              <div className="py-4 flex flex-wrap items-center justify-between gap-4 border-b-2 border-[var(--color-duo-border)]">
+                <div className="flex flex-col flex-1">
+                  <p className="text-[var(--color-duo-text)] text-[15px] font-medium">Tocar um som</p>
+                  <p className="text-[var(--color-duo-text-light)] text-[13px] mt-0.5">Som da notificação</p>
+                </div>
+                <select 
+                  className="duo-input cursor-pointer appearance-none px-4 py-2 w-full sm:w-auto"
+                  value={settings.sound}
+                  onChange={(e) => {
+                    const newSound = e.target.value;
+                    onSettingsChange({...settings, sound: newSound});
+                    if (newSound !== 'Silencioso') {
+                      playNotificationSound(newSound);
+                    }
+                  }}
+                >
+                  <option value="Silencioso">Silencioso</option>
+                  <option value="Sino">Sino</option>
+                  <option value="Harpa">Harpa</option>
+                  <option value="Celeste">Celeste</option>
+                </select>
+              </div>
+
+              <div className="py-4 flex items-center justify-between gap-4 border-b-2 border-[var(--color-duo-border)] cursor-pointer transition-transform active:scale-[0.98]" onClick={() => onSettingsChange({...settings, vibrate: !settings.vibrate})}>
+                <p className="text-[var(--color-duo-text)] text-[15px] font-medium flex-1">Vibrar o dispositivo</p>
+                <input 
+                  type="checkbox" 
+                  className="w-5 h-5 text-[var(--color-duo-orange)] rounded border-[var(--color-duo-border)] focus:ring-amber-500 accent-amber-600 cursor-pointer shrink-0"
+                  checked={settings.vibrate}
+                  onChange={(e) => onSettingsChange({...settings, vibrate: e.target.checked})}
+                />
+              </div>
+
+              <div className="py-4 flex items-center justify-between gap-4 border-b-2 border-[var(--color-duo-border)] cursor-pointer transition-transform active:scale-[0.98]" onClick={() => onSettingsChange({...settings, wakeDevice: !settings.wakeDevice})}>
+                <div className="flex items-center gap-3 flex-1">
+                  <Smartphone className="w-5 h-5 text-[var(--color-duo-text-light)] shrink-0" />
+                  <p className="text-[var(--color-duo-text)] text-[15px] font-medium">Acorde o dispositivo</p>
+                </div>
+                <input 
+                  type="checkbox" 
+                  className="w-5 h-5 text-[var(--color-duo-orange)] rounded border-[var(--color-duo-border)] focus:ring-amber-500 accent-amber-600 cursor-pointer shrink-0"
+                  checked={settings.wakeDevice}
+                  onChange={(e) => onSettingsChange({...settings, wakeDevice: e.target.checked})}
+                />
+              </div>
+
+              <div className="py-4 flex items-center justify-between gap-4 cursor-pointer transition-transform active:scale-[0.98]" onClick={() => onSettingsChange({...settings, flashLed: !settings.flashLed})}>
+                <div className="flex items-center gap-3 flex-1">
+                  <Zap className="w-5 h-5 text-[var(--color-duo-text-light)] shrink-0" />
+                  <p className="text-[var(--color-duo-text)] text-[15px] font-medium">Flash o LED</p>
+                </div>
+                <input 
+                  type="checkbox" 
+                  className="w-5 h-5 text-[var(--color-duo-orange)] rounded border-[var(--color-duo-border)] focus:ring-amber-500 accent-amber-600 cursor-pointer shrink-0"
+                  checked={settings.flashLed}
+                  onChange={(e) => onSettingsChange({...settings, flashLed: e.target.checked})}
+                />
+              </div>
+            </div>
+          </section>
+
+
+
+
+          {/* Android Native Integration (APK) */}
+          <section className="duo-card overflow-hidden p-0">
+            <div className="px-5 py-3 bg-[var(--color-duo-bg-sec)] border-b-2 border-[var(--color-duo-border)] flex items-center gap-2">
+              <Smartphone className="w-4 h-4 text-emerald-600" />
+              <h2 className="text-emerald-600 text-xs font-bold uppercase tracking-wider">Integração Android (APK)</h2>
+            </div>
+            
+            <div className="px-5">
+              <p className="text-xs text-[var(--color-duo-text-light)] py-3 leading-relaxed">
+                As opções abaixo servem para facilitar a compilação do aplicativo em um APK nativo (ex: WebView/Capacitor). Quando no ambiente Web, essas opções servem de atalho.
+              </p>
+
+              <div className="py-4 flex flex-col gap-1 border-b-2 border-[var(--color-duo-border)] cursor-pointer group" onClick={() => AndroidNative.requestBatteryOptimizationPermission()}>
+                <div className="flex items-center justify-between">
+                  <p className="text-[var(--color-duo-text)] text-[15px] font-medium group-hover:text-emerald-600 transition-colors">Desativar Otimização de Bateria</p>
+                </div>
+                <p className="text-[var(--color-duo-text-light)] text-xs leading-relaxed">
+                  Necessário para que o app possa despertar e verificar novos versículos em segundo plano de forma confiável (Ignorar otimizações de bateria).
+                </p>
+              </div>
+
+              <div className="py-4 flex flex-col gap-1 border-b-2 border-[var(--color-duo-border)] cursor-pointer group" onClick={() => AndroidNative.requestOverlayPermission()}>
+                <div className="flex items-center justify-between">
+                  <p className="text-[var(--color-duo-text)] text-[15px] font-medium group-hover:text-emerald-600 transition-colors">Sobrepor Outros Apps</p>
+                </div>
+                <p className="text-[var(--color-duo-text-light)] text-xs leading-relaxed">
+                  Necessário para exibir o Pop-up Gigante (tela inteira) por cima da tela de bloqueio e de outros aplicativos abertos (SYSTEM_ALERT_WINDOW).
+                </p>
+              </div>
+
+              <div className="py-4 flex flex-col gap-1 border-b-2 border-[var(--color-duo-border)] cursor-pointer group" onClick={() => AndroidNative.requestExactAlarmPermission()}>
+                <div className="flex items-center justify-between">
+                  <p className="text-[var(--color-duo-text)] text-[15px] font-medium group-hover:text-emerald-600 transition-colors">Alarmes Exatos</p>
+                </div>
+                <p className="text-[var(--color-duo-text-light)] text-xs leading-relaxed">
+                  Necessário para agendar o aparecimento exato da notificação / tela de versículo (SCHEDULE_EXACT_ALARM).
+                </p>
+              </div>
+
+              <div className="py-4 flex flex-col gap-1 border-b-2 border-[var(--color-duo-border)] cursor-pointer group" onClick={() => AndroidNative.requestAccessibilityPermission()}>
+                <div className="flex items-center justify-between">
+                  <p className="text-[var(--color-duo-text)] text-[15px] font-medium group-hover:text-emerald-600 transition-colors">Acessibilidade do Sistema</p>
+                </div>
+                <p className="text-[var(--color-duo-text-light)] text-xs leading-relaxed">
+                  Permite ao aplicativo detectar e atuar no sistema para ter mais poder e consistência de notificação (BIND_ACCESSIBILITY_SERVICE).
+                </p>
+              </div>
+
+              <div className="py-4 flex flex-col gap-1 cursor-pointer group" onClick={() => AndroidNative.openNotificationSettings()}>
+                <div className="flex items-center justify-between">
+                  <p className="text-[var(--color-duo-text)] text-[15px] font-medium group-hover:text-emerald-600 transition-colors">Permissão de Notificação</p>
+                </div>
+                <p className="text-[var(--color-duo-text-light)] text-xs leading-relaxed">
+                  Verificar e habilitar permissões de notificação do sistema Android (POST_NOTIFICATIONS).
+                </p>
+              </div>
+
+              </div>
+            </section>
+
+
+          {/* Support and Diagnostics */}
+          <section className="duo-card overflow-hidden p-0 mt-8">
+            <div className="px-5 py-3 bg-[var(--color-duo-bg-sec)] border-b-2 border-[var(--color-duo-border)] flex items-center gap-2">
+              <Bug className="w-4 h-4 text-stone-500" />
+              <h2 className="text-stone-500 text-xs font-bold uppercase tracking-wider">Suporte e Diagnóstico</h2>
+            </div>
+            <div className="px-5">
+              <div className="py-4 flex flex-col gap-1 cursor-pointer group" onClick={handleExportLogs}>
+                <div className="flex items-center justify-between">
+                  <p className="text-[var(--color-duo-text)] text-[15px] font-medium group-hover:text-[var(--color-duo-orange)] transition-colors">Relatar um Erro</p>
+                  <Download className="w-4 h-4 text-[var(--color-duo-text-light)]" />
+                </div>
+                <p className="text-[var(--color-duo-text-light)] text-xs leading-relaxed">
+                  Exportar e enviar os logs de erro do aplicativo por e-mail para o desenvolvedor analisar.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          {/* Reset App */}
+          <section className="duo-card overflow-hidden p-0 mt-8 !border-[var(--color-duo-red)]">
+            <div className="px-5 py-3 bg-red-50/50 dark:bg-red-900/20 border-b border-red-100 dark:border-red-900/30 flex items-center gap-2">
+              <RefreshCw className="w-4 h-4 text-red-600" />
+              <h2 className="text-red-600 text-xs font-bold uppercase tracking-wider">Zona de Perigo</h2>
+            </div>
+            <div className="px-5 py-5">
+              <p className="text-[var(--color-duo-text)] text-[15px] font-medium mb-2">Redefinir Aplicativo</p>
+              <p className="text-xs text-[var(--color-duo-text-light)] mb-4 leading-relaxed">
+                Isso apagará todas as suas configurações, versículo atual, notas do diário e histórico. O aplicativo será reiniciado do zero.
+              </p>
+              <button 
+                onClick={() => setShowResetConfirm(true)}
+                className="btn-primary w-full py-3 !bg-[var(--color-duo-red)] !border-[var(--color-duo-red)] !border-b-[var(--color-duo-red-dark)]"
+              >
+                Limpar tudo e reiniciar
+              </button>
+            </div>
+          </section>
+        </div>
+      </div>
+      <UpdateIntervalModal 
+        isOpen={isIntervalModalOpen}
+        onClose={() => setIsIntervalModalOpen(false)}
+        settings={settings}
+        onSettingsChange={onSettingsChange}
+      />
+    </div>
+  );
+}

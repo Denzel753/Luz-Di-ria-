@@ -21,7 +21,7 @@ export function SplashScreen() {
           }}
           className="duo-card w-24 h-24 flex items-center justify-center p-5"
         >
-          <img src="/icon.svg" alt="Luz Diária Logo" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
+          <img src="./icon.svg" alt="Luz Diária Logo" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
         </motion.div>
         
         <div className="text-center">

@@ -49,6 +49,26 @@ public class VerseAlarmReceiver extends BroadcastReceiver {
             verseRef = pick[1];
         }
 
+        // 0. WAKE LOCK DE TRANSIÇÃO (padrão AMdroid/AlarmClock): segura a CPU
+        // acordada por 60s quando o alarme dispara — garante que o pop-up,
+        // a notificação e o widget executem mesmo com o aparelho dormindo,
+        // antes do sistema voltar ao Doze. Sem isso, em alguns aparelhos
+        // (Motorola) o processo morre antes de mostrar o alerta.
+        try {
+            android.os.PowerManager pm =
+                (android.os.PowerManager) context.getSystemService(Context.POWER_SERVICE);
+            if (pm != null) {
+                android.os.PowerManager.WakeLock transitionLock = pm.newWakeLock(
+                    android.os.PowerManager.PARTIAL_WAKE_LOCK,
+                    "luzdiaria:transition"
+                );
+                transitionLock.acquire(60 * 1000L); // 60 segundos
+                // Será liberado automaticamente pelo timeout de 60s
+            }
+        } catch (Exception e) {
+            // Falha silenciosa — o alerta segue mesmo assim
+        }
+
         // 1. Acorda a tela (requer WAKE_LOCK) — para o pop-up gigante aparecer
         android.content.SharedPreferences prefs =
             context.getSharedPreferences("luzdiaria_alarm", Context.MODE_PRIVATE);

@@ -170,7 +170,7 @@ service_block = '''
         android:exported="false"
         android:excludeFromRecents="true"
         android:launchMode="singleTask"
-        android:theme="@android:style/Theme.NoDisplay"
+        android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen"
         android:showWhenLocked="true"
         android:turnScreenOn="true" />
 

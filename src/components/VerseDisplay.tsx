@@ -51,13 +51,22 @@ export const VerseDisplay = React.memo(React.forwardRef<HTMLDivElement, VerseDis
         scale = Math.sqrt(availableH / contentH);
       }
 
-
-
-      setDynamicScale(Math.max(0.35, scale));
+      // Nunca aumenta além de 1 (só reduz para caber) — evita o texto
+      // "crescer do nada" quando a fonte real carrega depois da medição
+      setDynamicScale(Math.min(1, Math.max(0.35, scale)));
     };
     
     // We delay the measurement slightly to allow initial animations to start
     const timer = setTimeout(checkFit, 50);
+
+    // Re-mede quando as fontes web terminam de carregar — sem isso, o texto
+    // era medido com a fonte fallback e "explodia" quando a fonte real chegava
+    if (typeof document !== 'undefined' && document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(() => {
+        setTimeout(checkFit, 100);
+      });
+    }
+
     return () => clearTimeout(timer);
   }, [verse.id, settings.verseFontSize, dynamicScale]);
 
@@ -113,9 +122,9 @@ export const VerseDisplay = React.memo(React.forwardRef<HTMLDivElement, VerseDis
           <motion.div 
             ref={textContainerRef}
             key={verse.id}
-            initial={{ opacity: 0, y: 15, filter: 'blur(4px)' }}
-            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-            exit={{ opacity: 0, y: -15, filter: 'blur(4px)' }}
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -15 }}
             transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
             className={`text-center max-w-[100vw] sm:max-w-[95vw] md:max-w-[90vw] lg:max-w-5xl xl:max-w-6xl px-4 md:px-8 w-full flex flex-col items-center pointer-events-auto ${dropShadow}`}
           >

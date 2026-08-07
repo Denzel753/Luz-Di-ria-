@@ -9,16 +9,26 @@ import os, re, sys
 def step(msg):
     print(f'== {msg} ==')
 
-# 1. Copiar plugin nativo
-step('1. Copiando NativeSettingsPlugin.java')
-src_plugin = 'native/NativeSettingsPlugin.java'
+# 1. Copiar plugins nativos
+step('1. Copiando arquivos nativos')
+native_files = [
+    'native/NativeSettingsPlugin.java',
+    'native/VerseAlarmPlugin.java',
+    'native/VerseForegroundService.java',
+    'native/VerseAlarmReceiver.java',
+    'native/BootReceiver.java',
+]
 dest_dir = 'android/app/src/main/java/com/luzdiaria/versiculos'
 os.makedirs(dest_dir, exist_ok=True)
-with open(src_plugin) as f:
-    plugin_content = f.read()
-with open(os.path.join(dest_dir, 'NativeSettingsPlugin.java'), 'w') as f:
-    f.write(plugin_content)
-print('Plugin copiado para', dest_dir)
+for src in native_files:
+    if not os.path.exists(src):
+        print(f'AVISO: {src} não encontrado, pulando')
+        continue
+    with open(src) as f:
+        content = f.read()
+    with open(os.path.join(dest_dir, os.path.basename(src)), 'w') as f:
+        f.write(content)
+    print(f'Copiado: {os.path.basename(src)}')
 
 # 1b. Copiar ícone de notificação (monocromático) para res/drawable
 step('1b. Copiando ícone de notificação')
@@ -89,6 +99,37 @@ if os.path.exists(strings_path):
 open(manifest, 'w').write(content)
 print(f'{added} permissões adicionadas ao manifest')
 
+# 2b. Registrar Service e Receivers no manifest (foreground service + alarmes)
+step('2b. Registrando service e receivers no manifest')
+service_block = '''
+    <service
+        android:name="com.luzdiaria.versiculos.VerseForegroundService"
+        android:exported="false"
+        android:foregroundServiceType="dataSync" />
+
+    <receiver
+        android:name="com.luzdiaria.versiculos.VerseAlarmReceiver"
+        android:exported="false" />
+
+    <receiver
+        android:name="com.luzdiaria.versiculos.BootReceiver"
+        android:exported="true">
+        <intent-filter>
+            <action android:name="android.intent.action.BOOT_COMPLETED" />
+            <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+            <action android:name="com.htc.intent.action.QUICKBOOT_POWERON" />
+        </intent-filter>
+    </receiver>
+'''
+
+if 'VerseForegroundService' not in content:
+    # Insere antes do fechamento do <application>
+    content = content.replace('</application>', service_block + '\n    </application>')
+    open(manifest, 'w').write(content)
+    print('Service e receivers registrados no manifest')
+else:
+    print('Service e receivers já registrados')
+
 # 3. Registrar plugin no MainActivity
 step('3. Registrando plugin no MainActivity')
 main_activity = None
@@ -111,13 +152,13 @@ if 'NativeSettingsPlugin' not in ma:
         # Adiciona o import e o registerPlugin
         ma = ma.replace(
             'import com.getcapacitor.BridgeActivity;',
-            'import com.getcapacitor.BridgeActivity;\nimport com.luzdiaria.versiculos.NativeSettingsPlugin;'
+            'import com.getcapacitor.BridgeActivity;\nimport com.luzdiaria.versiculos.NativeSettingsPlugin;\nimport com.luzdiaria.versiculos.VerseAlarmPlugin;'
         )
         if 'registerPlugin' in ma:
             # Formato com lista de plugins
             ma = ma.replace(
                 'registerPlugin(',
-                'registerPlugin(NativeSettingsPlugin.class);\n        registerPlugin(',
+                'registerPlugin(NativeSettingsPlugin.class);\n        registerPlugin(VerseAlarmPlugin.class);\n        registerPlugin(',
                 1
             )
         else:

@@ -32,6 +32,8 @@ import {
   shareImage,
   vibrate,
   copyToClipboard,
+  startNativeService,
+  scheduleDailyVerse,
 } from "./capacitorCompat";
 
 function useSessionState<T>(
@@ -391,6 +393,12 @@ export default function App() {
     localStorage.setItem("permissionsDone", "true");
     setSettings((prev) => ({ ...prev, dailyNotification: true }));
     updatePersistentNotification(currentVerse);
+    // No Android: inicia o serviço em primeiro plano (app não morre em background)
+    // e agenda o alarme diário no horário configurado
+    startNativeService();
+    const startTime = settings.notificationStartTime || "08:00";
+    const [h, m] = startTime.split(":").map(Number);
+    scheduleDailyVerse(h || 8, m || 0, currentVerse.text, currentVerse.reference);
   };
 
   // Save states to local storage individually to prevent unnecessary re-stringifying

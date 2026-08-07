@@ -2,6 +2,7 @@ import { Capacitor } from '@capacitor/core';
 import { LocalNotifications } from '@capacitor/local-notifications';
 import { Share } from '@capacitor/share';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
+import { registerPlugin } from '@capacitor/core';
 
 /**
  * Camada de compatibilidade: usa plugins nativos do Capacitor quando o app
@@ -10,6 +11,62 @@ import { Haptics, ImpactStyle } from '@capacitor/haptics';
  */
 
 const isNative = () => Capacitor.isNativePlatform();
+
+// ============================================================
+// ALARME DIÁRIO + FOREGROUND SERVICE (plugin nativo VerseAlarm)
+// Mantém o app vivo e agenda o versículo no horário exato.
+// ============================================================
+
+export interface VerseAlarmPlugin {
+  startForegroundService(): Promise<void>;
+  stopForegroundService(): Promise<void>;
+  scheduleDailyAlarm(options: {
+    hour: number;
+    minute: number;
+    verseText: string;
+    verseRef: string;
+  }): Promise<{ scheduled: boolean; nextFire: number; exact: boolean }>;
+  cancelDailyAlarm(): Promise<void>;
+}
+
+const VerseAlarm = registerPlugin<VerseAlarmPlugin>('VerseAlarm');
+
+export async function startNativeService() {
+  if (!isNative()) return;
+  try {
+    await VerseAlarm.startForegroundService();
+  } catch (e) {
+    console.error('Erro ao iniciar serviço nativo:', e);
+  }
+}
+
+export async function stopNativeService() {
+  if (!isNative()) return;
+  try {
+    await VerseAlarm.stopForegroundService();
+  } catch (e) {
+    console.error('Erro ao parar serviço nativo:', e);
+  }
+}
+
+export async function scheduleDailyVerse(hour: number, minute: number, verseText: string, verseRef: string) {
+  if (!isNative()) return { scheduled: false, exact: false };
+  try {
+    return await VerseAlarm.scheduleDailyAlarm({ hour, minute, verseText, verseRef });
+  } catch (e) {
+    console.error('Erro ao agendar alarme nativo:', e);
+    return { scheduled: false, exact: false };
+  }
+}
+
+export async function cancelDailyVerse() {
+  if (!isNative()) return;
+  try {
+    await VerseAlarm.cancelDailyAlarm();
+  } catch (e) {
+    console.error('Erro ao cancelar alarme nativo:', e);
+  }
+}
 
 // ============================================================
 // NOTIFICAÇÕES (substitui new Notification() da web)

@@ -173,7 +173,7 @@ public class VerseAlarmReceiver extends BroadcastReceiver {
         }
 
         Notification notification = builder
-            .setContentTitle("Luz Diária • " + verseRef)
+            .setContentTitle(verseRef)
             .setContentText(verseText)
             .setStyle(new Notification.BigTextStyle().bigText(verseText))
             .setSmallIcon(R.drawable.ic_stat_notification)

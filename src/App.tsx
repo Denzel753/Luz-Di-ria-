@@ -377,7 +377,7 @@ export default function App() {
   const updatePersistentNotification = (verse: Verse) => {
     try {
       showPersistentNotification(
-        `Luz Diária • ${verse.reference}`,
+        verse.reference,
         verse.text,
       );
     } catch (e) {
@@ -554,7 +554,7 @@ export default function App() {
       }
 
       showPersistentNotification(
-        `Novo Versículo • ${newVerse.reference}`,
+        newVerse.reference,
         newVerse.text,
       );
     };

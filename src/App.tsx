@@ -409,17 +409,21 @@ export default function App() {
   const scheduleWithCurrentSettings = () => {
     const s = settingsRef.current;
     const startTime = s.notificationStartTime || "08:00";
+    const endTime = s.notificationEndTime || "22:00";
     const [h, m] = startTime.split(":").map(Number);
+    const [eh, em] = endTime.split(":").map(Number);
     const interval = s.updateInterval || 1440;
     // Versículo ou frase aleatória (frase usa o autor como referência)
     const randomVerse = getNextRandomVerse("all", s);
     const useQuote = s.enableQuotes && Math.random() < 0.5;
     const content = useQuote ? getRandomQuote() : randomVerse;
     const ref = useQuote ? (content as any).author || "Luz Diária" : content.reference;
-    // Passa as opções nativas: vibrar, flash LED, acordar tela
+    // Passa as opções nativas: vibrar, flash LED, acordar tela + janela de horário
     scheduleDailyVerse(
       h || 8,
       m || 0,
+      eh || 22,
+      em || 0,
       interval,
       content.text,
       ref,
@@ -435,7 +439,7 @@ export default function App() {
       scheduleWithCurrentSettings();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [settings.updateInterval, settings.notificationStartTime, settings.enableQuotes, settings.vibrate, settings.flashLed, settings.wakeDevice]);
+  }, [settings.updateInterval, settings.notificationStartTime, settings.notificationEndTime, settings.enableQuotes, settings.vibrate, settings.flashLed, settings.wakeDevice]);
 
   // Reagenda SEMPRE que o app abre/volta ao primeiro plano.
   // O Android pode cancelar alarmes ao matar o processo — abrir o app
@@ -628,12 +632,10 @@ export default function App() {
           }
         };
 
-        // A janela de horário (início/fim) SÓ vale para o modo DIÁRIO.
-        // Se o usuário configurou intervalo personalizado (a cada X min/h),
-        // deve funcionar 24 horas — travar em 08:00-22:00 era um bug que
-        // impedia o alerta fora dessa janela.
-        const isDailyMode = currentSettings.updateInterval === 1440;
-        if (isDailyMode && !isTimeInWindow(now)) return;
+        // A JANELA DE HORÁRIO é SOBERANA: o usuário define início/fim e o
+        // intervalo (1min, 1h, diário...) só dispara DENTRO dela. Fora da
+        // janela, nenhum alerta acontece — independente do intervalo.
+        if (!isTimeInWindow(now)) return;
 
         if (!currentSettings.lastVerseUpdateTimestamp) {
           const updated = {

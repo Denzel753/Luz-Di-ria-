@@ -96,6 +96,10 @@ public class VerseAlarmPlugin extends Plugin {
                 .putBoolean("vibrate", vibrate)
                 .putBoolean("flashLed", flashLed)
                 .putBoolean("wakeDevice", wakeDevice)
+                .putInt("startHour", hour)
+                .putInt("startMinute", minute)
+                .putInt("endHour", call.getInt("endHour", 22))
+                .putInt("endMinute", call.getInt("endMinute", 0))
                 .apply();
 
             // Calcula o próximo horário (agora + intervalo, ou diário no horário fixo)

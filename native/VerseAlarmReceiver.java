@@ -25,6 +25,15 @@ public class VerseAlarmReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
+        // A JANELA DE HORÁRIO é soberana: o usuário define início/fim e o
+        // alerta só acontece DENTRO dela. Fora da janela, apenas reagenda
+        // o próximo disparo sem notificar (o versículo não incomoda fora
+        // do período que o usuário escolheu).
+        if (!isInTimeWindow(context)) {
+            rescheduleNext(context);
+            return;
+        }
+
         String verseText = intent.getStringExtra("verseText");
         String verseRef = intent.getStringExtra("verseRef");
         if (verseText == null) verseText = "Buscando o versículo do dia...";
@@ -137,6 +146,34 @@ public class VerseAlarmReceiver extends BroadcastReceiver {
             }
         } catch (Exception e) {
             // Falha silenciosa — o alarme principal ainda existe
+        }
+    }
+
+    // Verifica se o horário atual está DENTRO da janela configurada pelo
+    // usuário (início/fim). A janela é soberana — fora dela, sem alertas.
+    private boolean isInTimeWindow(Context context) {
+        try {
+            android.content.SharedPreferences prefs =
+                context.getSharedPreferences("luzdiaria_alarm", Context.MODE_PRIVATE);
+            int startH = prefs.getInt("startHour", 8);
+            int startM = prefs.getInt("startMinute", 0);
+            int endH = prefs.getInt("endHour", 22);
+            int endM = prefs.getInt("endMinute", 0);
+
+            java.util.Calendar now = java.util.Calendar.getInstance();
+            int mins = now.get(java.util.Calendar.HOUR_OF_DAY) * 60
+                     + now.get(java.util.Calendar.MINUTE);
+            int startMins = startH * 60 + startM;
+            int endMins = endH * 60 + endM;
+
+            if (startMins <= endMins) {
+                return mins >= startMins && mins <= endMins;
+            } else {
+                // Janela vira a meia-noite (ex: 22:00 -> 06:00)
+                return mins >= startMins || mins <= endMins;
+            }
+        } catch (Exception e) {
+            return true; // se falhar, permite (não bloqueia o alerta)
         }
     }
 

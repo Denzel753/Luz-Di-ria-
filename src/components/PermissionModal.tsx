@@ -1,10 +1,11 @@
 import React from 'react';
 import { useState, useEffect } from 'react';
-import { Bell, Battery, AlertCircle, Check } from 'lucide-react';
+import { Bell, Battery, AlertCircle, Check, Settings } from 'lucide-react';
 import {
   requestNotificationPermission,
   requestBatteryPermission,
   getPermissionsStatus,
+  openNotificationSettings,
 } from '../capacitorCompat';
 
 interface PermissionModalProps {
@@ -14,35 +15,62 @@ interface PermissionModalProps {
   onShowToast?: (type: 'success' | 'error' | 'info', message: string) => void;
 }
 
-export const PermissionModal = React.memo(function PermissionModal({ isOpen, onClose, onGrant }: PermissionModalProps) {
+export const PermissionModal = React.memo(function PermissionModal({ isOpen, onClose, onGrant, onShowToast }: PermissionModalProps) {
   const [notifGranted, setNotifGranted] = useState(false);
   const [batteryDone, setBatteryDone] = useState(false);
+  const [checking, setChecking] = useState(false);
+  const [triedContinue, setTriedContinue] = useState(false);
+
+  // REFRESH DO STATUS REAL (nativo): usa getPermissionsStatus() do
+  // plugin (NotificationManager.areNotificationsEnabled()), NUNCA a API
+  // web Notification.permission — dentro do WebView ela não reflete o
+  // estado real do Android.
+  const refreshStatus = () => {
+    setChecking(true);
+    getPermissionsStatus()
+      .then((s) => {
+        setNotifGranted(!!s.notifications);
+        setBatteryDone(!!s.battery);
+      })
+      .catch(() => {})
+      .finally(() => setChecking(false));
+  };
 
   useEffect(() => {
-    if (isOpen && 'Notification' in window) {
-      setNotifGranted(Notification.permission === 'granted');
-      // Verifica o status real (bateria pode já estar liberada)
-      getPermissionsStatus().then((s) => {
-        if (s.battery) setBatteryDone(true);
-      }).catch(() => {});
+    if (isOpen) {
+      setTriedContinue(false);
+      refreshStatus();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
-  // 1. Notificações — permissão do sistema (Android 13+ exige)
+  // 1. Notificações — permissão do sistema (Android 13+ exige).
+  // Após conceder/negar, SEMPRE re-consulta o status real (o retorno da
+  // chamada pode mentir se o usuário negou no diálogo do sistema).
   const handleRequestNotif = async () => {
-    const granted = await requestNotificationPermission();
-    setNotifGranted(granted);
+    await requestNotificationPermission();
+    refreshStatus();
   };
 
   // 2. Bateria — abre a tela "Ignorar otimização de bateria" do sistema.
-  // O pop-up gigante e a notificação fixa usam Activity + FullScreenIntent
-  // (padrão AMdroid) — NÃO precisam de sobreposição nem acessibilidade.
   const handleRequestBattery = () => {
     requestBatteryPermission();
-    setBatteryDone(true);
+    // Re-consulta após voltar (o status real pode demorar um instante)
+    setTimeout(refreshStatus, 1500);
   };
 
+  // 3. CONTINUAR: NÃO permite prosseguir sem a notificação concedida.
+  // Sem POST_NOTIFICATIONS o NotificationManager.notify() não posta NADA
+  // (silencioso) — e o pop-up gigante (FullScreenIntent) só dispara ATRAVÉS
+  // de uma notificação postada. Um único buraco explica os dois sintomas.
   const handleContinue = () => {
+    if (!notifGranted) {
+      setTriedContinue(true);
+      if (onShowToast) {
+        onShowToast('error', 'Sem a permissão de notificações o versículo não vai chegar!');
+      }
+      return;
+    }
     onGrant();
     onClose();
   };
@@ -78,8 +106,8 @@ export const PermissionModal = React.memo(function PermissionModal({ isOpen, onC
                   <p className="text-xs text-[var(--color-duo-text-light)]">Mostrar o versículo na barra</p>
                 </div>
               </div>
-              <button onClick={handleRequestNotif} disabled={notifGranted} className={btnClass(notifGranted)}>
-                {notifGranted ? <><Check className="w-3 h-3 inline" /> Concedido</> : 'Permitir'}
+              <button onClick={handleRequestNotif} disabled={notifGranted || checking} className={btnClass(notifGranted)}>
+                {notifGranted ? <><Check className="w-3 h-3 inline" /> Concedido</> : (checking ? '...' : 'Permitir')}
               </button>
             </div>
 
@@ -97,6 +125,22 @@ export const PermissionModal = React.memo(function PermissionModal({ isOpen, onC
               </button>
             </div>
           </div>
+
+          {triedContinue && !notifGranted && (
+            <div className="mb-4 p-3 rounded-[14px] bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800">
+              <p className="text-xs text-red-700 dark:text-red-300 font-medium mb-2">
+                ⚠️ Sem a permissão de notificações o versículo não vai chegar. Toque em "Permitir" e confirme no diálogo do Android.
+              </p>
+              {/* 4. Caso o Android tenha negado permanentemente (2 recusas):
+                   o diálogo não volta — abre as Configurações do app direto */}
+              <button
+                onClick={openNotificationSettings}
+                className="text-xs px-3 py-1.5 rounded-full font-medium bg-red-100 text-red-700 hover:bg-red-200 flex items-center gap-1"
+              >
+                <Settings className="w-3 h-3" /> Abrir configurações do app
+              </button>
+            </div>
+          )}
 
           <button onClick={handleContinue} className="btn-primary w-full py-4 text-sm">
             Continuar

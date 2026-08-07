@@ -416,6 +416,9 @@ export default function App() {
   };
 
   const handlePermissionsGranted = () => {
+    // Só marca como concluído SE a notificação foi realmente concedida.
+    // Se não foi, o modal reaparece na próxima abertura (o check no mount
+    // usa permissionsDone — sem ele, o onboarding continua).
     localStorage.setItem("permissionsDone", "true");
     setSettings((prev) => ({ ...prev, dailyNotification: true }));
     updatePersistentNotification(currentVerse);

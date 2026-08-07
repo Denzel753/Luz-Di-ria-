@@ -112,6 +112,14 @@ export async function requestExactAlarmPermission() {
   catch (e) { console.error('Erro alarme exato:', e); }
 }
 
+// Abre as Configurações do app no Android (para o caso de permissão
+// negada permanentemente — depois de 2 recusas o diálogo não volta).
+export async function openNotificationSettings() {
+  if (!isNative()) return;
+  try { await NativeSettings.openNotificationSettings(); }
+  catch (e) { console.error('Erro abrir configs:', e); }
+}
+
 export async function requestNotificationPermission() {
   if (!isNative()) {
     if ('Notification' in window) {

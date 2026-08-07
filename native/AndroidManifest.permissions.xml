@@ -50,3 +50,32 @@
         </activity>
     </application>
 </manifest>
+
+    <!-- ============================================================
+         DOCUMENTAÇÃO DO MANIFEST FINAL (gerado pelo fix_android_plugin.py)
+         O AndroidManifest.xml REAL do build é montado pelo script
+         fix_android_plugin.py no CI (workflow build-apk.yml, passo 6).
+         Ele adiciona ao manifest do Capacitor:
+
+         PERMISSÕES (12): REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
+         SCHEDULE_EXACT_ALARM, USE_EXACT_ALARM, USE_FULL_SCREEN_INTENT,
+         FOREGROUND_SERVICE, FOREGROUND_SERVICE_SPECIAL_USE,
+         POST_NOTIFICATIONS, VIBRATE, CAMERA, FLASHLIGHT, WAKE_LOCK,
+         RECEIVE_BOOT_COMPLETED
+
+         COMPONENTES REGISTRADOS (todos com nome completo):
+         <service  .VerseForegroundService  specialUse + property
+                   android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE />
+         <receiver .VerseAlarmReceiver  exported=false />
+         <receiver .BootReceiver  exported=true>
+             BOOT_COMPLETED, QUICKBOOT_POWERON (x2),
+             TIME_SET, TIMEZONE_CHANGED, LOCALE_CHANGED,
+             MY_PACKAGE_REPLACED, SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED
+         </receiver>
+         <activity .GiantVerseActivity  singleInstance, excludeFromRecents,
+                   fullscreen, showWhenLocked, turnScreenOn />
+         <activity .VerseWidgetConfigActivity />
+         <receiver .VerseWidgetProvider  exported=true>
+             APPWIDGET_UPDATE + WIDGET_UPDATE + meta-data @xml/widget_verse_info
+         </receiver>
+         ============================================================ -->

@@ -93,13 +93,15 @@ public class VerseWidgetProvider extends AppWidgetProvider {
             : lastRef;
 
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget_verse);
-        views.setTextViewText(R.id.widget_verse_text, "\u201C" + verse + "\u201D");
-        views.setTextViewText(R.id.widget_verse_ref, ref);
-        views.setTextColor(R.id.widget_verse_text, textColor);
-        views.setTextColor(R.id.widget_verse_ref, textColor & 0x99FFFFFF);
+        // Cada operação protegida: se o widget na tela for de uma versão
+        // antiga (layout sem o ID), a falha NÃO aborta as demais operações.
+        try { views.setTextViewText(R.id.widget_verse_text, "\u201C" + verse + "\u201D"); } catch (Exception ignored) {}
+        try { views.setTextViewText(R.id.widget_verse_ref, ref); } catch (Exception ignored) {}
+        try { views.setTextColor(R.id.widget_verse_text, textColor); } catch (Exception ignored) {}
+        try { views.setTextColor(R.id.widget_verse_ref, textColor & 0x99FFFFFF); } catch (Exception ignored) {}
         // Tamanho do texto (configurado pelo usuário, padrão Fossify)
         if (textSize >= 10 && textSize <= 30) {
-            views.setFloat(R.id.widget_verse_text, "setTextSize", textSize);
+            try { views.setFloat(R.id.widget_verse_text, "setTextSize", textSize); } catch (Exception ignored) {}
         }
         // Fundo em card arredondado: dark (azul noite) ou gold (dourado escuro).
         // Detecta pelo RGB base (0x451A03 = dourado), ignorando o alpha.
@@ -107,8 +109,8 @@ public class VerseWidgetProvider extends AppWidgetProvider {
         int bgRes = (bgRgb == 0x451A03)
             ? R.drawable.widget_bg_gold
             : R.drawable.widget_bg_dark;
-        views.setInt(R.id.widget_background, "setImageResource", bgRes);
-        views.setViewVisibility(R.id.widget_icon, showIcon ? android.view.View.VISIBLE : android.view.View.GONE);
+        try { views.setInt(R.id.widget_background, "setImageResource", bgRes); } catch (Exception ignored) {}
+        try { views.setViewVisibility(R.id.widget_icon, showIcon ? android.view.View.VISIBLE : android.view.View.GONE); } catch (Exception ignored) {}
 
         // Toque abre o app
         Intent openApp = new Intent(context, MainActivity.class);
@@ -116,7 +118,7 @@ public class VerseWidgetProvider extends AppWidgetProvider {
             context, widgetId, openApp,
             PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
         );
-        views.setOnClickPendingIntent(R.id.widget_root, pi);
+        try { views.setOnClickPendingIntent(R.id.widget_root, pi); } catch (Exception ignored) {}
 
         mgr.updateAppWidget(widgetId, views);
     }

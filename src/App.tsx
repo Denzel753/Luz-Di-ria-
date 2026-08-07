@@ -1168,9 +1168,9 @@ const handleOpenYoutube = useCallback(() => {
               </button>
               <button
                 onClick={() => setGiantPopupVerse(null)}
-                className="flex-1 py-3 px-4 bg-[var(--color-duo-border)] hover:bg-stone-200 dark:hover:bg-zinc-700 text-[var(--color-duo-text)] font-semibold rounded-[20px] border border-[var(--color-duo-border)] transition-colors flex items-center justify-center gap-2 text-[15px]"
+                className="btn-primary flex-1 py-3 px-4 gap-2 !bg-[var(--color-duo-orange)] !border-[var(--color-duo-orange)] !border-b-[var(--color-duo-orange-dark)]"
               >
-                <Check className="w-5 h-5 text-[var(--color-duo-text)] opacity-70" />
+                <Check className="w-5 h-5" />
                 Concluído
               </button>
             </div>

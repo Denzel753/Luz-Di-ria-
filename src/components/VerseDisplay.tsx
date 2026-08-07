@@ -69,11 +69,13 @@ export const VerseDisplay = React.memo(React.forwardRef<HTMLDivElement, VerseDis
   
   const isImage = bgType === 'image' && Boolean(bgImg);
   const isDark = isImage || (bgType === 'color' && isDarkColor(bgColor));
-  
-  const textStyle = isDark ? "text-white text-outline-dark" : "text-[var(--color-duo-text)] text-outline-light";
-  const subTextStyle = isDark ? "text-white/90 text-outline-dark" : "text-[var(--color-duo-text-light)] text-outline-light";
+
+  // Cores sólidas: branco em fundo escuro/imagem, cinza escuro em fundo claro.
+  // Sem text-outline (neon) — apenas drop-shadow suave quando o fundo é imagem.
+  const textStyle = isDark ? "text-white" : "text-neutral-800";
+  const subTextStyle = isDark ? "text-neutral-100" : "text-neutral-600";
   const dividerStyle = isDark ? 'bg-white/30' : 'bg-[var(--color-duo-border)]';
-  const dropShadow = isImage ? 'drop-shadow-lg' : '';
+  const dropShadow = isImage ? 'drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]' : '';
 
   return (
     <div 

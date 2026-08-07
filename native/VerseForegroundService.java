@@ -145,11 +145,13 @@ public class VerseForegroundService extends Service {
             startForeground(NOTIFICATION_ID, notification);
         }
 
-        // CHAVE DA SOLUÇÃO (Motorola/Android): posta a MESMA notificação via
-        // NotificationManager.notify(). Notificações normais postadas
-        // SOBREVIVEM à morte do processo/serviço — quando o Motorola mata o
-        // serviço, a notificação fixa continua na barra. A do startForeground
-        // (que o sistema remove ao matar o serviço) é reposta por esta aqui.
+        // NOTA (correção): o nm.notify() abaixo usa o MESMO ID (999) do
+        // startForeground — é a MESMA notificação/slot, não uma segunda.
+        // Quando o sistema mata o serviço, ela é removida junto com ele;
+        // a postagem duplicada NÃO a faz sobreviver à morte do processo.
+        // A permanência depende inteiramente do RELANÇAMENTO RÁPIDO do
+        // serviço: onTaskRemoved (alarme ~1s, AllowWhileIdle) + heartbeat
+        // (15 min) — é isso que repõe a notificação na barra.
         NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         if (nm != null) {
             nm.notify(NOTIFICATION_ID, notification);
@@ -251,9 +253,18 @@ public class VerseForegroundService extends Service {
             android.app.AlarmManager am =
                 (android.app.AlarmManager) getSystemService(ALARM_SERVICE);
             if (am != null) {
-                // Relança ~1s depois do swipe
-                am.set(android.app.AlarmManager.RTC,
-                    System.currentTimeMillis() + 1000, pi);
+                // Relança ~1s depois do swipe. IMPORTANTE: setExactAndAllowWhileIdle
+                // ignora Doze/App Standby — com set() simples o Android podia adiar
+                // o alarme por tempo indeterminado assim que o processo morria,
+                // deixando a notificação fixa sumida. (Mesma variante do
+                // scheduleHeartbeat da mesma classe.)
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+                    am.setExactAndAllowWhileIdle(android.app.AlarmManager.RTC_WAKEUP,
+                        System.currentTimeMillis() + 1000, pi);
+                } else {
+                    am.set(android.app.AlarmManager.RTC,
+                        System.currentTimeMillis() + 1000, pi);
+                }
             }
         } catch (Exception e) {
             // Falha silenciosa

@@ -406,7 +406,8 @@ export default function App() {
 
   // Agenda (ou reagenda) o alarme nativo conforme as configurações atuais.
   // Usa versículo OU frase aleatória se o usuário habilitou frases.
-  const scheduleWithCurrentSettings = () => {
+  // showConfirm=true mostra o aviso "Alarme agendado para HH:MM".
+  const scheduleWithCurrentSettings = (showConfirm: boolean = false) => {
     const s = settingsRef.current;
     const startTime = s.notificationStartTime || "08:00";
     const endTime = s.notificationEndTime || "22:00";
@@ -430,13 +431,23 @@ export default function App() {
       !!s.vibrate,
       !!s.flashLed,
       !!s.wakeDevice,
-    );
+    ).then((res) => {
+      // Confirmação visual do agendamento (só quando o usuário pediu)
+      if (showConfirm && res && res.scheduled && res.nextFire) {
+        const d = new Date(res.nextFire);
+        const hh = String(d.getHours()).padStart(2, "0");
+        const mm = String(d.getMinutes()).padStart(2, "0");
+        const label = interval === 1440 ? "diário" : `a cada ${interval} min`;
+        addToast("success", `⏰ Alarme agendado: ${hh}:${mm} (${label})`);
+      }
+    });
   };
 
   // Reagenda quando o usuário muda intervalo/horário/status nas configurações
   useEffect(() => {
     if (localStorage.getItem("permissionsDone")) {
-      scheduleWithCurrentSettings();
+      // Confirmação visual: o usuário MEXEU nas configs, quer ver que salvou
+      scheduleWithCurrentSettings(true);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [settings.updateInterval, settings.notificationStartTime, settings.notificationEndTime, settings.enableQuotes, settings.vibrate, settings.flashLed, settings.wakeDevice]);

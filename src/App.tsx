@@ -428,6 +428,34 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [settings.updateInterval, settings.notificationStartTime, settings.enableQuotes, settings.dailyNotification, settings.vibrate, settings.flashLed, settings.wakeDevice]);
 
+  // Reagenda SEMPRE que o app abre/volta ao primeiro plano.
+  // O Android pode cancelar alarmes ao matar o processo — abrir o app
+  // restaura o agendamento. Sem isso, a notificação só voltava ao gerar
+  // um versículo manualmente (bug reportado).
+  useEffect(() => {
+    const onVisibility = () => {
+      if (document.visibilityState === "visible"
+          && localStorage.getItem("permissionsDone")
+          && settingsRef.current.dailyNotification) {
+        startNativeService();
+        scheduleWithCurrentSettings();
+      }
+    };
+    // Roda ao montar (abertura do app)
+    const t = setTimeout(() => {
+      if (localStorage.getItem("permissionsDone") && settingsRef.current.dailyNotification) {
+        startNativeService();
+        scheduleWithCurrentSettings();
+      }
+    }, 800);
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      clearTimeout(t);
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Save states to local storage individually to prevent unnecessary re-stringifying
   useEffect(() => {
     try {

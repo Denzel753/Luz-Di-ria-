@@ -1,7 +1,13 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
-  <rect width="256" height="256" fill="url(#grad)" />
-  <path d="M128,40 A64,64 0 0,0 64,104 C64,131 77,153 96,168 L96,184 A16,16 0 0,0 112,200 L144,200 A16,16 0 0,0 160,184 L160,168 C179,153 192,131 192,104 A64,64 0 0,0 128,40 Z" fill="none" stroke="white" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
-  <line x1="112" y1="216" x2="144" y2="216" stroke="white" stroke-width="16" stroke-linecap="round"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Fundo gradiente (tela cheia) -->
+  <rect width="512" height="512" fill="url(#grad)" />
+  <!-- Símbolo da lâmpada CENTRALIZADO e MENOR (margem de segurança para crop do Android) -->
+  <g transform="translate(256 256) scale(0.85) translate(-256 -256)">
+    <path d="M256,120 A100,100 0 0,0 156,220 C156,258 176,288 206,306 L206,330 A24,24 0 0,0 230,354 L282,354 A24,24 0 0,0 306,330 L306,306 C336,288 356,258 356,220 A100,100 0 0,0 256,120 Z" fill="none" stroke="white" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"/>
+    <line x1="226" y1="384" x2="286" y2="384" stroke="white" stroke-width="24" stroke-linecap="round"/>
+    <line x1="256" y1="170" x2="256" y2="230" stroke="white" stroke-width="24" stroke-linecap="round"/>
+    <line x1="216" y1="210" x2="296" y2="210" stroke="white" stroke-width="24" stroke-linecap="round"/>
+  </g>
   <defs>
     <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#FBBF24" />

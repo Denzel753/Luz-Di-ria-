@@ -54,15 +54,42 @@ public class VerseForegroundService extends Service {
             // para o versículo do horário. Precisa ser criado ANTES de qualquer
             // notificação usá-lo, com IMPORTANCE_HIGH, para o alerta realmente
             // aparecer (som, pop-up) mesmo com a notificação fixa ativa.
+            // SOM DINÂMICO: o ID do canal inclui o som escolhido pelo usuário
+            // ("luz-diaria-alerta-sino/harpa/celeste/silencioso") — o Android
+            // não permite trocar som de canal existente, então cada som tem
+            // canal próprio; trocar a config cria canal novo (órfãos ok).
+            String soundKey = "celeste";
+            try {
+                String saved = getSharedPreferences("luzdiaria_alarm", Context.MODE_PRIVATE)
+                    .getString("sound", "Celeste");
+                if (saved != null) {
+                    soundKey = saved.toLowerCase()
+                        .replace("ç", "c").replace("ã", "a").replace("í", "i")
+                        .replace(" ", "_");
+                }
+            } catch (Exception e) { /* default */ }
             NotificationChannel alertChannel = new NotificationChannel(
-                "luz-diaria-alerta",
+                "luz-diaria-alerta-" + soundKey,
                 "Luz Diária • Versículos",
                 NotificationManager.IMPORTANCE_HIGH
             );
             alertChannel.setDescription("Alertas do versículo no horário configurado");
             alertChannel.setShowBadge(true);
             alertChannel.enableVibration(true);
-            alertChannel.setSound(android.provider.Settings.System.DEFAULT_NOTIFICATION_URI, null);
+            if ("silencioso".equals(soundKey)) {
+                alertChannel.setSound(null, null);
+            } else {
+                int soundRes = getResources().getIdentifier(
+                    soundKey, "raw", getPackageName());
+                if (soundRes != 0) {
+                    alertChannel.setSound(
+                        android.net.Uri.parse("android.resource://"
+                            + getPackageName() + "/" + soundRes), null);
+                } else {
+                    alertChannel.setSound(
+                        android.provider.Settings.System.DEFAULT_NOTIFICATION_URI, null);
+                }
+            }
             if (nm != null) nm.createNotificationChannel(alertChannel);
         }
     }

@@ -188,16 +188,22 @@ export default function App() {
       const savedSettings = localStorage.getItem("appSettings");
       if (savedSettings) {
         const parsed = JSON.parse(savedSettings);
-        // MIGRAÇÃO: APKs antigos salvaram a janela default como 08:00-22:00,
-        // o que TRAVA o motor fora desse horário sem o usuário perceber.
-        // Se os valores salvos são os antigos defaults (nunca tocados pelo
-        // usuário), migra para 24h (00:00-23:59).
-        if ((!parsed.notificationStartTime || parsed.notificationStartTime === "08:00")
-            && (!parsed.notificationEndTime || parsed.notificationEndTime === "22:00")) {
-          parsed.notificationStartTime = "00:00";
-          parsed.notificationEndTime = "23:59";
-          // persiste a migração
-          try { localStorage.setItem("appSettings", JSON.stringify(parsed)); } catch (e) {}
+        // MIGRAÇÃO ÚNICA (v1): APKs antigos salvaram a janela default como
+        // 08:00-22:00. A flag "migratedDefaultWindow_v1" garante que roda
+        // SÓ UMA VEZ — se o usuário escolher 08:00-22:00 de propósito depois,
+        // o app NUNCA mais sobrescreve (bug corrigido).
+        const alreadyMigrated = localStorage.getItem("migratedDefaultWindow_v1");
+        if (!alreadyMigrated) {
+          if ((!parsed.notificationStartTime || parsed.notificationStartTime === "08:00")
+              && (!parsed.notificationEndTime || parsed.notificationEndTime === "22:00")) {
+            parsed.notificationStartTime = "00:00";
+            parsed.notificationEndTime = "23:59";
+            // persiste a migração
+            try { localStorage.setItem("appSettings", JSON.stringify(parsed)); } catch (e) {}
+          }
+          // Marca como migrada SEMPRE (mesmo se não havia o que migrar) —
+          // a migração é pontual, nunca mais roda.
+          try { localStorage.setItem("migratedDefaultWindow_v1", "true"); } catch (e) {}
         }
         return parsed;
       }
@@ -419,6 +425,7 @@ export default function App() {
           currentVerse.text,
           currentVerse.reference,
           !!s.vibrate, !!s.flashLed, !!s.wakeDevice,
+          s.sound,
         );
       } catch (e) {
         console.error("Erro reagendar com versículo:", e);
@@ -465,7 +472,7 @@ export default function App() {
     const useQuote = s.enableQuotes && Math.random() < 0.5;
     const content = useQuote ? getRandomQuote() : randomVerse;
     const ref = useQuote ? (content as any).author || "Luz Diária" : content.reference;
-    // Passa as opções nativas: vibrar, flash LED, acordar tela + janela de horário
+    // Passa as opções nativas: vibrar, flash LED, acordar tela + janela de horário + SOM
     scheduleDailyVerse(
       h ?? 0,
       m ?? 0,
@@ -477,6 +484,7 @@ export default function App() {
       !!s.vibrate,
       !!s.flashLed,
       !!s.wakeDevice,
+      s.sound,
     ).then((res) => {
       // Confirmação visual do agendamento (só quando o usuário pediu)
       if (showConfirm && res && res.scheduled && res.nextFire) {
@@ -496,7 +504,7 @@ export default function App() {
       scheduleWithCurrentSettings(true);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [settings.updateInterval, settings.notificationStartTime, settings.notificationEndTime, settings.enableQuotes, settings.vibrate, settings.flashLed, settings.wakeDevice]);
+  }, [settings.updateInterval, settings.notificationStartTime, settings.notificationEndTime, settings.enableQuotes, settings.vibrate, settings.flashLed, settings.wakeDevice, settings.sound]);
 
   // Reagenda SEMPRE que o app abre/volta ao primeiro plano.
   // O Android pode cancelar alarmes ao matar o processo — abrir o app

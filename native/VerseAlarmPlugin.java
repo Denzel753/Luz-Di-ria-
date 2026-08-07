@@ -88,6 +88,8 @@ public class VerseAlarmPlugin extends Plugin {
         boolean vibrate = call.getBoolean("vibrate", false);
         boolean flashLed = call.getBoolean("flashLed", false);
         boolean wakeDevice = call.getBoolean("wakeDevice", false);
+        // SOM escolhido nas configurações ("Sino"/"Harpa"/"Celeste"/"Silencioso")
+        String sound = call.getString("sound", "Celeste");
 
         try {
             Context ctx = getContext();
@@ -106,6 +108,7 @@ public class VerseAlarmPlugin extends Plugin {
                 .putBoolean("vibrate", vibrate)
                 .putBoolean("flashLed", flashLed)
                 .putBoolean("wakeDevice", wakeDevice)
+                .putString("sound", sound)
                 .putInt("startHour", hour)
                 .putInt("startMinute", minute)
                 .putInt("endHour", call.getInt("endHour", 23))

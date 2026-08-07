@@ -159,10 +159,10 @@ export async function stopNativeService() {
   }
 }
 
-export async function scheduleDailyVerse(hour: number, minute: number, endHour: number, endMinute: number, intervalMinutes: number, verseText: string, verseRef: string, vibrate: boolean, flashLed: boolean, wakeDevice: boolean) {
+export async function scheduleDailyVerse(hour: number, minute: number, endHour: number, endMinute: number, intervalMinutes: number, verseText: string, verseRef: string, vibrate: boolean, flashLed: boolean, wakeDevice: boolean, sound?: string) {
   if (!isNative()) return { scheduled: false, exact: false, intervalMinutes };
   try {
-    return await VerseAlarm.scheduleDailyAlarm({ hour, minute, endHour, endMinute, intervalMinutes, verseText, verseRef, vibrate, flashLed, wakeDevice });
+    return await VerseAlarm.scheduleDailyAlarm({ hour, minute, endHour, endMinute, intervalMinutes, verseText, verseRef, vibrate, flashLed, wakeDevice, sound: sound || 'Celeste' });
   } catch (e) {
     console.error('Erro ao agendar alarme nativo:', e);
     return { scheduled: false, exact: false, intervalMinutes };

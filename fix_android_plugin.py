@@ -63,6 +63,18 @@ for xml_src, xml_dest in [
             f.write(data)
         print(f'Layout copiado: {xml_dest}')
 
+# 1c2. Copiar SONS do usuário (Sino/Harpa/Celeste) para res/raw
+os.makedirs('android/app/src/main/res/raw', exist_ok=True)
+for wav_name in ['sino', 'harpa', 'celeste']:
+    src = f'native/res/raw/{wav_name}.wav'
+    dest = f'android/app/src/main/res/raw/{wav_name}.wav'
+    if os.path.exists(src):
+        with open(src, 'rb') as f:
+            data = f.read()
+        with open(dest, 'wb') as f:
+            f.write(data)
+        print(f'Som copiado: {dest} ({len(data)//1024} KB)')
+
 # 1d. Adicionar string de descrição do widget
 step('1d. Adicionando strings (widget + acessibilidade)')
 strings_path = 'android/app/src/main/res/values/strings.xml'

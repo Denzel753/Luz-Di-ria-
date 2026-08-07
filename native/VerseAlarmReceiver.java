@@ -530,16 +530,50 @@ public class VerseAlarmReceiver extends BroadcastReceiver {
         // fixa) e o Android NÃO permite mudar a importância de canal existente.
         // Sem canal próprio, o alerta do versículo ficava preso no canal
         // silencioso e o usuário NÃO era notificado de verdade.
+        //
+        // SOM DO USUÁRIO: o canal é gerado DINAMICAMENTE com o som escolhido
+        // no ID — "luz-diaria-alerta-sino/harpa/celeste/silencioso". O Android
+        // não permite trocar o som de canal já criado; criando um canal NOVO
+        // por som, trocar a configuração funciona na hora (canais antigos
+        // ficam órfãos mas não atrapalham).
+        String soundKey = "celeste";
+        try {
+            android.content.SharedPreferences prefs =
+                context.getSharedPreferences("luzdiaria_alarm", Context.MODE_PRIVATE);
+            String saved = prefs.getString("sound", "Celeste");
+            if (saved != null) {
+                soundKey = saved.toLowerCase()
+                    .replace("ç", "c").replace("ã", "a").replace("í", "i")
+                    .replace(" ", "_");
+            }
+        } catch (Exception e) { /* default */ }
+        String channelId = CHANNEL_ID_ALERT + "-" + soundKey;
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(
-                CHANNEL_ID_ALERT,
+                channelId,
                 "Luz Diária • Versículos",
                 NotificationManager.IMPORTANCE_HIGH
             );
             channel.setDescription("Alertas do versículo no horário configurado");
             channel.setShowBadge(true);
             channel.enableVibration(true);
-            channel.setSound(android.provider.Settings.System.DEFAULT_NOTIFICATION_URI, null);
+            if ("silencioso".equals(soundKey)) {
+                // Silencioso: prioridade alta mas SEM som (aparece, não toca)
+                channel.setSound(null, null);
+            } else {
+                // Som real do usuário (arquivos em res/raw)
+                int soundRes = context.getResources().getIdentifier(
+                    soundKey, "raw", context.getPackageName());
+                if (soundRes != 0) {
+                    channel.setSound(
+                        android.net.Uri.parse("android.resource://"
+                            + context.getPackageName() + "/" + soundRes), null);
+                } else {
+                    channel.setSound(
+                        android.provider.Settings.System.DEFAULT_NOTIFICATION_URI, null);
+                }
+            }
             NotificationManager nm = context.getSystemService(NotificationManager.class);
             if (nm != null) nm.createNotificationChannel(channel);
         }
@@ -554,7 +588,7 @@ public class VerseAlarmReceiver extends BroadcastReceiver {
 
         Notification.Builder builder;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            builder = new Notification.Builder(context, CHANNEL_ID_ALERT);
+            builder = new Notification.Builder(context, channelId);
         } else {
             builder = new Notification.Builder(context);
         }

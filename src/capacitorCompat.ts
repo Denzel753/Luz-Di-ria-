@@ -52,6 +52,7 @@ export interface VerseAlarmPlugin {
   }>;
   testAlarmInOneMinute(): Promise<{ scheduled: boolean; fireAt: number }>;
   updateWidgetVerse(options: { verseText: string; verseRef: string }): Promise<{ updated: number }>;
+  getCurrentVerse(): Promise<{ verseText: string; verseRef: string }>;
   logEvent(options: { opcao: string; acao: string; valor: string; esperado: string; ok: boolean; detalhe: string }): Promise<void>;
   testVibrate(): Promise<void>;
   testWakeDevice(): Promise<void>;
@@ -185,6 +186,18 @@ export async function updateWidgetVerse(verseText: string, verseRef: string) {
     await VerseAlarm.updateWidgetVerse({ verseText, verseRef });
   } catch (e) {
     console.error('Erro ao atualizar widget:', e);
+  }
+}
+
+// LÊ o versículo que o NATIVO escolheu (fonte única de verdade).
+// O motor JS usa este valor para a tela — sem sortear um segundo.
+export async function getCurrentVerse() {
+  if (!isNative()) return { verseText: '', verseRef: '' };
+  try {
+    return await VerseAlarm.getCurrentVerse();
+  } catch (e) {
+    console.error('Erro ao ler versículo nativo:', e);
+    return { verseText: '', verseRef: '' };
   }
 }
 

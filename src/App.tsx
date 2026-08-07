@@ -39,6 +39,7 @@ import {
   installJsErrorHooks,
   getDiagnostics,
   logEventJs,
+  getCurrentVerse,
 } from "./capacitorCompat";
 
 function useSessionState<T>(
@@ -402,6 +403,27 @@ export default function App() {
     // Widget da tela inicial: atualiza SEMPRE que o versículo muda
     // (sortear, alarme, horário) — o widget mostra o versículo do momento.
     updateWidgetVerse(currentVerse.text, currentVerse.reference);
+
+    // FONTE ÚNICA DE VERDADE (parte 2): SEMPRE que o versículo da tela muda,
+    // reagenda o próximo alarme NATIVO com ESTE texto específico — assim o
+    // Java dispara com o versículo certo e NUNCA precisa do fallback de 10
+    // versículos (pickRandomVerse). Só agenda se o app já foi configurado.
+    if (localStorage.getItem("permissionsDone")) {
+      try {
+        const s = settingsRef.current;
+        const [h, m] = (s.notificationStartTime || "00:00").split(":").map(Number);
+        const [eh, em] = (s.notificationEndTime || "23:59").split(":").map(Number);
+        scheduleDailyVerse(
+          h ?? 0, m ?? 0, eh ?? 23, em ?? 59,
+          s.updateInterval || 1440,
+          currentVerse.text,
+          currentVerse.reference,
+          !!s.vibrate, !!s.flashLed, !!s.wakeDevice,
+        );
+      } catch (e) {
+        console.error("Erro reagendar com versículo:", e);
+      }
+    }
   }, [currentVerse]);
 
   const updatePersistentNotification = (verse: Verse) => {
@@ -609,17 +631,35 @@ export default function App() {
     };
 
 
-    const triggerUpdate = (isStartup: boolean = false) => {
+    const triggerUpdate = async (isStartup: boolean = false) => {
       const currentSettings = settingsRef.current;
-      // Versículo OU frase aleatória (regra do usuário: cada horário sorteia
-      // um conteúdo novo). 50% frase quando habilitada, senão versículo.
-      const randomVerse = getNextRandomVerse("all", currentSettings);
-      const useQuote = currentSettings.enableQuotes && Math.random() < 0.5;
-      const content = useQuote ? getRandomQuote() : randomVerse;
-      const newVerse = {
-        ...(content as any),
-        reference: useQuote ? (content as any).author || "Luz Diária" : (content as any).reference,
-      };
+
+      // FONTE ÚNICA DE VERDADE (nativo): primeiro tenta LER o versículo
+      // que o alarme nativo já escolheu (widget prefs = o que o widget
+      // mostra). Só sorteia um novo se o nativo ainda não tiver nada
+      // (primeira execução / web).
+      let newVerse: any = null;
+      try {
+        const nativeVerse = await getCurrentVerse();
+        if (nativeVerse && nativeVerse.verseText) {
+          newVerse = {
+            text: nativeVerse.verseText,
+            reference: nativeVerse.verseRef || "Luz Diária",
+            id: `native-${Date.now()}`,
+          };
+        }
+      } catch (e) { /* fallback para sorteio */ }
+
+      if (!newVerse) {
+        // Fallback (web / primeira vez): sorteia versículo OU frase.
+        const randomVerse = getNextRandomVerse("all", currentSettings);
+        const useQuote = currentSettings.enableQuotes && Math.random() < 0.5;
+        const content = useQuote ? getRandomQuote() : randomVerse;
+        newVerse = {
+          ...(content as any),
+          reference: useQuote ? (content as any).author || "Luz Diária" : (content as any).reference,
+        };
+      }
 
       setCurrentVerse(newVerse);
 

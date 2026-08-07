@@ -475,7 +475,36 @@ public class VerseAlarmPlugin extends Plugin {
         }
     }
 
-    // 8. Salva o versículo atual e ATUALIZA todos os widgets da tela inicial.
+    // 8. LÊ o versículo que o NATIVO escolheu (fonte única de verdade).
+    //    O motor JS usa este valor para setCurrentVerse() — em vez de
+    //    sortear um segundo versículo por conta própria. Garante que
+    //    tela, notificação e widget mostram EXATAMENTE o mesmo texto.
+    @PluginMethod
+    public void getCurrentVerse(PluginCall call) {
+        try {
+            Context ctx = getContext();
+            // 1ª fonte: widget prefs (é o que o widget mostra — a verdade final)
+            android.content.SharedPreferences wprefs =
+                ctx.getSharedPreferences("luzdiaria_widget", Context.MODE_MULTI_PROCESS);
+            String verseText = wprefs.getString("lastVerse", "");
+            String verseRef = wprefs.getString("lastRef", "");
+            // 2ª fonte: alarme prefs (se o widget ainda não foi atualizado)
+            if (verseText == null || verseText.isEmpty()) {
+                android.content.SharedPreferences aprefs =
+                    ctx.getSharedPreferences("luzdiaria_alarm", Context.MODE_PRIVATE);
+                verseText = aprefs.getString("verseText", "");
+                verseRef = aprefs.getString("verseRef", "");
+            }
+            JSObject result = new JSObject();
+            result.put("verseText", verseText == null ? "" : verseText);
+            result.put("verseRef", verseRef == null ? "" : verseRef);
+            call.resolve(result);
+        } catch (Exception e) {
+            call.reject("Erro ao ler versículo", e);
+        }
+    }
+
+    // 9. Salva o versículo atual e ATUALIZA todos os widgets da tela inicial.
     //    Chamado pelo app sempre que o versículo/frase muda.
     @PluginMethod
     public void updateWidgetVerse(PluginCall call) {

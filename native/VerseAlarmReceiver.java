@@ -48,6 +48,56 @@ public class VerseAlarmReceiver extends BroadcastReceiver {
 
         // 2. Dispara a notificação do versículo
         showVerseNotification(context, verseText, verseRef);
+
+        // 3. Reagenda o próximo disparo (repetição contínua com o intervalo salvo)
+        rescheduleNext(context);
+    }
+
+    // Reagenda o próximo alarme usando o intervalo salvo nas preferências.
+    // Assim o alarme repete: 1 min, 5 min, 1h... ou diário no horário fixo.
+    private void rescheduleNext(Context context) {
+        try {
+            android.content.SharedPreferences prefs =
+                context.getSharedPreferences("luzdiaria_alarm", Context.MODE_PRIVATE);
+            int intervalMinutes = prefs.getInt("intervalMinutes", 1440);
+            String verseText = prefs.getString("verseText", "");
+            String verseRef = prefs.getString("verseRef", "");
+
+            AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+            if (am == null) return;
+
+            Calendar cal = Calendar.getInstance();
+            if (intervalMinutes == 1440) {
+                // Diário: próximo dia no mesmo horário do primeiro agendamento
+                cal.add(Calendar.DAY_OF_YEAR, 1);
+            } else {
+                cal.add(Calendar.MINUTE, intervalMinutes);
+            }
+
+            Intent intent = new Intent(context, VerseAlarmReceiver.class);
+            intent.putExtra("verseText", verseText);
+            intent.putExtra("verseRef", verseRef);
+            intent.setAction("com.luzdiaria.versiculos.DAILY_VERSE_ALARM");
+
+            PendingIntent pi = PendingIntent.getBroadcast(
+                context,
+                1001,
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+            );
+
+            boolean exactOk = true;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                exactOk = am.canScheduleExactAlarms();
+            }
+            if (exactOk) {
+                am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), pi);
+            } else {
+                am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), pi);
+            }
+        } catch (Exception e) {
+            // Falha silenciosa — o alarme principal ainda existe
+        }
     }
 
     // Verifica se o app está em primeiro plano (visível na tela).

@@ -55,12 +55,14 @@ public class VerseAlarmPlugin extends Plugin {
         }
     }
 
-    // 3. Agenda o alarme diário do versículo (exato).
-    //    Ex: scheduleDailyAlarm(8, 30, "João 3:16", "Porque Deus amou o mundo...")
+    // 3. Agenda o alarme do versículo com intervalo configurado.
+    //    intervalMinutes: 1, 5, 15, 30, 60... 1440 = diário.
+    //    Ex: scheduleDailyAlarm(8, 30, 60, "João 3:16", "Porque Deus amou...")
     @PluginMethod
     public void scheduleDailyAlarm(PluginCall call) {
         int hour = call.getInt("hour", 8);
         int minute = call.getInt("minute", 0);
+        int intervalMinutes = call.getInt("intervalMinutes", 1440);
         String verseText = call.getString("verseText", "");
         String verseRef = call.getString("verseRef", "");
 
@@ -72,14 +74,28 @@ public class VerseAlarmPlugin extends Plugin {
                 return;
             }
 
-            // Calcula o próximo horário
+            // Guarda o intervalo para o receiver reagendar o próximo disparo
+            ctx.getSharedPreferences("luzdiaria_alarm", Context.MODE_PRIVATE)
+                .edit()
+                .putInt("intervalMinutes", intervalMinutes)
+                .putString("verseText", verseText)
+                .putString("verseRef", verseRef)
+                .apply();
+
+            // Calcula o próximo horário (agora + intervalo, ou diário no horário fixo)
             Calendar cal = Calendar.getInstance();
-            cal.set(Calendar.HOUR_OF_DAY, hour);
-            cal.set(Calendar.MINUTE, minute);
-            cal.set(Calendar.SECOND, 0);
-            cal.set(Calendar.MILLISECOND, 0);
-            if (cal.getTimeInMillis() <= System.currentTimeMillis()) {
-                cal.add(Calendar.DAY_OF_YEAR, 1); // já passou hoje → amanhã
+            if (intervalMinutes == 1440) {
+                // Diário: dispara no horário configurado
+                cal.set(Calendar.HOUR_OF_DAY, hour);
+                cal.set(Calendar.MINUTE, minute);
+                cal.set(Calendar.SECOND, 0);
+                cal.set(Calendar.MILLISECOND, 0);
+                if (cal.getTimeInMillis() <= System.currentTimeMillis()) {
+                    cal.add(Calendar.DAY_OF_YEAR, 1);
+                }
+            } else {
+                // Intervalo curto: dispara daqui a X minutos (teste rápido)
+                cal.add(Calendar.MINUTE, intervalMinutes);
             }
 
             Intent intent = new Intent(ctx, VerseAlarmReceiver.class);
@@ -111,6 +127,7 @@ public class VerseAlarmPlugin extends Plugin {
             result.put("scheduled", true);
             result.put("nextFire", cal.getTimeInMillis());
             result.put("exact", exactOk);
+            result.put("intervalMinutes", intervalMinutes);
             call.resolve(result);
         } catch (Exception e) {
             call.reject("Falha ao agendar alarme", e);

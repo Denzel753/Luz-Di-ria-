@@ -390,12 +390,33 @@ export default function App() {
     setSettings((prev) => ({ ...prev, dailyNotification: true }));
     updatePersistentNotification(currentVerse);
     // No Android: inicia o serviço em primeiro plano (app não morre em background)
-    // e agenda o alarme diário no horário configurado
+    // e agenda o alarme com o intervalo configurado
     startNativeService();
-    const startTime = settings.notificationStartTime || "08:00";
-    const [h, m] = startTime.split(":").map(Number);
-    scheduleDailyVerse(h || 8, m || 0, currentVerse.text, currentVerse.reference);
+    scheduleWithCurrentSettings();
   };
+
+  // Agenda (ou reagenda) o alarme nativo conforme as configurações atuais.
+  // Usa versículo OU frase aleatória se o usuário habilitou frases.
+  const scheduleWithCurrentSettings = () => {
+    const s = settingsRef.current;
+    const startTime = s.notificationStartTime || "08:00";
+    const [h, m] = startTime.split(":").map(Number);
+    const interval = s.updateInterval || 1440;
+    // Versículo ou frase aleatória (frase usa o autor como referência)
+    const randomVerse = getNextRandomVerse("all", s);
+    const useQuote = s.enableQuotes && Math.random() < 0.5;
+    const content = useQuote ? getRandomQuote() : randomVerse;
+    const ref = useQuote ? (content as any).author || "Luz Diária" : content.reference;
+    scheduleDailyVerse(h || 8, m || 0, interval, content.text, ref);
+  };
+
+  // Reagenda quando o usuário muda intervalo/horário/status nas configurações
+  useEffect(() => {
+    if (localStorage.getItem("permissionsDone") && settings.dailyNotification) {
+      scheduleWithCurrentSettings();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [settings.updateInterval, settings.notificationStartTime, settings.enableQuotes, settings.dailyNotification]);
 
   // Save states to local storage individually to prevent unnecessary re-stringifying
   useEffect(() => {
@@ -620,7 +641,8 @@ export default function App() {
 
     // Check immediately
     checkAndSchedule();
-    timer = setInterval(checkAndSchedule, 10 * 60 * 1000); // 10 minutes
+    // Checa com frequência o suficiente para o menor intervalo (1 min)
+    timer = setInterval(checkAndSchedule, 30 * 1000); // 30 segundos
 
     return () => {
       clearInterval(timer);

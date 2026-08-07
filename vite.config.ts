@@ -6,6 +6,7 @@ import webfontDownload from 'vite-plugin-webfont-dl';
 
 export default defineConfig(() => {
   return {
+    base: './',
     plugins: [
       react(), 
       tailwindcss(),

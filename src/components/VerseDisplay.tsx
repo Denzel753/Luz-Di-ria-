@@ -109,11 +109,12 @@ export const VerseDisplay = React.memo(React.forwardRef<HTMLDivElement, VerseDis
           <motion.div 
             ref={textContainerRef}
             key={verse.id}
-            initial={{ opacity: 0, y: 15, filter: 'blur(4px)' }}
-            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-            exit={{ opacity: 0, y: -15, filter: 'blur(4px)' }}
-            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -15 }}
+            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
             className={`text-center max-w-[100vw] sm:max-w-[95vw] md:max-w-[90vw] lg:max-w-5xl xl:max-w-6xl px-4 md:px-8 w-full flex flex-col items-center pointer-events-auto ${dropShadow}`}
+            style={{ willChange: 'opacity, transform' }}
           >
             <span className={`text-[var(--color-duo-orange)] opacity-20 text-8xl md:text-9xl font-sans font-black leading-none h-12 md:h-16 select-none transition-colors`}>"</span>
             <h2 className={`text-3xl md:text-4xl lg:text-[44px] font-sans font-bold tracking-tight font-medium  ${textStyle} leading-snug  tracking-tight md:tracking-normal mb-8 transition-colors custom-verse-text verse-size-display`}>

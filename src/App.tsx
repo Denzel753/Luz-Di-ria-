@@ -27,6 +27,13 @@ import { getRandomQuote } from "./quotes";
 import { getVerseTextInVersion } from "./bibleVersions";
 import { AppSettings, Verse } from "./types";
 import { playNotificationSound } from "./audio";
+import {
+  showPersistentNotification,
+  shareText,
+  shareImage,
+  vibrate,
+  copyToClipboard,
+} from "./capacitorCompat";
 
 function useSessionState<T>(
   key: string,
@@ -399,33 +406,17 @@ export default function App() {
   }, [currentVerse]);
 
   const updatePersistentNotification = (verse: Verse) => {
-    if ("Notification" in window && Notification.permission === "granted") {
-      try {
-        const notification = new Notification(
-          "Bíblia Verso do Dia • " +
-            new Date().toLocaleTimeString([], {
-              hour: "2-digit",
-              minute: "2-digit",
-            }),
-          {
-            body: `${verse.reference}\n\n${verse.text}`,
-            tag: "persistent-verse", // Ensures it replaces the old one
-            icon: "/notification-icon.svg",
-            badge: "/notification-icon.svg",
-            requireInteraction: true, // Keeps it in the notification bar
-            silent: true, // Persistent notifications shouldn't keep buzzing
-          },
-        );
-
-        notification.onclick = (event) => {
-          event.preventDefault();
-          window.focus();
-          // Recria a notificação para que ela continue na barra de status mesmo após ser clicada
-          setTimeout(() => updatePersistentNotification(verse), 100);
-        };
-      } catch (e) {
-        console.log("Error creating notification", e);
-      }
+    try {
+      showPersistentNotification(
+        "Bíblia Verso do Dia • " +
+          new Date().toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+        `${verse.reference}\n\n${verse.text}`,
+      );
+    } catch (e) {
+      console.log("Error creating notification", e);
     }
   };
 
@@ -523,12 +514,8 @@ export default function App() {
     let timer: ReturnType<typeof setInterval>;
 
     const triggerVibration = (shouldVibrate: boolean) => {
-      if (shouldVibrate && navigator.vibrate) {
-        try {
-          navigator.vibrate([200, 100, 200]);
-        } catch (e) {
-          console.error("Vibration failed", e);
-        }
+      if (shouldVibrate) {
+        vibrate([200, 100, 200]);
       }
     };
 
@@ -568,24 +555,10 @@ export default function App() {
         setGiantPopupVerse(newVerse);
       }
 
-      if ("Notification" in window && Notification.permission === "granted") {
-        try {
-          const notification = new Notification("Novo Versículo", {
-            body: `${newVerse.reference}\n${newVerse.text}`,
-            tag: "new-verse",
-            icon: "/notification-icon.svg",
-            badge: "/notification-icon.svg",
-            silent: true,
-          });
-
-          notification.onclick = (event) => {
-            event.preventDefault();
-            window.focus();
-          };
-        } catch (e) {
-          console.log("Error creating notification", e);
-        }
-      }
+      showPersistentNotification(
+        "Novo Versículo",
+        `${newVerse.reference}\n${newVerse.text}`,
+      );
     };
 
     const checkAndSchedule = () => {
@@ -695,30 +668,13 @@ export default function App() {
   }, []);
 
   const handleShareText = async () => {
-    const shareText = `"${currentVerse.text}"\n\n— ${currentVerse.reference}`;
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: "Luz Diária",
-          text: shareText,
-        });
-      } catch (error: any) {
-        if (
-          error.name !== "AbortError" &&
-          !error.message?.includes("Share canceled") &&
-          !error.message?.includes("cancel")
-        ) {
-          console.error("Error sharing:", error);
-        } else {
-          console.log("Share canceled by user");
-        }
-      }
-    } else {
-      try {
-        await navigator.clipboard.writeText(shareText);
+    const shareTextContent = `"${currentVerse.text}"\n\n— ${currentVerse.reference}`;
+    const shared = await shareText("Luz Diária", shareTextContent);
+    if (!shared) {
+      // Fallback: copia para a área de transferência
+      const copied = await copyToClipboard(shareTextContent);
+      if (copied) {
         addToast("success", "Versículo copiado para a área de transferência!");
-      } catch (error) {
-        console.error("Failed to copy", error);
       }
     }
   };
@@ -759,18 +715,21 @@ export default function App() {
         { type: "image/png" },
       );
 
-      if (
-        navigator.share &&
-        navigator.canShare &&
-        navigator.canShare({ files: [file] })
-      ) {
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
         await navigator.share({
           files: [file],
           title: "Luz Diária",
           text: "Olha que versículo lindo que eu vi hoje no app Luz Diária!",
         });
       } else {
-        handleDownloadImage(blob);
+        const shared = await shareImage(
+          "Luz Diária",
+          "Olha que versículo lindo que eu vi hoje no app Luz Diária!",
+          file,
+        );
+        if (!shared) {
+          handleDownloadImage(blob);
+        }
       }
     } catch (error: any) {
       if (
@@ -932,10 +891,12 @@ export default function App() {
   
   const handleCopy = useCallback(async () => {
     try {
-      await navigator.clipboard.writeText(`${currentVerse.text}\n\n— ${currentVerse.reference}`);
-      setCopied(true);
-      addToast('success', 'Versículo copiado para a área de transferência!');
-      setTimeout(() => setCopied(false), 2000);
+      const ok = await copyToClipboard(`${currentVerse.text}\n\n— ${currentVerse.reference}`);
+      if (ok) {
+        setCopied(true);
+        addToast('success', 'Versículo copiado para a área de transferência!');
+        setTimeout(() => setCopied(false), 2000);
+      }
     } catch (err) {
       console.error('Failed to copy', err);
     }

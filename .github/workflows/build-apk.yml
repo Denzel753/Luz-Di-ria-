@@ -35,12 +35,23 @@ jobs:
 
       - name: Instalar Capacitor
         run: |
-          npm install @capacitor/core @capacitor/cli @capacitor/android
+          npm install @capacitor/core @capacitor/cli @capacitor/android \
+            @capacitor/local-notifications @capacitor/share @capacitor/haptics
           npx cap init "Luz Diária" "com.luzdiaria.versiculos" --web-dir=dist
           npx cap add android
 
+      - name: Gerar ícones e splash com capacitor-assets
+        run: |
+          npx capacitor-assets generate --assetPath public --android
+
+      - name: Sincronizar plugins nativos
+        run: npx cap sync android
+
       - name: Corrigir conflito de versões Kotlin (stdlib duplicado)
         run: python3 fix_kotlin.py
+
+      - name: Configurar plugin nativo NativeSettings (permissões + registro)
+        run: python3 fix_android_plugin.py
 
       - name: Build APK
         working-directory: android

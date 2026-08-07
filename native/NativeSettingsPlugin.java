@@ -82,6 +82,64 @@ public class NativeSettingsPlugin extends Plugin {
         }
     }
 
+    // Verifica o status REAL de TODAS as permissões do sistema.
+    // Retorna um objeto com cada permissão e se está concedida.
+    @PluginMethod
+    public void getPermissionsStatus(PluginCall call) {
+        try {
+            android.content.Context ctx = getContext();
+
+            // 1. Notificações (Android 13+)
+            boolean notif = true;
+            try {
+                android.app.NotificationManager nm =
+                    (android.app.NotificationManager) ctx.getSystemService(android.content.Context.NOTIFICATION_SERVICE);
+                if (nm != null) notif = nm.areNotificationsEnabled();
+            } catch (Exception e) { notif = true; }
+
+            // 2. Otimização de bateria
+            boolean battery = true;
+            try {
+                android.os.PowerManager pm =
+                    (android.os.PowerManager) ctx.getSystemService(android.content.Context.POWER_SERVICE);
+                if (pm != null) battery = pm.isIgnoringBatteryOptimizations(ctx.getPackageName());
+            } catch (Exception e) { battery = true; }
+
+            // 3. Sobrepor outros apps
+            boolean overlay = Settings.canDrawOverlays(ctx);
+
+            // 4. Alarmes exatos (Android 12+)
+            boolean exactAlarm = true;
+            try {
+                android.app.AlarmManager am =
+                    (android.app.AlarmManager) ctx.getSystemService(android.content.Context.ALARM_SERVICE);
+                if (am != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    exactAlarm = am.canScheduleExactAlarms();
+                }
+            } catch (Exception e) { exactAlarm = true; }
+
+            // 5. Acessibilidade (serviço habilitado?)
+            boolean accessibility = false;
+            try {
+                String enabled = android.provider.Settings.Secure.getString(
+                    ctx.getContentResolver(),
+                    android.provider.Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
+                );
+                accessibility = enabled != null && enabled.contains(ctx.getPackageName());
+            } catch (Exception e) { accessibility = false; }
+
+            JSObject result = new JSObject();
+            result.put("notifications", notif);
+            result.put("battery", battery);
+            result.put("overlay", overlay);
+            result.put("exactAlarm", exactAlarm);
+            result.put("accessibility", accessibility);
+            call.resolve(result);
+        } catch (Exception e) {
+            call.reject("Erro ao verificar permissões", e);
+        }
+    }
+
     // Abre a página de detalhes do app (onde o usuário desbloqueia permissões
     // restritas em Android 13+/fabricantes como Motorola)
     @PluginMethod

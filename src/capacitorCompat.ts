@@ -49,6 +49,13 @@ export interface NativeSettingsPlugin {
   openNotificationSettings(): Promise<void>;
   canDrawOverlays(): Promise<{ canOverlay: boolean }>;
   openAppDetails(): Promise<void>;
+  getPermissionsStatus(): Promise<{
+    notifications: boolean;
+    battery: boolean;
+    overlay: boolean;
+    exactAlarm: boolean;
+    accessibility: boolean;
+  }>;
 }
 
 const NativeSettings = registerPlugin<NativeSettingsPlugin>('NativeSettings');
@@ -82,6 +89,25 @@ export async function openAppDetails() {
   if (!isNative()) return;
   try { await NativeSettings.openAppDetails(); }
   catch (e) { console.error('Erro abrir detalhes:', e); }
+}
+
+// Status REAL de todas as permissões (para exibir verde quando habilitada)
+export async function getPermissionsStatus() {
+  if (!isNative()) {
+    return {
+      notifications: typeof Notification !== 'undefined' && Notification.permission === 'granted',
+      battery: false,
+      overlay: false,
+      exactAlarm: false,
+      accessibility: false,
+    };
+  }
+  try {
+    return await NativeSettings.getPermissionsStatus();
+  } catch (e) {
+    console.error('Erro ao verificar permissões:', e);
+    return { notifications: false, battery: false, overlay: false, exactAlarm: false, accessibility: false };
+  }
 }
 
 export async function requestExactAlarmPermission() {

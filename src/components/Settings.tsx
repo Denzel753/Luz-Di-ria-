@@ -11,6 +11,7 @@ import {
   requestOverlayPermission,
   requestAccessibilityPermission,
   requestExactAlarmPermission,
+  getPermissionsStatus,
 } from '../capacitorCompat';
 
 interface SettingsProps {
@@ -25,6 +26,26 @@ interface SettingsProps {
 
 export function Settings({ isOpen, onClose, settings, onSettingsChange, onTestPopup, onShowToast }: SettingsProps) {
   const [isIntervalModalOpen, setIsIntervalModalOpen] = useState(false);
+
+  // Status REAL das permissões do sistema (verde quando habilitada)
+  const [permStatus, setPermStatus] = useState<{
+    notifications: boolean;
+    battery: boolean;
+    overlay: boolean;
+    exactAlarm: boolean;
+    accessibility: boolean;
+  }>({ notifications: false, battery: false, overlay: false, exactAlarm: false, accessibility: false });
+
+  // Checa o status real sempre que as configurações abrem
+  const refreshPermStatus = () => {
+    getPermissionsStatus().then((s) => setPermStatus(s)).catch(() => {});
+  };
+  if (isOpen) {
+    // (efeito simples: checa na abertura)
+    setTimeout(() => {
+      getPermissionsStatus().then((s) => setPermStatus(s)).catch(() => {});
+    }, 300);
+  }
 
   const handleExportLogs = () => {
     const logs = logger.exportLogs();
@@ -355,28 +376,42 @@ export function Settings({ isOpen, onClose, settings, onSettingsChange, onTestPo
                 Libere ou reabra cada permissão do Android quando quiser (aparece só na 1ª abertura, mas pode ajustar aqui).
               </p>
               {[
-                { icon: Bell, label: 'Notificações', desc: 'Versículo na barra de notificações', action: () => requestNotificationPermission() },
-                { icon: Battery, label: 'Otimização de Bateria', desc: 'App não morre em 2º plano', action: () => requestBatteryPermission() },
-                { icon: Layers, label: 'Sobrepor outros apps', desc: 'Pop-up gigante por cima de tudo', action: () => requestOverlayPermission() },
-                { icon: Zap, label: 'Alarmes exatos', desc: 'Disparo no horário certo', action: () => requestExactAlarmPermission() },
-                { icon: Accessibility, label: 'Acessibilidade', desc: 'Controle extra do sistema', action: () => requestAccessibilityPermission() },
-              ].map(({ icon: Icon, label, desc, action }) => (
-                <div key={label} className="py-3 flex items-center justify-between gap-4 border-b-2 border-[var(--color-duo-border)]">
-                  <div className="flex items-center gap-3 flex-1">
-                    <Icon className="w-5 h-5 text-[var(--color-duo-text-light)] shrink-0" />
-                    <div>
-                      <p className="text-[var(--color-duo-text)] text-[14px] font-medium">{label}</p>
-                      <p className="text-[var(--color-duo-text-light)] text-[12px]">{desc}</p>
+                { key: 'notifications', icon: Bell, label: 'Notificações', desc: 'Versículo na barra de notificações', action: () => requestNotificationPermission() },
+                { key: 'battery', icon: Battery, label: 'Otimização de Bateria', desc: 'App não morre em 2º plano', action: () => requestBatteryPermission() },
+                { key: 'overlay', icon: Layers, label: 'Sobrepor outros apps', desc: 'Pop-up gigante por cima de tudo', action: () => requestOverlayPermission() },
+                { key: 'exactAlarm', icon: Zap, label: 'Alarmes exatos', desc: 'Disparo no horário certo', action: () => requestExactAlarmPermission() },
+                { key: 'accessibility', icon: Accessibility, label: 'Acessibilidade', desc: 'Controle extra do sistema', action: () => requestAccessibilityPermission() },
+              ].map(({ key, icon: Icon, label, desc, action }) => {
+                const granted = permStatus[key as keyof typeof permStatus];
+                return (
+                  <div key={label} className="py-3 flex items-center justify-between gap-4 border-b-2 border-[var(--color-duo-border)]">
+                    <div className="flex items-center gap-3 flex-1">
+                      <Icon className={`w-5 h-5 shrink-0 ${granted ? 'text-green-500' : 'text-[var(--color-duo-text-light)]'}`} />
+                      <div>
+                        <p className="text-[var(--color-duo-text)] text-[14px] font-medium">{label}</p>
+                        <p className={`text-[12px] ${granted ? 'text-green-600 dark:text-green-400 font-medium' : 'text-[var(--color-duo-text-light)]'}`}>
+                          {granted ? '✓ Habilitado' : desc}
+                        </p>
+                      </div>
                     </div>
+                    <button
+                      onClick={() => {
+                        action();
+                        onShowToast(`Abrindo: ${label}`);
+                        // Re-checa o status após voltar do sistema
+                        setTimeout(refreshPermStatus, 2500);
+                      }}
+                      className={`text-xs px-3 py-1.5 rounded-full font-medium shrink-0 ${
+                        granted
+                          ? 'bg-green-100 text-green-700'
+                          : 'bg-amber-100 text-amber-700 hover:bg-amber-200'
+                      }`}
+                    >
+                      {granted ? 'Concedido' : 'Abrir'}
+                    </button>
                   </div>
-                  <button
-                    onClick={() => { action(); onShowToast(`Abrindo: ${label}`); }}
-                    className="text-xs px-3 py-1.5 rounded-full font-medium bg-amber-100 text-amber-700 hover:bg-amber-200 shrink-0"
-                  >
-                    Abrir
-                  </button>
-                </div>
-              ))}
+                );
+              })}
             </div>
             </div>
           </section>

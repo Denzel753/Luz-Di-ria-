@@ -31,6 +31,7 @@ export interface VerseAlarmPlugin {
     wakeDevice: boolean;
   }): Promise<{ scheduled: boolean; nextFire: number; exact: boolean; intervalMinutes: number }>;
   cancelDailyAlarm(): Promise<void>;
+  updateWidgetVerse(options: { verseText: string; verseRef: string }): Promise<{ updated: number }>;
 }
 
 const VerseAlarm = registerPlugin<VerseAlarmPlugin>('VerseAlarm');
@@ -145,6 +146,17 @@ export async function cancelDailyVerse() {
     await VerseAlarm.cancelDailyAlarm();
   } catch (e) {
     console.error('Erro ao cancelar alarme nativo:', e);
+  }
+}
+
+// Atualiza o widget da tela inicial com o versículo/frase do momento.
+// Chamado sempre que o versículo muda (sortear, alarme, horário).
+export async function updateWidgetVerse(verseText: string, verseRef: string) {
+  if (!isNative()) return;
+  try {
+    await VerseAlarm.updateWidgetVerse({ verseText, verseRef });
+  } catch (e) {
+    console.error('Erro ao atualizar widget:', e);
   }
 }
 

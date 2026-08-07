@@ -73,10 +73,18 @@ public class VerseWidgetProvider extends AppWidgetProvider {
         int bgColor = prefs.getInt("bgColor_" + widgetId, 0xE60F172A);
         boolean showIcon = prefs.getBoolean("showIcon_" + widgetId, true);
 
-        // Versículo do dia (fallback se o app ainda não salvou)
-        String verse = prefs.getString("verse_" + widgetId,
-                "Porque Deus amou o mundo de tal maneira que deu o seu Filho unigênito, para que todo aquele que nele crê não pereça, mas tenha a vida eterna.");
-        String ref = prefs.getString("ref_" + widgetId, "João 3:16");
+        // Versículo do momento: prioriza o último salvo pelo app (lastVerse),
+        // que é atualizado a cada versículo novo; fallback para o específico
+        // do widget (configuração) e depois texto padrão.
+        String lastVerse = prefs.getString("lastVerse", "");
+        String lastRef = prefs.getString("lastRef", "");
+        String verse = lastVerse.isEmpty()
+            ? prefs.getString("verse_" + widgetId,
+                "Porque Deus amou o mundo de tal maneira que deu o seu Filho unigênito, para que todo aquele que nele crê não pereça, mas tenha a vida eterna.")
+            : lastVerse;
+        String ref = lastRef.isEmpty()
+            ? prefs.getString("ref_" + widgetId, "João 3:16")
+            : lastRef;
 
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget_verse);
         views.setTextViewText(R.id.widget_verse_text, "\u201C" + verse + "\u201D");

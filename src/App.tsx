@@ -34,6 +34,7 @@ import {
   copyToClipboard,
   startNativeService,
   scheduleDailyVerse,
+  updateWidgetVerse,
 } from "./capacitorCompat";
 
 function useSessionState<T>(
@@ -376,6 +377,10 @@ export default function App() {
         && document.visibilityState !== 'visible') {
       updatePersistentNotification(currentVerse);
     }
+
+    // Widget da tela inicial: atualiza SEMPRE que o versículo muda
+    // (sortear, alarme, horário) — o widget mostra o versículo do momento.
+    updateWidgetVerse(currentVerse.text, currentVerse.reference);
   }, [currentVerse]);
 
   const updatePersistentNotification = (verse: Verse) => {

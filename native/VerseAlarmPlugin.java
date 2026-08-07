@@ -150,6 +150,37 @@ public class VerseAlarmPlugin extends Plugin {
         }
     }
 
+    // 5. Salva o versículo atual e ATUALIZA todos os widgets da tela inicial.
+    //    Chamado pelo app sempre que o versículo/frase muda.
+    @PluginMethod
+    public void updateWidgetVerse(PluginCall call) {
+        try {
+            Context ctx = getContext();
+            String verseText = call.getString("verseText", "");
+            String verseRef = call.getString("verseRef", "");
+
+            // Salva o versículo atual nas preferências (o widget lê daqui)
+            VerseWidgetProvider.saveVerse(ctx, verseText, verseRef);
+
+            // Força a atualização de TODOS os widgets instalados na tela inicial
+            android.appwidget.AppWidgetManager mgr =
+                android.appwidget.AppWidgetManager.getInstance(ctx);
+            int[] ids = mgr.getAppWidgetIds(
+                new android.content.ComponentName(ctx, VerseWidgetProvider.class)
+            );
+            for (int id : ids) {
+                VerseWidgetProvider provider = new VerseWidgetProvider();
+                provider.updateWidgetPublic(ctx, mgr, id);
+            }
+
+            JSObject result = new JSObject();
+            result.put("updated", ids.length);
+            call.resolve(result);
+        } catch (Exception e) {
+            call.reject("Falha ao atualizar widget", e);
+        }
+    }
+
     // 4. Cancela o alarme diário.
     @PluginMethod
     public void cancelDailyAlarm(PluginCall call) {

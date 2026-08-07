@@ -72,6 +72,22 @@ public class VerseAlarmReceiver extends BroadcastReceiver {
         boolean foreground = isAppInForeground(context);
         showVerseNotification(context, verseText, verseRef, !foreground);
 
+        // 1d. Atualiza o widget da tela inicial com o versículo do momento
+        try {
+            VerseWidgetProvider.saveVerse(context, verseText, verseRef);
+            android.appwidget.AppWidgetManager mgr =
+                android.appwidget.AppWidgetManager.getInstance(context);
+            int[] ids = mgr.getAppWidgetIds(
+                new android.content.ComponentName(context, VerseWidgetProvider.class)
+            );
+            for (int id : ids) {
+                VerseWidgetProvider provider = new VerseWidgetProvider();
+                provider.updateWidgetPublic(context, mgr, id);
+            }
+        } catch (Exception e) {
+            // Falha silenciosa — o widget tenta de novo no próximo disparo
+        }
+
         // 3. Reagenda o próximo disparo (repetição contínua com o intervalo salvo)
         rescheduleNext(context);
     }

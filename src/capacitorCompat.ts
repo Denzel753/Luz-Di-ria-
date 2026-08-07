@@ -28,8 +28,9 @@ export async function showPersistentNotification(title: string, body: string) {
             id: 999, // id fixo = substitui a notificação persistente anterior
             title,
             body,
-            smallIcon: 'ic_launcher',
-            iconColor: '#FFD782',
+            smallIcon: 'ic_stat_notification',
+            iconColor: '#EA580C',
+            channelId: 'luz-diaria',
             ongoing: true, // persistente, fica na barra
             autoCancel: false,
             sound: null,

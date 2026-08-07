@@ -72,24 +72,22 @@ html.dark, html.dark body, html.dark #root {
     transform: translateY(1px);
   }
   .btn-icon {
-    @apply bg-[var(--color-duo-bg-sec)] text-[var(--color-duo-text-light)] flex items-center justify-center transition-all outline-none select-none border-2 border-[var(--color-duo-border)] border-b-4 hover:text-[var(--color-duo-orange)];
+    @apply bg-transparent text-[var(--color-duo-text-light)] flex items-center justify-center transition-all outline-none select-none  hover:text-[var(--color-duo-orange)];
     border-radius: 9999px;
   }
   .btn-icon:active {
-    @apply border-b-2;
-    transform: translateY(2px);
+    transform: translateY(1px);
   }
   .duo-card {
-    @apply bg-[var(--color-duo-bg)] transition-all border-2 border-[var(--color-duo-border)] border-b-4;
+    @apply bg-[var(--color-duo-bg)] transition-all border-2 border-[var(--color-duo-border)] border-b-2;
     border-radius: 20px;
   }
   .duo-card-interactive {
-    @apply bg-[var(--color-duo-bg)] transition-all cursor-pointer select-none border-2 border-[var(--color-duo-border)] border-b-4 hover:border-b-4 hover:border-[var(--color-duo-orange)]/30;
+    @apply bg-[var(--color-duo-bg)] transition-all cursor-pointer select-none border-2 border-[var(--color-duo-border)] border-b-2 hover:border-[var(--color-duo-orange)]/30;
     border-radius: 20px;
   }
   .duo-card-interactive:active {
-    @apply border-b-2;
-    transform: translateY(2px);
+    transform: translateY(1px);
   }
   .duo-modal {
     @apply bg-white/95 dark:bg-[#111111]/95 backdrop-blur-xl shadow-2xl;
@@ -122,6 +120,5 @@ html.dark, html.dark body, html.dark #root {
 .duo-input:focus {
   @apply border-[var(--color-duo-orange)] bg-[var(--color-duo-bg)] shadow-sm ring-2 ring-[var(--color-duo-orange)]/20;
 }
-
 
 

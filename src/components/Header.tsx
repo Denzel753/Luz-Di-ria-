@@ -9,8 +9,6 @@ import {
 } from 'lucide-react';
 
 interface HeaderProps {
-  streak: number;
-  onStreakClick: () => void;
   enableQuotes?: boolean;
   onToggleQuotes?: (enabled: boolean) => void;
   onMenuClick: () => void;
@@ -23,7 +21,7 @@ interface HeaderProps {
   onAboutClick: () => void;
 }
 
-export const Header = React.memo(function Header({ streak, onStreakClick, onMenuClick, onSettingsClick, onRandomClick, onShareClick, onSearchClick, onBackgroundClick, onEmotionsClick, onAboutClick, enableQuotes, onToggleQuotes }: HeaderProps) {
+export const Header = React.memo(function Header({ onMenuClick, onSettingsClick, onRandomClick, onShareClick, onSearchClick, onBackgroundClick, onEmotionsClick, onAboutClick, enableQuotes, onToggleQuotes }: HeaderProps) {
   const [showMenu, setShowMenu] = useState(false);
 
   return (
@@ -42,12 +40,6 @@ export const Header = React.memo(function Header({ streak, onStreakClick, onMenu
           </div>
         </div>
         <div className="flex items-center gap-2">
-          {/* Streak indicator */}
-          <button onClick={onStreakClick} className="flex items-center gap-1.5 px-3 py-1.5 bg-[var(--color-duo-bg-sec)] rounded-full border-2 border-[var(--color-duo-border)] border-b-4 mr-2 sm:mr-4 active:border-b-2 active:translate-y-[2px] transition-all cursor-pointer hover:bg-stone-100 dark:hover:bg-zinc-800">
-            <Flame className="w-5 sm:w-6 h-5 sm:h-6 text-[var(--color-duo-orange)] fill-[var(--color-duo-orange)]" />
-            <span className="text-lg font-bold text-[var(--color-duo-orange)]">{streak}</span>
-          </button>
-          
           <button className="btn-icon p-2 w-10 sm:w-12 h-10 sm:h-12" onClick={onShareClick}>
             <Share2 className="w-5 sm:w-6 h-5 sm:h-6 text-[var(--color-duo-text-light)]" />
           </button>
@@ -76,7 +68,7 @@ export const Header = React.memo(function Header({ streak, onStreakClick, onMenu
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: -10 }}
             transition={{ duration: 0.2, ease: "easeOut" }}
-            className="fixed top-24 right-4 md:right-[calc(50vw-28rem+1rem)] xl:right-[calc(50vw-28rem+1rem)] bg-[var(--color-duo-bg)] rounded-[24px] border-2 border-[var(--color-duo-border)] border-b-4 shadow-2xl p-2 w-64 z-50 overflow-hidden"
+            className="fixed top-24 right-4 md:right-[calc(50vw-28rem+1rem)] xl:right-[calc(50vw-28rem+1rem)] bg-[var(--color-duo-bg)] rounded-[24px]  shadow-2xl p-2 w-64 z-50 overflow-hidden"
           >
             {[
               { icon: <Shuffle className="w-4 h-4"/>, text: "Versículos por Tema", action: onRandomClick },
@@ -89,7 +81,7 @@ export const Header = React.memo(function Header({ streak, onStreakClick, onMenu
             ].map((item, i) => {
               if (item.isToggle) {
                 return (
-                  <label key={i} className="w-full px-4 py-3 hover:bg-[var(--color-duo-bg-sec)] rounded-[16px] flex items-center justify-between transition-colors cursor-pointer">
+                  <label key={i} className="w-full px-4 py-3 hover:bg-transparent rounded-[16px] flex items-center justify-between transition-colors cursor-pointer">
                     <div className="flex items-center gap-2 sm:gap-3">
                       <span className="text-[var(--color-duo-orange)]">{item.icon}</span>
                       <span className="text-[var(--color-duo-text)] text-sm font-medium">{item.text}</span>
@@ -111,7 +103,7 @@ export const Header = React.memo(function Header({ streak, onStreakClick, onMenu
               return (
                 <button 
                   key={i}
-                  className="w-full text-left px-4 py-3 hover:bg-[var(--color-duo-bg-sec)] rounded-[16px] flex items-center gap-2 sm:gap-3 text-[var(--color-duo-text)] text-sm font-medium transition-colors"
+                  className="w-full text-left px-4 py-3 hover:bg-transparent rounded-[16px] flex items-center gap-2 sm:gap-3 text-[var(--color-duo-text)] text-sm font-medium transition-colors"
                   onClick={() => {
                     setShowMenu(false);
                     if(item.action) item.action();

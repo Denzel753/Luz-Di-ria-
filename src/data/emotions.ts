@@ -330,7 +330,7 @@ export const emotionsVerses = [
   {
     "emotion": "Grato",
     "emoji": "🙌",
-    "color": "bg-emerald-100 text-emerald-700",
+    "color": "bg-amber-100 text-amber-700",
     "references": [
       "Salmos 107:1",
       "1 Tessalonicenses 5:18",

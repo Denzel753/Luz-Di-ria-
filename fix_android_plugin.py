@@ -20,6 +20,18 @@ with open(os.path.join(dest_dir, 'NativeSettingsPlugin.java'), 'w') as f:
     f.write(plugin_content)
 print('Plugin copiado para', dest_dir)
 
+# 1b. Copiar ícone de notificação (monocromático) para res/drawable
+step('1b. Copiando ícone de notificação')
+notif_src = 'assets/notification-icon.png'
+if os.path.exists(notif_src):
+    drawable_dir = 'android/app/src/main/res/drawable'
+    os.makedirs(drawable_dir, exist_ok=True)
+    with open(notif_src, 'rb') as f:
+        notif_data = f.read()
+    with open(os.path.join(drawable_dir, 'ic_stat_notification.png'), 'wb') as f:
+        f.write(notif_data)
+    print('Ícone de notificação copiado para', drawable_dir)
+
 # 2. Permissões no AndroidManifest
 step('2. Adicionando permissões ao AndroidManifest.xml')
 manifest = 'android/app/src/main/AndroidManifest.xml'
@@ -40,8 +52,11 @@ permissions = [
     'android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS',
     'android.permission.SYSTEM_ALERT_WINDOW',
     'android.permission.SCHEDULE_EXACT_ALARM',
+    'android.permission.USE_EXACT_ALARM',
     'android.permission.POST_NOTIFICATIONS',
     'android.permission.VIBRATE',
+    'android.permission.CAMERA',
+    'android.permission.FLASHLIGHT',
     'android.permission.WAKE_LOCK',
     'android.permission.RECEIVE_BOOT_COMPLETED',
 ]
@@ -54,6 +69,22 @@ for perm in permissions:
             f'<uses-permission android:name="android.permission.INTERNET" />\n    <uses-permission android:name="{perm}" />'
         )
         added += 1
+
+# Nome do app: "Luz Diária"
+strings_path = 'android/app/src/main/res/values/strings.xml'
+if os.path.exists(strings_path):
+    strings = open(strings_path).read()
+    if 'Luz Diária' not in strings:
+        strings = strings.replace(
+            '<string name="app_name">',
+            '<string name="app_name">Luz Diária'
+        )
+        # Caso o valor venha com o nome antigo, substitui
+        strings = re.sub(r'(<string name="app_name">)[^<]*(</string>)', r'\1Luz Diária\2', strings)
+        open(strings_path, 'w').write(strings)
+        print('Nome do app definido como "Luz Diária"')
+    else:
+        print('Nome do app já é Luz Diária')
 
 open(manifest, 'w').write(content)
 print(f'{added} permissões adicionadas ao manifest')
@@ -96,6 +127,17 @@ if 'NativeSettingsPlugin' not in ma:
                 '''public class MainActivity extends BridgeActivity {
     @Override
     public void onCreate(android.os.Bundle savedInstanceState) {
+        // Cria o canal de notificações "Luz Diária" (obrigatório no Android 8+)
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            android.app.NotificationChannel channel = new android.app.NotificationChannel(
+                "luz-diaria",
+                "Luz Diária",
+                android.app.NotificationManager.IMPORTANCE_HIGH
+            );
+            channel.setDescription("Notificações de versículos diários");
+            android.app.NotificationManager nm = getSystemService(android.app.NotificationManager.class);
+            if (nm != null) nm.createNotificationChannel(channel);
+        }
         registerPlugin(NativeSettingsPlugin.class);
         super.onCreate(savedInstanceState);
     }

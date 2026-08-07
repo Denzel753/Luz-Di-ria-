@@ -46,7 +46,7 @@ export const Drawer = React.memo(function Drawer({ isOpen, onClose, recentVerses
              favoriteVerses.map((v, i) => (
                <div 
                  key={`${v.id}-fav-${i}`} 
-                 className="p-4 bg-[var(--color-duo-bg)] border-2 border-[var(--color-duo-border)] border-b-4 rounded-[20px] active:border-b-2 active:translate-y-[2px] transition-all group relative cursor-pointer"
+                 className="p-4 bg-[var(--color-duo-bg)] border-2 border-[var(--color-duo-border)] border-b-2 rounded-[20px] active:translate-y-[1px] transition-all group relative cursor-pointer"
                  onClick={() => { onSelectVerse(v); onClose(); }}
                >
                  <div className="cursor-pointer pr-8" onClick={() => {
@@ -98,7 +98,7 @@ export const Drawer = React.memo(function Drawer({ isOpen, onClose, recentVerses
               return (
                 <div 
                   key={`${v.id}-${i}`} 
-                  className="p-4 bg-[var(--color-duo-bg)] border-2 border-[var(--color-duo-border)] border-b-4 rounded-[20px] active:border-b-2 active:translate-y-[2px] transition-all group relative cursor-pointer"
+                  className="p-4 bg-[var(--color-duo-bg)] border-2 border-[var(--color-duo-border)] border-b-2 rounded-[20px] active:translate-y-[1px] transition-all group relative cursor-pointer"
                   onClick={() => {
                     onSelectVerse(v);
                     onClose();

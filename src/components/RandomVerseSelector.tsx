@@ -8,8 +8,8 @@ const iconMap: Record<string, React.ReactNode> = {
   Sun: <Sun className="w-7 h-7 text-yellow-600 stroke-[1.5]" />,
   Star: <Star className="w-7 h-7 text-amber-500 stroke-[1.5]" />,
   HeartHandshake: <HeartHandshake className="w-7 h-7 text-[var(--color-duo-text)] stroke-[1.5]" />,
-  Coins: <Coins className="w-7 h-7 text-green-600 stroke-[1.5]" />,
-  Users: <Users className="w-7 h-7 text-green-500 stroke-[1.5]" />,
+  Coins: <Coins className="w-7 h-7 text-[var(--color-duo-orange)] stroke-[1.5]" />,
+  Users: <Users className="w-7 h-7 text-[var(--color-duo-orange)] stroke-[1.5]" />,
   RefreshCw: <RefreshCw className="w-7 h-7 text-[var(--color-duo-text)] stroke-[1.5]" />,
   Heart: <Heart className="w-7 h-7 text-red-500 stroke-[1.5]" />,
   Flame: <Flame className="w-7 h-7 text-red-600 stroke-[1.5]" />,
@@ -18,7 +18,7 @@ const iconMap: Record<string, React.ReactNode> = {
   BookOpen: <BookOpen className="w-7 h-7 text-orange-400 stroke-[1.5]" />,
   BookText: <BookText className="w-7 h-7 text-[var(--color-duo-orange)] stroke-[1.5]" />,
   ScrollText: <ScrollText className="w-7 h-7 text-[var(--color-duo-text)] stroke-[1.5]" />,
-  TrendingUp: <TrendingUp className="w-7 h-7 text-green-600 stroke-[1.5]" />,
+  TrendingUp: <TrendingUp className="w-7 h-7 text-[var(--color-duo-orange)] stroke-[1.5]" />,
   CloudRain: <CloudRain className="w-7 h-7 text-[var(--color-duo-text)] stroke-[1.5]" />,
   HandHeart: <HandHeart className="w-7 h-7 text-blue-400 stroke-[1.5]" />,
   Eye: <Eye className="w-7 h-7 text-purple-400 stroke-[1.5]" />,
@@ -78,7 +78,7 @@ export const RandomVerseSelector = React.memo(function RandomVerseSelector({ isO
               onShowVerse(selectedTopic);
               onClose();
             }}
-            className="w-full py-4 px-4 gap-2 text-lg bg-[#58cc02] hover:bg-[#46a302] text-white font-bold flex items-center justify-center transition-all outline-none select-none border-b-4 border-[#46a302] active:border-b-0 active:translate-y-[4px] rounded-full shadow-lg"
+            className="w-full py-4 px-4 gap-2 text-lg bg-[var(--color-duo-orange)] hover:opacity-90 text-white font-bold flex items-center justify-center transition-all outline-none select-none active:translate-y-[2px] rounded-full shadow-lg"
           >
             <Check className="w-6 h-6" />
             CONCLUIR

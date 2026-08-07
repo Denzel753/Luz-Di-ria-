@@ -1,7 +1,6 @@
 import { AnimatePresence } from "motion/react";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Shuffle, Star, Network, Youtube, Copy, Check, Book, BookOpen } from "lucide-react";
-import { StreakModal } from "./components/StreakModal";
 import { Header } from "./components/Header";
 import { BottomNav } from "./components/BottomNav";
 import { Drawer } from "./components/Drawer";
@@ -145,39 +144,7 @@ export default function App() {
     }, 3000);
   }, []);
   const [isFlashing, setIsFlashing] = useState(false);
-  const [showStreakModal, setShowStreakModal] = useState(false);
-  const [streakDays, setStreakDays] = useState(() => {
-    try {
-      const saved = localStorage.getItem("streakDaysData");
-      return saved ? parseInt(saved, 10) : 1;
-    } catch (e) {}
-    return 1;
-  });
-  
-  useEffect(() => {
-    const today = new Date().toDateString();
-    const lastOpened = localStorage.getItem("lastOpenedDate");
-    
-    if (lastOpened !== today) {
-      if (lastOpened) {
-        const lastDate = new Date(lastOpened);
-        const currentDate = new Date(today);
-        const diffTime = Math.abs(currentDate.getTime() - lastDate.getTime());
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
-        
-        if (diffDays === 1) {
-          // Came back the next day!
-          setStreakDays(prev => prev + 1);
-        } else if (diffDays > 1) {
-          // Missed a day
-          setStreakDays(1);
-        }
-      }
-      localStorage.setItem("lastOpenedDate", today);
-    }
-  }, []);
 
-  useEffect(() => { localStorage.setItem("streakDaysData", streakDays.toString()); }, [streakDays]);
   const [favoriteVerses, setFavoriteVerses] = useState<Verse[]>(() => {
     try {
       const savedFavs = localStorage.getItem("favoriteVersesData");
@@ -408,7 +375,7 @@ export default function App() {
   const updatePersistentNotification = (verse: Verse) => {
     try {
       showPersistentNotification(
-        "Bíblia Verso do Dia • " +
+        "Luz Diária • " +
           new Date().toLocaleTimeString([], {
             hour: "2-digit",
             minute: "2-digit",
@@ -668,11 +635,10 @@ export default function App() {
   }, []);
 
   const handleShareText = async () => {
-    const shareTextContent = `"${currentVerse.text}"\n\n— ${currentVerse.reference}`;
-    const shared = await shareText("Luz Diária", shareTextContent);
+    const shareContent = `"${currentVerse.text}"\n\n— ${currentVerse.reference}`;
+    const shared = await shareText("Luz Diária", shareContent);
     if (!shared) {
-      // Fallback: copia para a área de transferência
-      const copied = await copyToClipboard(shareTextContent);
+      const copied = await copyToClipboard(shareContent);
       if (copied) {
         addToast("success", "Versículo copiado para a área de transferência!");
       }
@@ -920,8 +886,6 @@ const handleOpenYoutube = useCallback(() => {
   const handleAboutClick = useCallback(() => setIsAboutOpen(true), []);
 
   
-  const openStreakModal = useCallback(() => setShowStreakModal(true), []);
-  const closeStreakModal = useCallback(() => setShowStreakModal(false), []);
   const closeDrawer = useCallback(() => setIsDrawerOpen(false), []);
   const closeSettings = useCallback(() => setIsSettingsOpen(false), []);
   const closeBackgroundModal = useCallback(() => setIsBackgroundModalOpen(false), []);
@@ -1051,8 +1015,6 @@ const handleOpenYoutube = useCallback(() => {
         <div className="fixed inset-0 z-[9999] bg-white transition-opacity duration-75 pointer-events-none" />
       )}
       <Header
-        streak={streakDays}
-        onStreakClick={openStreakModal}
         onMenuClick={handleMenuClick}
         onSettingsClick={handleSettingsClick}
         onRandomClick={handleRandomClick}
@@ -1077,11 +1039,6 @@ const handleOpenYoutube = useCallback(() => {
         copied={copied}
       />
 
-      <StreakModal
-        isOpen={showStreakModal}
-        onClose={closeStreakModal}
-        streak={streakDays}
-      />
       <Drawer
         bibleVersion={settings.bibleVersion}
         isOpen={isDrawerOpen}

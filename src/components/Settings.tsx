@@ -1,10 +1,17 @@
 import { useEffect, useState } from 'react';
-import { ArrowLeft, Bell, Clock, Smartphone, Zap, Palette, RefreshCw, BookOpen, Download, Bug,  } from 'lucide-react';
+import { ArrowLeft, Bell, Clock, Smartphone, Zap, Palette, RefreshCw, BookOpen, Download, Bug, ShieldCheck, Battery, Layers, Accessibility,  } from 'lucide-react';
 import { AppSettings } from '../types';
 import { AndroidNative } from '../AndroidNative';
 import { playNotificationSound } from '../audio';
 import { UpdateIntervalModal } from './UpdateIntervalModal';
 import { logger } from '../utils/logger';
+import {
+  requestNotificationPermission,
+  requestBatteryPermission,
+  requestOverlayPermission,
+  requestAccessibilityPermission,
+  requestExactAlarmPermission,
+} from '../capacitorCompat';
 
 interface SettingsProps {
   onTestPopup?: () => void;
@@ -380,6 +387,40 @@ export function Settings({ isOpen, onClose, settings, onSettingsChange, onTestPo
                   onChange={(e) => onSettingsChange({...settings, flashLed: e.target.checked})}
                 />
               </div>
+
+            {/* Permissões do Sistema */}
+            <div className="px-5 py-3 bg-[var(--color-duo-bg-sec)] border-b-2 border-[var(--color-duo-border)] flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4 text-[var(--color-duo-orange)]" />
+              <h2 className="text-[var(--color-duo-orange)] text-xs font-bold uppercase tracking-wider">Permissões do Sistema</h2>
+            </div>
+            <div className="px-5 pb-2">
+              <p className="text-[13px] text-[var(--color-duo-text-light)] py-3 border-b-2 border-[var(--color-duo-border)]">
+                Libere ou reabra cada permissão do Android quando quiser (aparece só na 1ª abertura, mas pode ajustar aqui).
+              </p>
+              {[
+                { icon: Bell, label: 'Notificações', desc: 'Versículo na barra de notificações', action: () => requestNotificationPermission() },
+                { icon: Battery, label: 'Otimização de Bateria', desc: 'App não morre em 2º plano', action: () => requestBatteryPermission() },
+                { icon: Layers, label: 'Sobrepor outros apps', desc: 'Pop-up gigante por cima de tudo', action: () => requestOverlayPermission() },
+                { icon: Zap, label: 'Alarmes exatos', desc: 'Disparo no horário certo', action: () => requestExactAlarmPermission() },
+                { icon: Accessibility, label: 'Acessibilidade', desc: 'Controle extra do sistema', action: () => requestAccessibilityPermission() },
+              ].map(({ icon: Icon, label, desc, action }) => (
+                <div key={label} className="py-3 flex items-center justify-between gap-4 border-b-2 border-[var(--color-duo-border)]">
+                  <div className="flex items-center gap-3 flex-1">
+                    <Icon className="w-5 h-5 text-[var(--color-duo-text-light)] shrink-0" />
+                    <div>
+                      <p className="text-[var(--color-duo-text)] text-[14px] font-medium">{label}</p>
+                      <p className="text-[var(--color-duo-text-light)] text-[12px]">{desc}</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => { action(); onShowToast(`Abrindo: ${label}`); }}
+                    className="text-xs px-3 py-1.5 rounded-full font-medium bg-amber-100 text-amber-700 hover:bg-amber-200 shrink-0"
+                  >
+                    Abrir
+                  </button>
+                </div>
+              ))}
+            </div>
             </div>
           </section>
         </div>

@@ -279,7 +279,7 @@ export function Settings({ isOpen, onClose, settings, onSettingsChange, onTestPo
                     <span className="text-xs font-medium text-[var(--color-duo-text-light)] uppercase tracking-wider">Início</span>
                     <input 
                       type="time" 
-                      value={settings.notificationStartTime || '08:00'}
+                      value={settings.notificationStartTime || '00:00'}
                       onChange={(e) => onSettingsChange({...settings, notificationStartTime: e.target.value})}
                       className="w-full bg-[var(--color-duo-bg-sec)] border border-[var(--color-duo-border)] text-[var(--color-duo-text)] rounded-[12px] px-3 py-1.5 text-sm focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
                     />

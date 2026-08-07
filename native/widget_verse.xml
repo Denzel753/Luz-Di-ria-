@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/widget_bg_dark"
-    android:padding="18dp">
+    android:padding="20dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -12,21 +12,27 @@
         android:orientation="vertical"
         android:layout_gravity="center_vertical">
 
-        <!-- Linha superior: ícone + nome -->
+        <!-- Linha superior: ícone em badge + nome -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:layout_marginBottom="10dp">
+            android:layout_marginBottom="12dp">
 
-            <ImageView
-                android:id="@+id/widget_icon"
-                android:layout_width="28dp"
-                android:layout_height="28dp"
-                android:src="@mipmap/ic_launcher"
-                android:contentDescription="Luz Diária"
-                android:scaleType="fitCenter" />
+            <FrameLayout
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:background="@drawable/widget_icon_badge">
+
+                <ImageView
+                    android:id="@+id/widget_icon"
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:layout_gravity="center"
+                    android:src="@mipmap/ic_launcher"
+                    android:contentDescription="Luz Diária" />
+            </FrameLayout>
 
             <TextView
                 android:layout_width="wrap_content"
@@ -34,36 +40,23 @@
                 android:text="LUZ DIÁRIA"
                 android:textColor="#FBBF24"
                 android:textSize="10sp"
-                android:fontFamily="sans-serif"
+                android:fontFamily="sans-serif-medium"
                 android:textStyle="bold"
-                android:letterSpacing="0.15"
-                android:paddingStart="8dp"
-                android:paddingLeft="8dp" />
+                android:letterSpacing="0.18"
+                android:paddingStart="10dp"
+                android:paddingLeft="10dp" />
         </LinearLayout>
 
-        <!-- Aspa decorativa -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="\u201C"
-            android:textColor="#FBBF24"
-            android:textSize="34sp"
-            android:fontFamily="serif"
-            android:includeFontPadding="false"
-            android:layout_marginTop="-8dp"
-            android:layout_marginBottom="-12dp"
-            android:alpha="0.55" />
-
-        <!-- Versículo -->
+        <!-- Versículo (com aspa decorativa integrada) -->
         <TextView
             android:id="@+id/widget_verse_text"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textColor="#F8FAFC"
-            android:textSize="15sp"
+            android:textSize="16sp"
             android:fontFamily="sans-serif"
             android:textStyle="bold"
-            android:lineSpacingExtra="4dp"
+            android:lineSpacingExtra="5dp"
             android:maxLines="4"
             android:ellipsize="end" />
 
@@ -72,12 +65,12 @@
             android:id="@+id/widget_verse_ref"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textColor="#94A3B8"
-            android:textSize="11sp"
-            android:fontFamily="sans-serif"
+            android:textColor="#FBBF24"
+            android:textSize="12sp"
+            android:fontFamily="sans-serif-medium"
             android:textStyle="bold"
-            android:letterSpacing="0.08"
-            android:layout_marginTop="8dp"
-            android:textAllCaps="true" />
+            android:letterSpacing="0.1"
+            android:layout_marginTop="10dp"
+            android:textAllCaps="false" />
     </LinearLayout>
 </FrameLayout>

@@ -6,22 +6,17 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
-import android.graphics.Typeface;
 import android.os.Bundle;
-import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
-import android.widget.LinearLayout;
-import android.widget.ScrollView;
 import android.widget.TextView;
 
 /**
  * Tela de configuração do widget — abre quando o usuário adiciona o widget
- * na tela inicial. Personaliza: mostrar ícone, cor do texto, tamanho do texto,
- * cor de fundo. Tela cheia com scroll para garantir que o botão Concluído
- * seja sempre acessível (tela estreita antiga impedia a adição do widget).
+ * na tela inicial. Usa o layout XML (widget_config.xml) com design do app:
+ * cards escuros, botões laranja, prévia ao vivo das cores.
  */
 public class VerseWidgetConfigActivity extends Activity {
 
@@ -31,7 +26,7 @@ public class VerseWidgetConfigActivity extends Activity {
     private TextView txtColorPreview;
     private TextView txtBgPreview;
     private int selectedTextColor = Color.WHITE;
-    private int selectedBgColor = 0xE60F172A;
+    private int selectedBgColor = 0xE61E293B;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,166 +43,50 @@ public class VerseWidgetConfigActivity extends Activity {
         }
 
         // CRÍTICO: o launcher só adiciona o widget se retornar RESULT_OK com o ID.
-        // Começa como cancelado; muda para OK quando o usuário salvar.
         setResult(RESULT_CANCELED, intent);
 
-        buildUi();
-    }
+        setContentView(R.layout.widget_config);
 
-    private void buildUi() {
-        // Root com scroll (garante acesso ao botão Concluído em telas pequenas)
-        ScrollView scroll = new ScrollView(this);
-        scroll.setFillViewport(true);
-        scroll.setBackgroundColor(Color.parseColor("#0F172A"));
+        // Liga os elementos do layout
+        chkIcon = findViewById(R.id.chk_icon);
+        edtSize = findViewById(R.id.edt_size);
+        txtColorPreview = findViewById(R.id.txt_color_preview);
+        txtBgPreview = findViewById(R.id.txt_bg_preview);
+        Button btnColor = findViewById(R.id.btn_color);
+        Button btnBg = findViewById(R.id.btn_bg);
+        Button btnDone = findViewById(R.id.btn_done);
+        Button btnCancel = findViewById(R.id.btn_cancel);
 
-        LinearLayout root = new LinearLayout(this);
-        root.setOrientation(LinearLayout.VERTICAL);
-        root.setPadding(dp(24), dp(24), dp(24), dp(32));
-        root.setGravity(Gravity.CENTER_HORIZONTAL);
-        scroll.addView(root, new ScrollView.LayoutParams(
-            ScrollView.LayoutParams.MATCH_PARENT,
-            ScrollView.LayoutParams.WRAP_CONTENT
-        ));
+        updateColorPreview();
+        updateBgPreview();
 
-        // Título
-        TextView title = new TextView(this);
-        title.setText("⚡ Personalizar Widget");
-        title.setTextColor(Color.parseColor("#FBBF24"));
-        title.setTextSize(22);
-        title.setTypeface(Typeface.DEFAULT_BOLD);
-        title.setGravity(Gravity.CENTER);
-        title.setPadding(0, 0, 0, dp(8));
-        root.addView(title, lpMatchWrap());
-
-        TextView subtitle = new TextView(this);
-        subtitle.setText("Configure como o versículo aparece na sua tela inicial");
-        subtitle.setTextColor(Color.parseColor("#94A3B8"));
-        subtitle.setTextSize(13);
-        subtitle.setGravity(Gravity.CENTER);
-        subtitle.setPadding(0, 0, 0, dp(24));
-        root.addView(subtitle, lpMatchWrap());
-
-        // Mostrar ícone
-        chkIcon = new CheckBox(this);
-        chkIcon.setText("Mostrar ícone do app");
-        chkIcon.setTextColor(Color.WHITE);
-        chkIcon.setTextSize(15);
-        chkIcon.setChecked(true);
-        root.addView(chkIcon, lpMatchWrap());
-
-        // Espaço
-        root.addView(spacer(dp(8)));
-
-        // Tamanho do texto
-        TextView lblSize = new TextView(this);
-        lblSize.setText("Tamanho do texto (10 a 30):");
-        lblSize.setTextColor(Color.WHITE);
-        lblSize.setTextSize(14);
-        lblSize.setPadding(0, dp(12), 0, dp(6));
-        root.addView(lblSize, lpMatchWrap());
-
-        edtSize = new EditText(this);
-        edtSize.setText("14");
-        edtSize.setTextColor(Color.WHITE);
-        edtSize.setTextSize(16);
-        edtSize.setHintTextColor(Color.GRAY);
-        edtSize.setSingleLine(true);
-        root.addView(edtSize, lpMatchWrap());
-
-        // Espaço
-        root.addView(spacer(dp(16)));
-
-        // Cor do texto
-        Button btnColor = new Button(this);
-        btnColor.setText("Cor do texto");
-        btnColor.setAllCaps(false);
-        btnColor.setTextColor(Color.WHITE);
-        btnColor.setTextSize(14);
-        btnColor.setTypeface(Typeface.DEFAULT_BOLD);
-        btnColor.setBackgroundColor(Color.parseColor("#EA580C"));
-        btnColor.setPadding(0, dp(14), 0, dp(14));
         btnColor.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 cycleTextColor();
             }
         });
-        root.addView(btnColor, lpMatchWrap());
 
-        txtColorPreview = new TextView(this);
-        txtColorPreview.setText("Exemplo de texto");
-        txtColorPreview.setGravity(Gravity.CENTER);
-        txtColorPreview.setTextSize(16);
-        txtColorPreview.setTypeface(Typeface.DEFAULT_BOLD);
-        txtColorPreview.setPadding(0, dp(8), 0, dp(4));
-        updateColorPreview();
-        root.addView(txtColorPreview, lpMatchWrap());
-
-        // Espaço
-        root.addView(spacer(dp(12)));
-
-        // Cor de fundo
-        Button btnBg = new Button(this);
-        btnBg.setText("Cor de fundo");
-        btnBg.setAllCaps(false);
-        btnBg.setTextColor(Color.WHITE);
-        btnBg.setTextSize(14);
-        btnBg.setTypeface(Typeface.DEFAULT_BOLD);
-        btnBg.setBackgroundColor(Color.parseColor("#334155"));
-        btnBg.setPadding(0, dp(14), 0, dp(14));
         btnBg.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 cycleBgColor();
             }
         });
-        root.addView(btnBg, lpMatchWrap());
 
-        txtBgPreview = new TextView(this);
-        txtBgPreview.setText("Fundo do widget");
-        txtBgPreview.setGravity(Gravity.CENTER);
-        txtBgPreview.setTextSize(13);
-        txtBgPreview.setPadding(0, dp(10), 0, dp(4));
-        updateBgPreview();
-        root.addView(txtBgPreview, lpMatchWrap());
-
-        // Espaço
-        root.addView(spacer(dp(24)));
-
-        // Botão Concluído (grande e sempre acessível)
-        Button btnDone = new Button(this);
-        btnDone.setText("✓ Concluído — Adicionar Widget");
-        btnDone.setAllCaps(false);
-        btnDone.setTextColor(Color.WHITE);
-        btnDone.setTextSize(17);
-        btnDone.setTypeface(Typeface.DEFAULT_BOLD);
-        btnDone.setBackgroundColor(Color.parseColor("#EA580C"));
-        btnDone.setPadding(0, dp(18), 0, dp(18));
         btnDone.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 saveAndFinish();
             }
         });
-        root.addView(btnDone, lpMatchWrap());
 
-        // Botão cancelar
-        Button btnCancel = new Button(this);
-        btnCancel.setText("Cancelar");
-        btnCancel.setAllCaps(false);
-        btnCancel.setTextColor(Color.parseColor("#CBD5E1"));
-        btnCancel.setTextSize(14);
-        btnCancel.setBackgroundColor(Color.TRANSPARENT);
-        btnCancel.setPadding(0, dp(10), 0, dp(10));
         btnCancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 finish(); // RESULT_CANCELED — launcher não adiciona
             }
         });
-        root.addView(btnCancel, lpMatchWrap());
-
-        setContentView(scroll);
     }
 
     private void cycleTextColor() {
@@ -224,10 +103,10 @@ public class VerseWidgetConfigActivity extends Activity {
     }
 
     private void cycleBgColor() {
-        if (selectedBgColor == 0xE60F172A) {
-            selectedBgColor = 0xE6334000;
-        } else if (selectedBgColor == 0xE6334000) {
-            selectedBgColor = 0xE60F172A;
+        if (selectedBgColor == 0xE61E293B) {
+            selectedBgColor = 0xE6451A03;
+        } else if (selectedBgColor == 0xE6451A03) {
+            selectedBgColor = 0xE61E293B;
         }
         updateBgPreview();
     }
@@ -241,9 +120,9 @@ public class VerseWidgetConfigActivity extends Activity {
 
     private void updateBgPreview() {
         if (txtBgPreview != null) {
-            txtBgPreview.setBackgroundColor(selectedBgColor);
-            txtBgPreview.setTextColor(selectedBgColor == 0xE6334000 ? Color.WHITE : Color.parseColor("#94A3B8"));
-            txtBgPreview.setText("Fundo: " + (selectedBgColor == 0xE6334000 ? "Dourado escuro" : "Azul noite"));
+            txtBgPreview.setBackgroundResource(
+                selectedBgColor == 0xE6451A03 ? R.drawable.widget_bg_gold : R.drawable.widget_bg_dark);
+            txtBgPreview.setText("Fundo: " + (selectedBgColor == 0xE6451A03 ? "Dourado" : "Azul noite"));
         }
     }
 
@@ -287,22 +166,5 @@ public class VerseWidgetConfigActivity extends Activity {
         result.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId);
         setResult(RESULT_OK, result);
         finish();
-    }
-
-    private int dp(int v) {
-        return Math.round(v * getResources().getDisplayMetrics().density);
-    }
-
-    private LinearLayout.LayoutParams lpMatchWrap() {
-        return new LinearLayout.LayoutParams(
-            LinearLayout.LayoutParams.MATCH_PARENT,
-            LinearLayout.LayoutParams.WRAP_CONTENT
-        );
-    }
-
-    private View spacer(int h) {
-        View v = new View(this);
-        v.setLayoutParams(new LinearLayout.LayoutParams(1, dp(h)));
-        return v;
     }
 }

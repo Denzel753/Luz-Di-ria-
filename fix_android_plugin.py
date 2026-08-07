@@ -45,6 +45,13 @@ for xml_src, xml_dest in [
     ('native/widget_verse_info.xml', 'android/app/src/main/res/xml/widget_verse_info.xml'),
     ('native/drawable/widget_bg_dark.xml', 'android/app/src/main/res/drawable/widget_bg_dark.xml'),
     ('native/drawable/widget_bg_gold.xml', 'android/app/src/main/res/drawable/widget_bg_gold.xml'),
+    ('native/drawable/widget_icon_badge.xml', 'android/app/src/main/res/drawable/widget_icon_badge.xml'),
+    ('native/drawable/widget_config_card.xml', 'android/app/src/main/res/drawable/widget_config_card.xml'),
+    ('native/drawable/widget_config_input.xml', 'android/app/src/main/res/drawable/widget_config_input.xml'),
+    ('native/drawable/widget_config_preview.xml', 'android/app/src/main/res/drawable/widget_config_preview.xml'),
+    ('native/drawable/widget_config_button.xml', 'android/app/src/main/res/drawable/widget_config_button.xml'),
+    ('native/drawable/widget_config_done.xml', 'android/app/src/main/res/drawable/widget_config_done.xml'),
+    ('native/layout/widget_config.xml', 'android/app/src/main/res/layout/widget_config.xml'),
 ]:
     if os.path.exists(xml_src):
         with open(xml_src) as f:

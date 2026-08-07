@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:background="#0F172A">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="28dp">
+
+        <!-- Título -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Personalizar Widget"
+            android:textColor="#FBBF24"
+            android:textSize="26sp"
+            android:fontFamily="sans-serif-black"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:letterSpacing="0.02" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Deixe o versículo do jeito que você gosta na tela inicial"
+            android:textColor="#94A3B8"
+            android:textSize="14sp"
+            android:gravity="center"
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="28dp" />
+
+        <!-- Card: Mostrar ícone -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="@drawable/widget_config_card"
+            android:padding="16dp"
+            android:layout_marginBottom="14dp">
+
+            <CheckBox
+                android:id="@+id/chk_icon"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Mostrar ícone do app"
+                android:textColor="#FFFFFF"
+                android:textSize="15sp"
+                android:checked="true" />
+        </LinearLayout>
+
+        <!-- Card: Tamanho do texto -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/widget_config_card"
+            android:padding="16dp"
+            android:layout_marginBottom="14dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Tamanho do texto (10 a 30)"
+                android:textColor="#CBD5E1"
+                android:textSize="13sp"
+                android:layout_marginBottom="10dp" />
+
+            <EditText
+                android:id="@+id/edt_size"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="14"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                android:background="@drawable/widget_config_input"
+                android:padding="12dp"
+                android:inputType="number"
+                android:singleLine="true" />
+        </LinearLayout>
+
+        <!-- Card: Cor do texto -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="@drawable/widget_config_card"
+            android:padding="16dp"
+            android:layout_marginBottom="14dp">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Cor do texto"
+                    android:textColor="#FFFFFF"
+                    android:textSize="15sp" />
+
+                <TextView
+                    android:id="@+id/txt_color_preview"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Exemplo de texto (Branco)"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:layout_marginTop="8dp"
+                    android:padding="8dp"
+                    android:background="@drawable/widget_config_preview" />
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/btn_color"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Mudar"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp"
+                android:background="@drawable/widget_config_button"
+                android:paddingLeft="18dp"
+                android:paddingRight="18dp"
+                android:paddingTop="10dp"
+                android:paddingBottom="10dp" />
+        </LinearLayout>
+
+        <!-- Card: Cor de fundo -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="@drawable/widget_config_card"
+            android:padding="16dp"
+            android:layout_marginBottom="28dp">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Cor de fundo"
+                    android:textColor="#FFFFFF"
+                    android:textSize="15sp" />
+
+                <TextView
+                    android:id="@+id/txt_bg_preview"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Fundo: Azul noite"
+                    android:textSize="13sp"
+                    android:layout_marginTop="8dp"
+                    android:padding="10dp"
+                    android:background="@drawable/widget_bg_dark" />
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/btn_bg"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Mudar"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp"
+                android:background="@drawable/widget_config_button"
+                android:paddingLeft="18dp"
+                android:paddingRight="18dp"
+                android:paddingTop="10dp"
+                android:paddingBottom="10dp" />
+        </LinearLayout>
+
+        <!-- Botão Concluído -->
+        <Button
+            android:id="@+id/btn_done"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="✓ Concluído — Adicionar Widget"
+            android:textColor="#FFFFFF"
+            android:textSize="17sp"
+            android:textStyle="bold"
+            android:background="@drawable/widget_config_done"
+            android:paddingTop="16dp"
+            android:paddingBottom="16dp"
+            android:layout_marginBottom="10dp" />
+
+        <Button
+            android:id="@+id/btn_cancel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Cancelar"
+            android:textColor="#94A3B8"
+            android:textSize="14sp"
+            android:background="@android:color/transparent"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp" />
+    </LinearLayout>
+</ScrollView>

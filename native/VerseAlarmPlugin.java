@@ -32,6 +32,16 @@ public class VerseAlarmPlugin extends Plugin {
             Intent intent = new Intent(ctx, VerseForegroundService.class);
             intent.setAction(ACTION_START_SERVICE);
 
+            // Aceita o versículo atual para exibir na notificação fixa
+            String verseText = call.getString("verseText", "");
+            String verseRef = call.getString("verseRef", "");
+            if (verseText != null && !verseText.isEmpty()) {
+                intent.putExtra("verseText", verseText);
+            }
+            if (verseRef != null && !verseRef.isEmpty()) {
+                intent.putExtra("verseRef", verseRef);
+            }
+
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 ctx.startForegroundService(intent);
             } else {

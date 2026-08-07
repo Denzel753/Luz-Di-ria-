@@ -395,7 +395,7 @@ export default function App() {
     updatePersistentNotification(currentVerse);
     // No Android: inicia o serviço em primeiro plano (app não morre em background)
     // e agenda o alarme com o intervalo configurado
-    startNativeService();
+    startNativeService(currentVerse.text, currentVerse.reference);
     scheduleWithCurrentSettings();
   };
 
@@ -440,14 +440,14 @@ export default function App() {
     const onVisibility = () => {
       if (document.visibilityState === "visible"
           && localStorage.getItem("permissionsDone")) {
-        startNativeService();
+        startNativeService(currentVerse.text, currentVerse.reference);
         scheduleWithCurrentSettings();
       }
     };
     // Roda ao montar (abertura do app)
     const t = setTimeout(() => {
       if (localStorage.getItem("permissionsDone")) {
-        startNativeService();
+        startNativeService(currentVerse.text, currentVerse.reference);
         scheduleWithCurrentSettings();
       }
     }, 800);

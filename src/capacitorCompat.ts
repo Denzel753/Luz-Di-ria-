@@ -18,7 +18,7 @@ const isNative = () => Capacitor.isNativePlatform();
 // ============================================================
 
 export interface VerseAlarmPlugin {
-  startForegroundService(): Promise<void>;
+  startForegroundService(options?: { verseText?: string; verseRef?: string }): Promise<void>;
   stopForegroundService(): Promise<void>;
   scheduleDailyAlarm(options: {
     hour: number;
@@ -111,10 +111,10 @@ export async function requestNotificationPermission() {
   }
 }
 
-export async function startNativeService() {
+export async function startNativeService(verseText?: string, verseRef?: string) {
   if (!isNative()) return;
   try {
-    await VerseAlarm.startForegroundService();
+    await VerseAlarm.startForegroundService({ verseText, verseRef });
   } catch (e) {
     console.error('Erro ao iniciar serviço nativo:', e);
   }
@@ -159,21 +159,11 @@ export async function showPersistentNotification(title: string, body: string) {
       const perm = await LocalNotifications.requestPermissions();
       if (perm.display !== 'granted') return;
 
-      await LocalNotifications.schedule({
-        notifications: [
-          {
-            id: 999, // id fixo = substitui a notificação persistente anterior
-            title,
-            body,
-            smallIcon: 'ic_stat_notification',
-            iconColor: '#EA580C',
-            channelId: 'luz-diaria',
-            ongoing: true, // persistente, fica na barra
-            autoCancel: false,
-            sound: null,
-          },
-        ],
-      });
+      // No APK: a notificação FIXA é a do Foreground Service (com
+      // FLAG_NO_CLEAR — não some nem pode ser deslizada). Em vez de criar
+      // uma notificação separada do plugin (que o sistema pode remover),
+      // atualiza a do serviço com o versículo atual.
+      await startNativeService(body, title);
     } catch (e) {
       console.error('Erro notificação nativa:', e);
     }

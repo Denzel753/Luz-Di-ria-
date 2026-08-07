@@ -65,6 +65,9 @@ public class VerseAlarmPlugin extends Plugin {
         int intervalMinutes = call.getInt("intervalMinutes", 1440);
         String verseText = call.getString("verseText", "");
         String verseRef = call.getString("verseRef", "");
+        boolean vibrate = call.getBoolean("vibrate", false);
+        boolean flashLed = call.getBoolean("flashLed", false);
+        boolean wakeDevice = call.getBoolean("wakeDevice", false);
 
         try {
             Context ctx = getContext();
@@ -74,12 +77,15 @@ public class VerseAlarmPlugin extends Plugin {
                 return;
             }
 
-            // Guarda o intervalo para o receiver reagendar o próximo disparo
+            // Guarda o intervalo e as opções para o receiver reagendar/executar
             ctx.getSharedPreferences("luzdiaria_alarm", Context.MODE_PRIVATE)
                 .edit()
                 .putInt("intervalMinutes", intervalMinutes)
                 .putString("verseText", verseText)
                 .putString("verseRef", verseRef)
+                .putBoolean("vibrate", vibrate)
+                .putBoolean("flashLed", flashLed)
+                .putBoolean("wakeDevice", wakeDevice)
                 .apply();
 
             // Calcula o próximo horário (agora + intervalo, ou diário no horário fixo)

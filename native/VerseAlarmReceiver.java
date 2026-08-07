@@ -30,9 +30,40 @@ public class VerseAlarmReceiver extends BroadcastReceiver {
         if (verseRef == null) verseRef = "";
 
         // 1. Acorda a tela (requer WAKE_LOCK) — para o pop-up gigante aparecer
-        wakeScreen(context);
+        android.content.SharedPreferences prefs =
+            context.getSharedPreferences("luzdiaria_alarm", Context.MODE_PRIVATE);
+        boolean wantWake = prefs.getBoolean("wakeDevice", true);
+        boolean wantVibrate = prefs.getBoolean("vibrate", false);
+        boolean wantFlash = prefs.getBoolean("flashLed", false);
 
-        // 1b. Lança o Pop-up Gigante NATIVO em tela cheia (acorda o dispositivo
+        if (wantWake) {
+            wakeScreen(context);
+        }
+
+        // 1a. Vibração (configurável pelo usuário)
+        if (wantVibrate) {
+            try {
+                android.os.Vibrator vib =
+                    (android.os.Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
+                if (vib != null && vib.hasVibrator()) {
+                    long[] pattern = {0, 200, 100, 200};
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        vib.vibrate(pattern, -1);
+                    } else {
+                        vib.vibrate(pattern, -1);
+                    }
+                }
+            } catch (Exception e) {
+                // Falha silenciosa — não bloqueia a notificação
+            }
+        }
+
+        // 1b. Flash LED (configurável pelo usuário)
+        if (wantFlash) {
+            FlashLightUtil.blinkFlash(context, 5);
+        }
+
+        // 1c. Lança o Pop-up Gigante NATIVO em tela cheia (acorda o dispositivo
         //     e mostra o versículo por cima de outros apps / tela de bloqueio)
         //     SOMENTE se o app NÃO estiver em primeiro plano — se o usuário
         //     está dentro do app, ele já vê o versículo na tela.

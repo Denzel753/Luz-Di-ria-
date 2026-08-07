@@ -21,6 +21,7 @@ native_files = [
     'native/VerseWidgetProvider.java',
     'native/VerseWidgetConfigActivity.java',
     'native/VerseAccessibilityService.java',
+    'native/FlashLightUtil.java',
 ]
 dest_dir = 'android/app/src/main/java/com/luzdiaria/versiculos'
 os.makedirs(dest_dir, exist_ok=True)

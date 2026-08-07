@@ -26,6 +26,9 @@ export interface VerseAlarmPlugin {
     intervalMinutes: number;
     verseText: string;
     verseRef: string;
+    vibrate: boolean;
+    flashLed: boolean;
+    wakeDevice: boolean;
   }): Promise<{ scheduled: boolean; nextFire: number; exact: boolean; intervalMinutes: number }>;
   cancelDailyAlarm(): Promise<void>;
 }
@@ -126,10 +129,10 @@ export async function stopNativeService() {
   }
 }
 
-export async function scheduleDailyVerse(hour: number, minute: number, intervalMinutes: number, verseText: string, verseRef: string) {
+export async function scheduleDailyVerse(hour: number, minute: number, intervalMinutes: number, verseText: string, verseRef: string, vibrate: boolean, flashLed: boolean, wakeDevice: boolean) {
   if (!isNative()) return { scheduled: false, exact: false, intervalMinutes };
   try {
-    return await VerseAlarm.scheduleDailyAlarm({ hour, minute, intervalMinutes, verseText, verseRef });
+    return await VerseAlarm.scheduleDailyAlarm({ hour, minute, intervalMinutes, verseText, verseRef, vibrate, flashLed, wakeDevice });
   } catch (e) {
     console.error('Erro ao agendar alarme nativo:', e);
     return { scheduled: false, exact: false, intervalMinutes };

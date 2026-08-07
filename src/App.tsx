@@ -407,7 +407,17 @@ export default function App() {
     const useQuote = s.enableQuotes && Math.random() < 0.5;
     const content = useQuote ? getRandomQuote() : randomVerse;
     const ref = useQuote ? (content as any).author || "Luz Diária" : content.reference;
-    scheduleDailyVerse(h || 8, m || 0, interval, content.text, ref);
+    // Passa as opções nativas: vibrar, flash LED, acordar tela
+    scheduleDailyVerse(
+      h || 8,
+      m || 0,
+      interval,
+      content.text,
+      ref,
+      !!s.vibrate,
+      !!s.flashLed,
+      !!s.wakeDevice,
+    );
   };
 
   // Reagenda quando o usuário muda intervalo/horário/status nas configurações
@@ -416,7 +426,7 @@ export default function App() {
       scheduleWithCurrentSettings();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [settings.updateInterval, settings.notificationStartTime, settings.enableQuotes, settings.dailyNotification]);
+  }, [settings.updateInterval, settings.notificationStartTime, settings.enableQuotes, settings.dailyNotification, settings.vibrate, settings.flashLed, settings.wakeDevice]);
 
   // Save states to local storage individually to prevent unnecessary re-stringifying
   useEffect(() => {

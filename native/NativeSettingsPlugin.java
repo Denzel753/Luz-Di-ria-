@@ -40,47 +40,6 @@ public class NativeSettingsPlugin extends Plugin {
         }
     }
 
-    @PluginMethod
-    public void requestOverlayPermission(PluginCall call) {
-        try {
-            Intent intent = new Intent(
-                Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                Uri.parse("package:" + getContext().getPackageName())
-            );
-            getActivity().startActivity(intent);
-            call.resolve();
-        } catch (ActivityNotFoundException e) {
-            try {
-                // Fallback: abre a página de detalhes do app (funciona em
-                // aparelhos como Motorola/Xiaomi que bloqueiam a tela de
-                // sobreposição para apps instalados via APK)
-                Intent details = new Intent(
-                    Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-                    Uri.parse("package:" + getContext().getPackageName())
-                );
-                getActivity().startActivity(details);
-                call.resolve();
-            } catch (Exception ex) {
-                call.reject("Overlay permission settings not available", ex);
-            }
-        } catch (Exception e) {
-            call.reject("Failed to open overlay permission settings", e);
-        }
-    }
-
-    // Verifica se a permissão de sobreposição JÁ foi concedida (status real)
-    @PluginMethod
-    public void canDrawOverlays(PluginCall call) {
-        try {
-            boolean can = Settings.canDrawOverlays(getContext());
-            JSObject result = new JSObject();
-            result.put("canOverlay", can);
-            call.resolve(result);
-        } catch (Exception e) {
-            call.reject("Erro ao verificar overlay", e);
-        }
-    }
-
     // Verifica o status REAL de TODAS as permissões do sistema.
     // Retorna um objeto com cada permissão e se está concedida.
     @PluginMethod
@@ -104,10 +63,7 @@ public class NativeSettingsPlugin extends Plugin {
                 if (pm != null) battery = pm.isIgnoringBatteryOptimizations(ctx.getPackageName());
             } catch (Exception e) { battery = true; }
 
-            // 3. Sobrepor outros apps
-            boolean overlay = Settings.canDrawOverlays(ctx);
-
-            // 4. Alarmes exatos (Android 12+)
+            // 3. Alarmes exatos (Android 12+)
             boolean exactAlarm = true;
             try {
                 android.app.AlarmManager am =
@@ -117,22 +73,10 @@ public class NativeSettingsPlugin extends Plugin {
                 }
             } catch (Exception e) { exactAlarm = true; }
 
-            // 5. Acessibilidade (serviço habilitado?)
-            boolean accessibility = false;
-            try {
-                String enabled = android.provider.Settings.Secure.getString(
-                    ctx.getContentResolver(),
-                    android.provider.Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
-                );
-                accessibility = enabled != null && enabled.contains(ctx.getPackageName());
-            } catch (Exception e) { accessibility = false; }
-
             JSObject result = new JSObject();
             result.put("notifications", notif);
             result.put("battery", battery);
-            result.put("overlay", overlay);
             result.put("exactAlarm", exactAlarm);
-            result.put("accessibility", accessibility);
             call.resolve(result);
         } catch (Exception e) {
             call.reject("Erro ao verificar permissões", e);
@@ -187,29 +131,6 @@ public class NativeSettingsPlugin extends Plugin {
             }
         } catch (Exception e) {
             call.reject("Failed to open exact alarm settings", e);
-        }
-    }
-
-    @PluginMethod
-    public void requestAccessibilityPermission(PluginCall call) {
-        try {
-            Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
-            getActivity().startActivity(intent);
-            call.resolve();
-        } catch (ActivityNotFoundException e) {
-            // Fallback: configurações gerais do app
-            try {
-                Intent fallback = new Intent(
-                    Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-                    Uri.parse("package:" + getContext().getPackageName())
-                );
-                getActivity().startActivity(fallback);
-                call.resolve();
-            } catch (Exception ex) {
-                call.reject("Accessibility settings not available", ex);
-            }
-        } catch (Exception e) {
-            call.reject("Failed to open accessibility settings", e);
         }
     }
 

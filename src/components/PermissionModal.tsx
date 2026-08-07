@@ -1,15 +1,10 @@
 import React from 'react';
 import { useState, useEffect } from 'react';
-import { Bell, Battery, Layers, Accessibility, AlertCircle, Check } from 'lucide-react';
+import { Bell, Battery, AlertCircle, Check } from 'lucide-react';
 import {
   requestNotificationPermission,
   requestBatteryPermission,
-  requestOverlayPermission,
-  requestAccessibilityPermission,
-  checkOverlayPermission,
-  openAppDetails,
   getPermissionsStatus,
-  copyToClipboard,
 } from '../capacitorCompat';
 
 interface PermissionModalProps {
@@ -19,15 +14,17 @@ interface PermissionModalProps {
   onShowToast?: (type: 'success' | 'error' | 'info', message: string) => void;
 }
 
-export const PermissionModal = React.memo(function PermissionModal({ isOpen, onClose, onGrant, onShowToast }: PermissionModalProps) {
+export const PermissionModal = React.memo(function PermissionModal({ isOpen, onClose, onGrant }: PermissionModalProps) {
   const [notifGranted, setNotifGranted] = useState(false);
   const [batteryDone, setBatteryDone] = useState(false);
-  const [overlayDone, setOverlayDone] = useState(false);
-  const [accessDone, setAccessDone] = useState(false);
 
   useEffect(() => {
     if (isOpen && 'Notification' in window) {
       setNotifGranted(Notification.permission === 'granted');
+      // Verifica o status real (bateria pode já estar liberada)
+      getPermissionsStatus().then((s) => {
+        if (s.battery) setBatteryDone(true);
+      }).catch(() => {});
     }
   }, [isOpen]);
 
@@ -37,56 +34,12 @@ export const PermissionModal = React.memo(function PermissionModal({ isOpen, onC
     setNotifGranted(granted);
   };
 
-  // 2. Bateria — abre a tela "Ignorar otimização de bateria" do sistema
+  // 2. Bateria — abre a tela "Ignorar otimização de bateria" do sistema.
+  // O pop-up gigante e a notificação fixa usam Activity + FullScreenIntent
+  // (padrão AMdroid) — NÃO precisam de sobreposição nem acessibilidade.
   const handleRequestBattery = () => {
     requestBatteryPermission();
-    setBatteryDone(true); // o usuário volta do sistema e confirma
-  };
-
-  // 3. Sobrepor outros apps — abre a tela SYSTEM_ALERT_WINDOW.
-  // Em Android 13+/Motorola o app pode estar BLOQUEADO (aviso de
-  // "informações pessoais") — nesse caso abrimos os detalhes do app.
-  const [overlayBlocked, setOverlayBlocked] = useState(false);
-  const handleRequestOverlay = async () => {
-    await requestOverlayPermission();
-    // Verifica o status real após abrir a tela
-    setTimeout(async () => {
-      const can = await checkOverlayPermission();
-      if (can) {
-        setOverlayDone(true);
-        setOverlayBlocked(false);
-      } else {
-        setOverlayBlocked(true); // mostra instruções + botão de detalhes
-      }
-    }, 1500);
-  };
-
-  const handleOpenAppDetails = async () => {
-    await openAppDetails();
-    setTimeout(async () => {
-      const can = await checkOverlayPermission();
-      if (can) setOverlayDone(true);
-    }, 2000);
-  };
-
-  // 4. Acessibilidade — abre as configurações de acessibilidade.
-  // Android 13+ BLOQUEIA apps instalados via APK (Restricted Settings) —
-  // o usuário precisa permitir em Apps → Luz Diária → menu ⋮ →
-  // "Permitir configurações restritas" antes de ativar a acessibilidade.
-  const [accessBlocked, setAccessBlocked] = useState(false);
-  const handleRequestAccess = () => {
-    requestAccessibilityPermission();
-    setAccessDone(true);
-    // Verifica depois se realmente foi habilitada
-    setTimeout(async () => {
-      const status = await getPermissionsStatus();
-      if (status.accessibility) {
-        setAccessDone(true);
-        setAccessBlocked(false);
-      } else {
-        setAccessBlocked(true); // mostra instruções de desbloqueio
-      }
-    }, 2500);
+    setBatteryDone(true);
   };
 
   const handleContinue = () => {
@@ -142,78 +95,6 @@ export const PermissionModal = React.memo(function PermissionModal({ isOpen, onC
               <button onClick={handleRequestBattery} disabled={batteryDone} className={btnClass(batteryDone)}>
                 {batteryDone ? <><Check className="w-3 h-3 inline" /> Feito</> : 'Abrir'}
               </button>
-            </div>
-
-            {/* 3. Sobrepor outros apps */}
-            <div>
-              <div className={itemClass}>
-                <div className="flex items-center gap-3">
-                  <Layers className={`w-5 h-5 ${iconColor(overlayDone)}`} />
-                  <div className="text-left">
-                    <p className="text-sm font-semibold text-[var(--color-duo-text)]">Sobrepor outros apps</p>
-                    <p className="text-xs text-[var(--color-duo-text-light)]">Pop-up do versículo por cima de tudo</p>
-                  </div>
-                </div>
-                <button onClick={handleRequestOverlay} disabled={overlayDone} className={btnClass(overlayDone)}>
-                  {overlayDone ? <><Check className="w-3 h-3 inline" /> Feito</> : 'Abrir'}
-                </button>
-              </div>
-              {overlayBlocked && !overlayDone && (
-                <div className="mt-2 p-3 bg-red-50 dark:bg-red-950/40 rounded-[16px] border border-red-200 dark:border-red-800">
-                  <p className="text-xs text-red-700 dark:text-red-300 font-medium mb-2">
-                    ⚠️ Alguns celulares (Motorola, Android 13+) bloqueiam apps instalados por APK. 
-                    Na tela que abriu, procure "Permitir sobrepor outros apps" ou use o botão abaixo:
-                  </p>
-                  <button
-                    onClick={handleOpenAppDetails}
-                    className="text-xs px-3 py-2 rounded-full font-medium bg-red-100 text-red-700 hover:bg-red-200"
-                  >
-                    Abrir detalhes do app
-                  </button>
-                  <button
-                    onClick={async () => {
-                      await copyToClipboard("adb shell appops set com.luzdiaria.versiculos SYSTEM_ALERT_WINDOW allow");
-                      if (onShowToast) onShowToast('success', 'Comando ADB copiado');
-                    }}
-                    className="text-xs px-3 py-2 rounded-full font-medium bg-zinc-100 text-zinc-700 hover:bg-zinc-200 ml-2"
-                  >
-                    Copiar comando ADB
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {/* 4. Acessibilidade */}
-            <div>
-              <div className={itemClass}>
-                <div className="flex items-center gap-3">
-                  <Accessibility className={`w-5 h-5 ${iconColor(accessDone)}`} />
-                  <div className="text-left">
-                    <p className="text-sm font-semibold text-[var(--color-duo-text)]">Acessibilidade</p>
-                    <p className="text-xs text-[var(--color-duo-text-light)]">Controle ainda maior do sistema</p>
-                  </div>
-                </div>
-                <button onClick={handleRequestAccess} disabled={accessDone} className={btnClass(accessDone)}>
-                  {accessDone ? <><Check className="w-3 h-3 inline" /> Feito</> : 'Abrir'}
-                </button>
-              </div>
-              {accessBlocked && !accessDone && (
-                <div className="mt-2 p-3 bg-red-50 dark:bg-red-950/40 rounded-[16px] border border-red-200 dark:border-red-800">
-                  <p className="text-xs text-red-700 dark:text-red-300 font-medium mb-1">
-                    ⚠️ Android bloqueia acessibilidade em apps instalados por APK (proteção do sistema).
-                  </p>
-                  <p className="text-xs text-red-600 dark:text-red-400 mb-2">
-                    Para liberar: Configurações → Apps → Luz Diária → menu ⋮ (3 pontinhos) → 
-                    "Permitir configurações restritas" → confirme → volte e ative o serviço.
-                  </p>
-                  <button
-                    onClick={handleOpenAppDetails}
-                    className="text-xs px-3 py-2 rounded-full font-medium bg-red-100 text-red-700 hover:bg-red-200"
-                  >
-                    Abrir detalhes do app
-                  </button>
-                </div>
-              )}
             </div>
           </div>
 

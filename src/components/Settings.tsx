@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowLeft, Bell, Clock, Smartphone, Zap, Palette, RefreshCw, BookOpen, Download, Bug, ShieldCheck, Battery, Layers, Accessibility,  } from 'lucide-react';
+import { ArrowLeft, Bell, Clock, Smartphone, Zap, Palette, RefreshCw, BookOpen, Download, Bug, ShieldCheck, Battery } from 'lucide-react';
 import { AppSettings } from '../types';
 import { AndroidNative } from '../AndroidNative';
 import { playNotificationSound } from '../audio';
@@ -8,8 +8,6 @@ import { logger } from '../utils/logger';
 import {
   requestNotificationPermission,
   requestBatteryPermission,
-  requestOverlayPermission,
-  requestAccessibilityPermission,
   requestExactAlarmPermission,
   getPermissionsStatus,
   testVibrate,
@@ -402,9 +400,7 @@ export function Settings({ isOpen, onClose, settings, onSettingsChange, onTestPo
               {[
                 { key: 'notifications', icon: Bell, label: 'Notificações', desc: 'Versículo na barra de notificações', action: () => requestNotificationPermission() },
                 { key: 'battery', icon: Battery, label: 'Otimização de Bateria', desc: 'App não morre em 2º plano', action: () => requestBatteryPermission() },
-                { key: 'overlay', icon: Layers, label: 'Sobrepor outros apps', desc: 'Pop-up gigante por cima de tudo', action: () => requestOverlayPermission() },
                 { key: 'exactAlarm', icon: Zap, label: 'Alarmes exatos', desc: 'Disparo no horário certo', action: () => requestExactAlarmPermission() },
-                { key: 'accessibility', icon: Accessibility, label: 'Acessibilidade', desc: 'Controle extra do sistema', action: () => requestAccessibilityPermission() },
               ].map(({ key, icon: Icon, label, desc, action }) => {
                 const granted = permStatus[key as keyof typeof permStatus];
                 return (
@@ -416,16 +412,6 @@ export function Settings({ isOpen, onClose, settings, onSettingsChange, onTestPo
                         <p className={`text-[12px] ${granted ? 'text-green-600 dark:text-green-400 font-medium' : 'text-[var(--color-duo-text-light)]'}`}>
                           {granted ? '✓ Habilitado' : desc}
                         </p>
-                        {!granted && key === 'accessibility' && (
-                          <p className="text-[11px] text-red-500 dark:text-red-400 mt-0.5">
-                            Dica: se bloqueado, libere em Apps → Luz Diária → menu ⋮ → Permitir configurações restritas
-                          </p>
-                        )}
-                        {!granted && key === 'overlay' && (
-                          <p className="text-[11px] text-red-500 dark:text-red-400 mt-0.5">
-                            Dica: se bloqueado (Motorola/Xiaomi), procure "Permitir sobrepor" na tela que abriu
-                          </p>
-                        )}
                       </div>
                     </div>
                     <button

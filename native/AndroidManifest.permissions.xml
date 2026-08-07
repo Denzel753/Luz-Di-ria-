@@ -10,21 +10,17 @@
          e pedir que o app fique imune à economia de bateria. -->
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
 
-    <!-- 2. requestOverlayPermission()
-         Necessária para ACTION_MANAGE_OVERLAY_PERMISSION
-         (sobrepor outros apps — SYSTEM_ALERT_WINDOW). -->
-    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <!-- 2. (removido) requestOverlayPermission() — o pop-up gigante usa
+         Activity + FullScreenIntent (padrão AMdroid/AlarmClock), NÃO usa
+         sobreposição. SYSTEM_ALERT_WINDOW foi removido do app. -->
 
     <!-- 3. requestExactAlarmPermission() — Android 12+ (API 31+)
          Necessária para ACTION_REQUEST_SCHEDULE_EXACT_ALARM
          (alarmes exatos / notificações pontuais). -->
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
 
-    <!-- 4. requestAccessibilityPermission()
-         A tela de acessibilidade (ACTION_ACCESSIBILITY_SETTINGS) não exige
-         permissão declarada no manifest; o usuário concede via configurações.
-         Mantida apenas por documentação/boas práticas:
-    <uses-permission android:name="android.permission.BIND_ACCESSIBILITY_SERVICE" /> -->
+    <!-- 4. (removido) requestAccessibilityPermission() — o app não usa
+         serviço de acessibilidade. VerseAccessibilityService removido. -->
 
     <!-- 5. openNotificationSettings()
          Não exige permissão declarada para ABRIR a tela; porém, para o app

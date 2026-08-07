@@ -49,18 +49,12 @@ const VerseAlarm = registerPlugin<VerseAlarmPlugin>('VerseAlarm');
 
 export interface NativeSettingsPlugin {
   requestBatteryOptimizationPermission(): Promise<void>;
-  requestOverlayPermission(): Promise<void>;
   requestExactAlarmPermission(): Promise<void>;
-  requestAccessibilityPermission(): Promise<void>;
   openNotificationSettings(): Promise<void>;
-  canDrawOverlays(): Promise<{ canOverlay: boolean }>;
-  openAppDetails(): Promise<void>;
   getPermissionsStatus(): Promise<{
     notifications: boolean;
     battery: boolean;
-    overlay: boolean;
     exactAlarm: boolean;
-    accessibility: boolean;
   }>;
 }
 
@@ -77,47 +71,20 @@ export async function requestBatteryPermission() {
   catch (e) { console.error('Erro bateria:', e); }
 }
 
-export async function requestOverlayPermission() {
-  if (!isNative()) return;
-  try { await NativeSettings.requestOverlayPermission(); }
-  catch (e) { console.error('Erro sobreposição:', e); }
-}
-
-// Verifica o status REAL da sobreposição (Motorola/Android 13+ bloqueiam)
-export async function checkOverlayPermission(): Promise<boolean> {
-  if (!isNative()) return false;
-  try {
-    const res = await NativeSettings.canDrawOverlays();
-    return res.canOverlay;
-  } catch (e) {
-    console.error('Erro verificar sobreposição:', e);
-    return false;
-  }
-}
-
-// Abre os detalhes do app (onde o usuário desbloqueia permissões restritas)
-export async function openAppDetails() {
-  if (!isNative()) return;
-  try { await NativeSettings.openAppDetails(); }
-  catch (e) { console.error('Erro abrir detalhes:', e); }
-}
-
 // Status REAL de todas as permissões (para exibir verde quando habilitada)
 export async function getPermissionsStatus() {
   if (!isNative()) {
     return {
       notifications: typeof Notification !== 'undefined' && Notification.permission === 'granted',
       battery: false,
-      overlay: false,
       exactAlarm: false,
-      accessibility: false,
     };
   }
   try {
     return await NativeSettings.getPermissionsStatus();
   } catch (e) {
     console.error('Erro ao verificar permissões:', e);
-    return { notifications: false, battery: false, overlay: false, exactAlarm: false, accessibility: false };
+    return { notifications: false, battery: false, exactAlarm: false };
   }
 }
 
@@ -125,12 +92,6 @@ export async function requestExactAlarmPermission() {
   if (!isNative()) return;
   try { await NativeSettings.requestExactAlarmPermission(); }
   catch (e) { console.error('Erro alarme exato:', e); }
-}
-
-export async function requestAccessibilityPermission() {
-  if (!isNative()) return;
-  try { await NativeSettings.requestAccessibilityPermission(); }
-  catch (e) { console.error('Erro acessibilidade:', e); }
 }
 
 export async function requestNotificationPermission() {

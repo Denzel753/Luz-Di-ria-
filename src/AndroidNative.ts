@@ -13,30 +13,12 @@ export const AndroidNative = {
     }
   },
 
-  requestOverlayPermission: () => {
-    if (typeof (window as any).Android !== 'undefined' && (window as any).Android.requestOverlayPermission) {
-      (window as any).Android.requestOverlayPermission();
-    } else {
-      console.log('Ambiente Web: Pedido de permissão para sobreposição de tela disparado. Isso funcionará nativamente no APK.');
-      alert('Funcionalidade nativa do Android: Sobrepor outros apps.\n\nNo APK final, esta ação abrirá as configurações do Android para permitir que o app exiba pop-ups gigantes sobre outros aplicativos.');
-    }
-  },
-
   requestExactAlarmPermission: () => {
     if (typeof (window as any).Android !== 'undefined' && (window as any).Android.requestExactAlarmPermission) {
       (window as any).Android.requestExactAlarmPermission();
     } else {
       console.log('Ambiente Web: Pedido de permissão para alarmes exatos disparado. Isso funcionará nativamente no APK.');
       alert('Funcionalidade nativa do Android: Alarmes Exatos.\n\nNo APK final, esta ação abrirá as configurações do Android para permitir que o app agende notificações precisas no horário exato.');
-    }
-  },
-  
-  requestAccessibilityPermission: () => {
-    if (typeof (window as any).Android !== 'undefined' && (window as any).Android.requestAccessibilityPermission) {
-      (window as any).Android.requestAccessibilityPermission();
-    } else {
-      console.log('Ambiente Web: Pedido de permissão de acessibilidade disparado. Isso funcionará nativamente no APK.');
-      alert('Funcionalidade nativa do Android: Acessibilidade.\n\nNo APK final, esta ação abrirá as configurações do Android para permitir que o app tenha mais poder de notificação e atuação sobre o sistema.');
     }
   },
   

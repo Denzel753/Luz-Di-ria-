@@ -57,7 +57,9 @@
                 android:paddingLeft="9dp" />
         </LinearLayout>
 
-        <!-- Versículo: tamanho controlado pelo provider (configuração) -->
+        <!-- Versículo: texto COMPLETO (sem maxLines/corte) — o widget cresce
+             com a altura da célula. Em telas grandes o versículo inteiro
+             aparece; o tamanho do texto é controlado pelo provider. -->
         <TextView
             android:id="@+id/widget_verse_text"
             android:layout_width="match_parent"
@@ -66,9 +68,7 @@
             android:fontFamily="sans-serif"
             android:textStyle="bold"
             android:lineSpacingExtra="3dp"
-            android:maxLines="3"
-            android:ellipsize="end"
-            tools:text="Porque Deus amou o mundo de tal maneira que deu o seu Filho unigênito" />
+            tools:text="Porque Deus amou o mundo de tal maneira que deu o seu Filho unigênito, para que todo aquele que nele crê não pereça, mas tenha a vida eterna." />
 
         <!-- Referência -->
         <TextView

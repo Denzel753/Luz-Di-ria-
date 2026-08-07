@@ -99,9 +99,18 @@ public class VerseWidgetProvider extends AppWidgetProvider {
         try { views.setTextViewText(R.id.widget_verse_ref, ref); } catch (Exception ignored) {}
         try { views.setTextColor(R.id.widget_verse_text, textColor); } catch (Exception ignored) {}
         try { views.setTextColor(R.id.widget_verse_ref, textColor & 0x99FFFFFF); } catch (Exception ignored) {}
-        // Tamanho do texto (configurado pelo usuário, padrão Fossify)
+        // Tamanho do texto (configurado pelo usuário, padrão Fossify).
+        // AUTO-AJUSTE: versículos longos usam tamanho menor automaticamente
+        // para caber COMPLETO (o layout não corta mais — sem maxLines).
+        // ~90 chars = versículo médio; acima disso, reduz progressivamente.
         if (textSize >= 10 && textSize <= 30) {
-            try { views.setFloat(R.id.widget_verse_text, "setTextSize", textSize); } catch (Exception ignored) {}
+            float effective = textSize;
+            if (verse.length() > 150) {
+                effective = Math.max(10f, textSize - 4f);
+            } else if (verse.length() > 110) {
+                effective = Math.max(10f, textSize - 2f);
+            }
+            try { views.setFloat(R.id.widget_verse_text, "setTextSize", effective); } catch (Exception ignored) {}
         }
         // Fundo em card arredondado: dark (azul noite) ou gold (dourado escuro).
         // Detecta pelo RGB base (0x451A03 = dourado), ignorando o alpha.

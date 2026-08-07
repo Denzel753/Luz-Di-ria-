@@ -1,5 +1,6 @@
 package com.luzdiaria.versiculos;
 
+import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -9,6 +10,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.PowerManager;
+
+import java.util.Calendar;
 
 /**
  * Recebe o alarme diário do versículo, acorda a tela (se o usuário permitir)

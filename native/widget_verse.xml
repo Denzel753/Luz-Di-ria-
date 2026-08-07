@@ -1,40 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/widget_root"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@drawable/widget_bg_dark"
-    android:padding="20dp">
+    android:layout_height="match_parent">
+
+    <!-- Fundo do card (arredondado, estilo Fossify) -->
+    <ImageView
+        android:id="@+id/widget_background"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:src="@drawable/widget_bg_dark" />
 
     <LinearLayout
+        android:id="@+id/widget_content"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:orientation="vertical"
-        android:layout_gravity="center_vertical">
+        android:gravity="center_vertical"
+        android:padding="18dp">
 
-        <!-- Linha superior: ícone em badge + nome -->
+        <!-- Linha superior: badge do ícone + nome do app -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:layout_marginBottom="12dp">
+            android:layout_marginBottom="10dp">
 
             <FrameLayout
-                android:layout_width="36dp"
-                android:layout_height="36dp"
+                android:id="@+id/widget_icon_badge"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
                 android:background="@drawable/widget_icon_badge">
 
                 <ImageView
                     android:id="@+id/widget_icon"
-                    android:layout_width="22dp"
-                    android:layout_height="22dp"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
                     android:layout_gravity="center"
                     android:src="@mipmap/ic_launcher"
                     android:contentDescription="Luz Diária" />
             </FrameLayout>
 
             <TextView
+                android:id="@+id/widget_brand"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="LUZ DIÁRIA"
@@ -42,23 +52,27 @@
                 android:textSize="10sp"
                 android:fontFamily="sans-serif-medium"
                 android:textStyle="bold"
-                android:letterSpacing="0.18"
-                android:paddingStart="10dp"
-                android:paddingLeft="10dp" />
+                android:letterSpacing="0.16"
+                android:paddingStart="9dp"
+                android:paddingLeft="9dp" />
         </LinearLayout>
 
-        <!-- Versículo (com aspa decorativa integrada) -->
+        <!-- Versículo: texto AUTO-AJUSTÁVEL (autoSizeTextType) -->
         <TextView
             android:id="@+id/widget_verse_text"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textColor="#F8FAFC"
-            android:textSize="16sp"
             android:fontFamily="sans-serif"
             android:textStyle="bold"
-            android:lineSpacingExtra="5dp"
-            android:maxLines="4"
-            android:ellipsize="end" />
+            android:autoSizeTextType="uniform"
+            android:autoSizeMinTextSize="10sp"
+            android:autoSizeMaxTextSize="22sp"
+            android:autoSizeStepGranularity="1sp"
+            android:lineSpacingExtra="3dp"
+            android:maxLines="3"
+            android:ellipsize="end"
+            tools:text="Porque Deus amou o mundo de tal maneira que deu o seu Filho unigênito" />
 
         <!-- Referência -->
         <TextView
@@ -69,8 +83,8 @@
             android:textSize="12sp"
             android:fontFamily="sans-serif-medium"
             android:textStyle="bold"
-            android:letterSpacing="0.1"
-            android:layout_marginTop="10dp"
-            android:textAllCaps="false" />
+            android:letterSpacing="0.08"
+            android:layout_marginTop="8dp"
+            tools:text="João 3:16" />
     </LinearLayout>
-</FrameLayout>
+</RelativeLayout>

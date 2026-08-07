@@ -22,6 +22,13 @@ import java.util.Calendar;
 public class VerseWidgetProvider extends AppWidgetProvider {
 
     public static final String PREFS_NAME = "luzdiaria_widget";
+
+    // CHAVE DO BUG: o widget roda no processo do LAUNCHER (separado do app).
+    // MODE_MULTI_PROCESS força a leitura do disco a cada acesso (sem cache
+    // velho) e commit() garante a escrita síncrona ANTES do widget ler.
+    private static SharedPreferences getPrefs(Context context) {
+        return context.getSharedPreferences(PREFS_NAME, Context.MODE_MULTI_PROCESS);
+    }
     public static final String ACTION_UPDATE = "com.luzdiaria.versiculos.WIDGET_UPDATE";
 
     @Override
@@ -48,7 +55,7 @@ public class VerseWidgetProvider extends AppWidgetProvider {
 
     @Override
     public void onDeleted(Context context, int[] appWidgetIds) {
-        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        SharedPreferences prefs = getPrefs(context);
         SharedPreferences.Editor ed = prefs.edit();
         for (int id : appWidgetIds) {
             ed.remove("textColor_" + id);
@@ -66,7 +73,7 @@ public class VerseWidgetProvider extends AppWidgetProvider {
     }
 
     private void updateWidget(Context context, AppWidgetManager mgr, int widgetId) {
-        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        SharedPreferences prefs = getPrefs(context);
         int textColor = prefs.getInt("textColor_" + widgetId, 0xFFFFFFFF);
         float textSize = prefs.getFloat("textSize_" + widgetId, 14f);
         int bgColor = prefs.getInt("bgColor_" + widgetId, 0xE60F172A);
@@ -90,12 +97,11 @@ public class VerseWidgetProvider extends AppWidgetProvider {
         views.setTextViewText(R.id.widget_verse_ref, ref);
         views.setTextColor(R.id.widget_verse_text, textColor);
         views.setTextColor(R.id.widget_verse_ref, textColor & 0x99FFFFFF);
-        views.setFloat(R.id.widget_verse_text, "setTextSize", textSize);
         // Fundo em card arredondado: dark (azul noite) ou gold (dourado escuro)
         int bgRes = (bgColor == 0xE6334000)
             ? R.drawable.widget_bg_gold
             : R.drawable.widget_bg_dark;
-        views.setInt(R.id.widget_root, "setBackgroundResource", bgRes);
+        views.setInt(R.id.widget_background, "setImageResource", bgRes);
         views.setViewVisibility(R.id.widget_icon, showIcon ? android.view.View.VISIBLE : android.view.View.GONE);
 
         // Toque abre o app
@@ -138,7 +144,7 @@ public class VerseWidgetProvider extends AppWidgetProvider {
 
     // Salva o versículo atual para o widget (chamado pelo app quando troca o versículo)
     public static void saveVerse(Context context, String verse, String ref) {
-        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-        prefs.edit().putString("lastVerse", verse).putString("lastRef", ref).apply();
+        SharedPreferences prefs = getPrefs(context);
+        prefs.edit().putString("lastVerse", verse).putString("lastRef", ref).commit();
     }
 }

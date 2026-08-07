@@ -211,6 +211,115 @@ public class VerseAlarmPlugin extends Plugin {
         }
     }
 
+    // DIAGNÓSTICO (Etapa 1 do plano): retorna o estado REAL de tudo para a
+    // tela de Diagnóstico do app. A corrente do versículo tem 4 elos:
+    // alarme agendado → receiver dispara → janela ok → notificação mostra.
+    // Esta chamada mostra em qual elo está quebrando.
+    @PluginMethod
+    public void getDiagnostics(PluginCall call) {
+        try {
+            android.content.Context ctx = getContext();
+            android.content.SharedPreferences alarmPrefs =
+                ctx.getSharedPreferences("luzdiaria_alarm", Context.MODE_PRIVATE);
+            android.content.SharedPreferences diagPrefs =
+                ctx.getSharedPreferences("luzdiaria_diag", Context.MODE_PRIVATE);
+
+            JSObject result = new JSObject();
+
+            // 1. Serviço rodando?
+            boolean serviceRunning = false;
+            android.app.ActivityManager am =
+                (android.app.ActivityManager) ctx.getSystemService(Context.ACTIVITY_SERVICE);
+            if (am != null) {
+                java.util.List<android.app.ActivityManager.RunningServiceInfo> services =
+                    am.getRunningServices(100);
+                if (services != null) {
+                    for (android.app.ActivityManager.RunningServiceInfo s : services) {
+                        if (VerseForegroundService.class.getName().equals(s.service.getClassName())) {
+                            serviceRunning = true;
+                            break;
+                        }
+                    }
+                }
+            }
+            result.put("serviceRunning", serviceRunning);
+
+            // 2. Configuração salva do alarme
+            int intervalMinutes = alarmPrefs.getInt("intervalMinutes", 0);
+            result.put("intervalMinutes", intervalMinutes);
+            result.put("startHour", alarmPrefs.getInt("startHour", 8));
+            result.put("startMinute", alarmPrefs.getInt("startMinute", 0));
+            result.put("endHour", alarmPrefs.getInt("endHour", 22));
+            result.put("endMinute", alarmPrefs.getInt("endMinute", 0));
+            result.put("configured", intervalMinutes > 0);
+
+            // 3. Próximo alarme agendado no sistema (via AlarmClockInfo)
+            long nextAlarm = 0;
+            try {
+                AlarmManager am2 = (AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE);
+                if (am2 != null && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+                    AlarmManager.AlarmClockInfo info = am2.getNextAlarmClock();
+                    if (info != null) nextAlarm = info.getTriggerTime();
+                }
+            } catch (Exception e) { nextAlarm = 0; }
+            result.put("nextAlarm", nextAlarm);
+
+            // 4. Log de diagnóstico (últimos disparos)
+            result.put("diagLog", diagPrefs.getString("log", ""));
+
+            call.resolve(result);
+        } catch (Exception e) {
+            call.reject("Erro ao obter diagnóstico", e);
+        }
+    }
+
+    // TESTE ISOLADO (Etapa 3 do plano): agenda o alarme para 1 minuto a
+    // partir de agora com forceShow=true (ignora a janela). Isola o problema:
+    // se o teste disparar e o agendamento normal não, o problema é a JANELA.
+    @PluginMethod
+    public void testAlarmInOneMinute(PluginCall call) {
+        try {
+            android.content.Context ctx = getContext();
+            AlarmManager am = (AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE);
+            if (am == null) { call.reject("AlarmManager indisponível"); return; }
+
+            java.util.Calendar cal = java.util.Calendar.getInstance();
+            cal.add(java.util.Calendar.MINUTE, 1);
+
+            Intent intent = new Intent(ctx, VerseAlarmReceiver.class);
+            intent.putExtra("verseText", "Teste de diagnóstico: se você está vendo isto, o alarme disparou corretamente!");
+            intent.putExtra("verseRef", "Diagnóstico • 1 min");
+            intent.putExtra("forceShow", true);
+            intent.setAction("com.luzdiaria.versiculos.DAILY_VERSE_ALARM");
+
+            PendingIntent pi = PendingIntent.getBroadcast(
+                ctx, 1001, intent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+            );
+
+            try {
+                Intent showIntent = new Intent(ctx, MainActivity.class);
+                showIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                PendingIntent showPi = PendingIntent.getActivity(
+                    ctx, 9001, showIntent,
+                    PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+                );
+                am.setAlarmClock(new AlarmManager.AlarmClockInfo(cal.getTimeInMillis(), showPi), pi);
+            } catch (Exception e) {
+                am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), pi);
+            }
+
+            VerseAlarmReceiver.logDiagnostic(ctx, "teste_1min_agendado", true, true);
+
+            JSObject result = new JSObject();
+            result.put("scheduled", true);
+            result.put("fireAt", cal.getTimeInMillis());
+            call.resolve(result);
+        } catch (Exception e) {
+            call.reject("Falha ao agendar teste", e);
+        }
+    }
+
     // Verifica se o Foreground Service está rodando. Se o sistema/fabricante
     // matou o app, o serviço para — o app pode avisar o usuário.
     @PluginMethod

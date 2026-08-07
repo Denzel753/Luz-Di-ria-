@@ -29,7 +29,14 @@ public class VerseAlarmReceiver extends BroadcastReceiver {
         // alerta só acontece DENTRO dela. Fora da janela, apenas reagenda
         // o próximo disparo sem notificar (o versículo não incomoda fora
         // do período que o usuário escolheu).
-        if (!isInTimeWindow(context)) {
+        // EXCEÇÃO: forceShow=true (teste manual de diagnóstico) ignora a janela.
+        boolean forceShow = intent.getBooleanExtra("forceShow", false);
+        boolean inWindow = isInTimeWindow(context);
+        // LOG DE DIAGNÓSTICO (Etapa 2): grava cada disparo para a tela
+        // de Diagnóstico do app mostrar onde a corrente quebra.
+        logDiagnostic(context, "alarme_disparou", inWindow, forceShow);
+        if (!inWindow && !forceShow) {
+            logDiagnostic(context, "fora_da_janela_silencioso", false, false);
             rescheduleNext(context);
             return;
         }
@@ -118,6 +125,7 @@ public class VerseAlarmReceiver extends BroadcastReceiver {
         //     plano, não precisa do pop-up — o usuário já vê o versículo.
         boolean foreground = isAppInForeground(context);
         showVerseNotification(context, verseText, verseRef, !foreground);
+        logDiagnostic(context, "notificacao_exibida", inWindow, forceShow);
 
         // 1d. Atualiza o widget da tela inicial com o versículo do momento
         try {
@@ -325,6 +333,35 @@ public class VerseAlarmReceiver extends BroadcastReceiver {
             }
         } catch (Exception e) {
             // Falha silenciosa — o app re-agenda ao abrir
+        }
+    }
+
+    // LOG DE DIAGNÓSTICO (Etapa 2 do plano): grava cada disparo do alarme
+    // num arquivo de log persistente. Se o problema acontece com o app
+    // fechado, a tela de Diagnóstico conta a história quando o app reabrir.
+    private static final String DIAG_PREFS = "luzdiaria_diag";
+    private static final int MAX_DIAG_ENTRIES = 30;
+
+    public static void logDiagnostic(Context context, String event, boolean inWindow, boolean forceShow) {
+        try {
+            android.content.SharedPreferences prefs =
+                context.getSharedPreferences(DIAG_PREFS, Context.MODE_PRIVATE);
+            String timestamp = new java.text.SimpleDateFormat("dd/MM HH:mm:ss", java.util.Locale.getDefault())
+                .format(new java.util.Date());
+            String entry = timestamp + " | " + event
+                + (inWindow ? " | na_janela" : " | fora_janela")
+                + (forceShow ? " | forceShow" : "");
+            String existing = prefs.getString("log", "");
+            existing = entry + "\n" + existing;
+            // limita a 30 entradas (as mais recentes)
+            String[] lines = existing.split("\n");
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < Math.min(lines.length, MAX_DIAG_ENTRIES); i++) {
+                if (!lines[i].isEmpty()) sb.append(lines[i]).append("\n");
+            }
+            prefs.edit().putString("log", sb.toString()).apply();
+        } catch (Exception e) {
+            // nunca quebra o fluxo por causa do log
         }
     }
 

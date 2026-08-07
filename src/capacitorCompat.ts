@@ -33,11 +33,23 @@ export interface VerseAlarmPlugin {
     wakeDevice: boolean;
   }): Promise<{ scheduled: boolean; nextFire: number; exact: boolean; intervalMinutes: number }>;
   cancelDailyAlarm(): Promise<void>;
+  isServiceRunning(): Promise<{ running: boolean }>;
+  getDiagnostics(): Promise<{
+    serviceRunning: boolean;
+    intervalMinutes: number;
+    startHour: number;
+    startMinute: number;
+    endHour: number;
+    endMinute: number;
+    configured: boolean;
+    nextAlarm: number;
+    diagLog: string;
+  }>;
+  testAlarmInOneMinute(): Promise<{ scheduled: boolean; fireAt: number }>;
   updateWidgetVerse(options: { verseText: string; verseRef: string }): Promise<{ updated: number }>;
   testVibrate(): Promise<void>;
   testWakeDevice(): Promise<void>;
   testFlashLed(): Promise<void>;
-  isServiceRunning(): Promise<{ running: boolean }>;
 }
 
 const VerseAlarm = registerPlugin<VerseAlarmPlugin>('VerseAlarm');
@@ -192,6 +204,38 @@ export async function isServiceRunning(): Promise<boolean> {
   } catch (e) {
     console.error('Erro verificar serviço:', e);
     return false;
+  }
+}
+
+// DIAGNÓSTICO (Etapa 1): estado REAL de tudo — alarme agendado, janela,
+// serviço, log de disparos. Mostra em qual elo da corrente está quebrando.
+export async function getDiagnostics() {
+  if (!isNative()) {
+    return {
+      serviceRunning: false, intervalMinutes: 0, startHour: 8, startMinute: 0,
+      endHour: 22, endMinute: 0, configured: false, nextAlarm: 0, diagLog: '',
+    };
+  }
+  try {
+    return await VerseAlarm.getDiagnostics();
+  } catch (e) {
+    console.error('Erro ao obter diagnóstico:', e);
+    return {
+      serviceRunning: false, intervalMinutes: 0, startHour: 8, startMinute: 0,
+      endHour: 22, endMinute: 0, configured: false, nextAlarm: 0, diagLog: '',
+    };
+  }
+}
+
+// TESTE ISOLADO (Etapa 3): agenda o alarme para 1 min com forceShow
+// (ignora a janela). Se disparar e o normal não, o problema é a janela.
+export async function testAlarmInOneMinute() {
+  if (!isNative()) return { scheduled: false, fireAt: 0 };
+  try {
+    return await VerseAlarm.testAlarmInOneMinute();
+  } catch (e) {
+    console.error('Erro ao agendar teste:', e);
+    return { scheduled: false, fireAt: 0 };
   }
 }
 

@@ -13,6 +13,8 @@ import {
   testVibrate,
   testWakeDevice,
   testFlashLed,
+  getDiagnostics,
+  testAlarmInOneMinute,
 } from '../capacitorCompat';
 
 interface SettingsProps {
@@ -32,10 +34,25 @@ export function Settings({ isOpen, onClose, settings, onSettingsChange, onTestPo
   const [permStatus, setPermStatus] = useState<{
     notifications: boolean;
     battery: boolean;
-    overlay: boolean;
     exactAlarm: boolean;
-    accessibility: boolean;
-  }>({ notifications: false, battery: false, overlay: false, exactAlarm: false, accessibility: false });
+  }>({ notifications: false, battery: false, exactAlarm: false });
+
+  // DIAGNÓSTICO (Etapa 1 do plano): estado real do alarme + log de disparos
+  const [diag, setDiag] = useState<{
+    serviceRunning: boolean;
+    intervalMinutes: number;
+    startHour: number;
+    startMinute: number;
+    endHour: number;
+    endMinute: number;
+    configured: boolean;
+    nextAlarm: number;
+    diagLog: string;
+  } | null>(null);
+
+  const refreshDiag = () => {
+    getDiagnostics().then(setDiag).catch(() => {});
+  };
 
   // Checa o status real sempre que as configurações abrem
   const refreshPermStatus = () => {
@@ -45,6 +62,7 @@ export function Settings({ isOpen, onClose, settings, onSettingsChange, onTestPo
     // (efeito simples: checa na abertura)
     setTimeout(() => {
       getPermissionsStatus().then((s) => setPermStatus(s)).catch(() => {});
+      refreshDiag();
     }, 300);
   }
 
@@ -436,6 +454,73 @@ export function Settings({ isOpen, onClose, settings, onSettingsChange, onTestPo
                 );
               })}
             </div>
+            </div>
+
+            {/* Diagnóstico (Etapa 1: onde a corrente quebra) */}
+            <div className="px-5 py-3 bg-[var(--color-duo-bg-sec)] border-b-2 border-[var(--color-duo-border)] flex items-center gap-2">
+              <Bug className="w-4 h-4 text-[var(--color-duo-orange)]" />
+              <h2 className="text-[var(--color-duo-orange)] text-xs font-bold uppercase tracking-wider">Diagnóstico do Alarme</h2>
+            </div>
+            <div className="px-5 py-3 border-b-2 border-[var(--color-duo-border)]">
+              <p className="text-[12px] text-[var(--color-duo-text-light)] mb-2">
+                Estado real da corrente: alarme → disparo → janela → notificação.
+              </p>
+              {diag ? (
+                <div className="space-y-1.5 text-[12px] font-mono">
+                  <div className="flex justify-between">
+                    <span className="text-[var(--color-duo-text-light)]">Serviço em 1º plano:</span>
+                    <span className={diag.serviceRunning ? 'text-green-600 dark:text-green-400 font-bold' : 'text-red-500 font-bold'}>
+                      {diag.serviceRunning ? 'ATIVO ✓' : 'MORTO ✗'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-[var(--color-duo-text-light)]">Alarme configurado:</span>
+                    <span className={diag.configured ? 'text-green-600 dark:text-green-400 font-bold' : 'text-red-500 font-bold'}>
+                      {diag.configured ? `SIM (${diag.intervalMinutes} min)` : 'NÃO ✗'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-[var(--color-duo-text-light)]">Janela:</span>
+                    <span>{String(diag.startHour).padStart(2, '0')}:{String(diag.startMinute).padStart(2, '0')} → {String(diag.endHour).padStart(2, '0')}:{String(diag.endMinute).padStart(2, '0')}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-[var(--color-duo-text-light)]">Próximo alarme (sistema):</span>
+                    <span className={diag.nextAlarm > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-500'}>
+                      {diag.nextAlarm > 0 ? new Date(diag.nextAlarm).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : 'NENHUM ✗'}
+                    </span>
+                  </div>
+                  <div className="mt-2">
+                    <p className="text-[var(--color-duo-text-light)] mb-1">Log de disparos:</p>
+                    <pre className="bg-[var(--color-duo-bg-sec)] rounded-lg p-2 text-[10px] leading-relaxed max-h-32 overflow-y-auto whitespace-pre-wrap">
+                      {diag.diagLog || '(sem registros ainda — aguarde um horário ou use o teste)'}
+                    </pre>
+                  </div>
+                  <div className="flex gap-2 pt-2">
+                    <button
+                      onClick={() => {
+                        testAlarmInOneMinute().then((r) => {
+                          if (r.scheduled && onShowToast) {
+                            onShowToast('success', '🔔 Alarme de teste agendado! Chega em 1 min (ignora a janela)');
+                          } else if (onShowToast) {
+                            onShowToast('error', 'Falha ao agendar teste');
+                          }
+                        });
+                      }}
+                      className="text-xs px-3 py-1.5 rounded-full font-medium bg-amber-100 text-amber-700 hover:bg-amber-200"
+                    >
+                      🔔 Testar alarme em 1 min
+                    </button>
+                    <button
+                      onClick={() => { refreshDiag(); if (onShowToast) onShowToast('info', 'Diagnóstico atualizado'); }}
+                      className="text-xs px-3 py-1.5 rounded-full font-medium bg-zinc-100 text-zinc-700 hover:bg-zinc-200"
+                    >
+                      ↻ Atualizar
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-[12px] text-[var(--color-duo-text-light)]">Carregando...</p>
+              )}
             </div>
           </section>
         </div>

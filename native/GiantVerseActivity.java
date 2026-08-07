@@ -119,6 +119,28 @@ public class GiantVerseActivity extends Activity {
         root.addView(btnWrap);
 
         setContentView(root);
+
+        // AUTO-FECHAR: se ninguém tocar, fecha sozinho após 60s — evita a
+        // tela ficar acesa para sempre (padrão de auto-silêncio do AMdroid).
+        // Se o usuário tocar em qualquer lugar, o timer é cancelado.
+        final android.os.Handler autoCloseHandler = new android.os.Handler(
+            android.os.Looper.getMainLooper());
+        final Runnable autoCloseRunnable = new Runnable() {
+            @Override
+            public void run() {
+                finish();
+            }
+        };
+        autoCloseHandler.postDelayed(autoCloseRunnable, 60 * 1000L);
+
+        View.OnTouchListener cancelAutoClose = new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, android.view.MotionEvent event) {
+                autoCloseHandler.removeCallbacks(autoCloseRunnable);
+                return false;
+            }
+        };
+        root.setOnTouchListener(cancelAutoClose);
     }
 
     private int dp(int v) {

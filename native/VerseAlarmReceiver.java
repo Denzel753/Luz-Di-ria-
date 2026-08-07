@@ -432,6 +432,27 @@ public class VerseAlarmReceiver extends BroadcastReceiver {
             builder.setFullScreenIntent(fullScreenIntent, true);
         }
 
+        // AÇÃO na notificação: botão "Abrir" que leva ao app (padrão do
+        // AMdroid/AlarmClock — o alarme tem ações Soneca/Parar; aqui temos
+        // a ação de abrir o versículo completo).
+        try {
+            Intent openIntent = new Intent(context, MainActivity.class);
+            openIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            PendingIntent openPi = PendingIntent.getActivity(
+                context,
+                2,
+                openIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+            );
+            builder.addAction(
+                R.drawable.ic_stat_notification,
+                "Abrir",
+                openPi
+            );
+        } catch (Exception e) {
+            // Falha silenciosa — a notificação funciona sem a ação
+        }
+
         Notification notification = builder.build();
 
         NotificationManager nm = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);

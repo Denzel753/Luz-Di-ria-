@@ -250,10 +250,27 @@ export async function showPersistentNotification(title: string, body: string) {
       const perm = await LocalNotifications.requestPermissions();
       if (perm.display !== 'granted') return;
 
-      // No APK: a notificação FIXA é a do Foreground Service (com
-      // FLAG_NO_CLEAR — não some nem pode ser deslizada). Em vez de criar
-      // uma notificação separada do plugin (que o sistema pode remover),
-      // atualiza a do serviço com o versículo atual.
+      // 1. Notificação FIXA via plugin — aparece IMEDIATAMENTE na barra,
+      //    com ongoing=true (FLAG_ONGOING_EVENT | FLAG_NO_CLEAR: não some
+      //    nem pode ser deslizada). Id fixo 999 = sempre substitui a mesma.
+      await LocalNotifications.schedule({
+        notifications: [
+          {
+            id: 999,
+            title,
+            body,
+            ongoing: true,
+            autoCancel: false,
+            smallIcon: 'ic_stat_notification',
+            channelId: 'luz-diaria',
+            sound: null,
+            silent: true,
+          },
+        ],
+      });
+
+      // 2. Foreground Service em paralelo — mantém o app vivo e reforça a
+      //    permanência (se o serviço iniciar bem, ele também posta a fixa).
       await startNativeService(body, title);
     } catch (e) {
       console.error('Erro notificação nativa:', e);

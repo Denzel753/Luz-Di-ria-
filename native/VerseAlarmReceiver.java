@@ -20,6 +20,7 @@ import java.util.Calendar;
 public class VerseAlarmReceiver extends BroadcastReceiver {
 
     private static final String CHANNEL_ID = "luz-diaria";
+    private static final String CHANNEL_ID_ALERT = "luz-diaria-alerta";
     private static final int NOTIFICATION_ID = 1001;
 
     @Override
@@ -182,14 +183,21 @@ public class VerseAlarmReceiver extends BroadcastReceiver {
     }
 
     private void showVerseNotification(Context context, String verseText, String verseRef, boolean showPopup) {
+        // CANAL SEPARADO de ALERTA (alta prioridade). O canal "luz-diaria"
+        // já foi criado com IMPORTANCE_LOW pelo Foreground Service (notificação
+        // fixa) e o Android NÃO permite mudar a importância de canal existente.
+        // Sem canal próprio, o alerta do versículo ficava preso no canal
+        // silencioso e o usuário NÃO era notificado de verdade.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(
-                CHANNEL_ID,
-                "Luz Diária",
+                CHANNEL_ID_ALERT,
+                "Luz Diária • Versículos",
                 NotificationManager.IMPORTANCE_HIGH
             );
-            channel.setDescription("Versículos diários");
-            channel.enableVibration(false);
+            channel.setDescription("Alertas do versículo no horário configurado");
+            channel.setShowBadge(true);
+            channel.enableVibration(true);
+            channel.setSound(android.provider.Settings.System.DEFAULT_NOTIFICATION_URI, null);
             NotificationManager nm = context.getSystemService(NotificationManager.class);
             if (nm != null) nm.createNotificationChannel(channel);
         }
@@ -204,7 +212,7 @@ public class VerseAlarmReceiver extends BroadcastReceiver {
 
         Notification.Builder builder;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            builder = new Notification.Builder(context, CHANNEL_ID);
+            builder = new Notification.Builder(context, CHANNEL_ID_ALERT);
         } else {
             builder = new Notification.Builder(context);
         }

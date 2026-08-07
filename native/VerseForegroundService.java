@@ -44,6 +44,21 @@ public class VerseForegroundService extends Service {
             channel.setShowBadge(false);
             NotificationManager nm = getSystemService(NotificationManager.class);
             if (nm != null) nm.createNotificationChannel(channel);
+
+            // Canal de ALERTA (alta prioridade) — usado pelo VerseAlarmReceiver
+            // para o versículo do horário. Precisa ser criado ANTES de qualquer
+            // notificação usá-lo, com IMPORTANCE_HIGH, para o alerta realmente
+            // aparecer (som, pop-up) mesmo com a notificação fixa ativa.
+            NotificationChannel alertChannel = new NotificationChannel(
+                "luz-diaria-alerta",
+                "Luz Diária • Versículos",
+                NotificationManager.IMPORTANCE_HIGH
+            );
+            alertChannel.setDescription("Alertas do versículo no horário configurado");
+            alertChannel.setShowBadge(true);
+            alertChannel.enableVibration(true);
+            alertChannel.setSound(android.provider.Settings.System.DEFAULT_NOTIFICATION_URI, null);
+            if (nm != null) nm.createNotificationChannel(alertChannel);
         }
     }
 

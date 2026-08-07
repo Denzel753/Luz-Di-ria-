@@ -30,15 +30,22 @@ public class GiantVerseActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // 1. Acorda o dispositivo e mostra sobre a tela de bloqueio
+        // 1. Acorda o dispositivo e mostra sobre a tela de bloqueio.
+        // Padrão do AMdroid/AlarmClock (app de alarme de referência):
+        // setShowWhenLocked/setTurnScreenOn para API 27+, MAS também adiciona
+        // TODOS os flags deprecated em QUALQUER API — em alguns aparelhos
+        // (Motorola!) os métodos novos não bastam, os flags antigos são
+        // necessários. FLAG_ALLOW_LOCK_WHILE_SCREEN_ON mantém a tela acesa
+        // mesmo com o lock ativo.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
             setShowWhenLocked(true);
             setTurnScreenOn(true);
         }
         Window win = getWindow();
-        win.addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
-        win.addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
         win.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        win.addFlags(WindowManager.LayoutParams.FLAG_ALLOW_LOCK_WHILE_SCREEN_ON);
+        win.addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
+        win.addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
         win.addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
 
         // 2. Recebe o versículo vindo do alarme

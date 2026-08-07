@@ -329,7 +329,11 @@ public class VerseAlarmReceiver extends BroadcastReceiver {
             .setContentIntent(contentIntent)
             .setAutoCancel(true)
             .setPriority(Notification.PRIORITY_HIGH)
-            .setCategory(Notification.CATEGORY_ALARM);
+            .setCategory(Notification.CATEGORY_ALARM)
+            // VISIBILITY_PUBLIC: permite o conteúdo aparecer na tela de
+            // bloqueio (padrão do AMdroid/AlarmClock para o alerta cheio)
+            .setVisibility(Notification.VISIBILITY_PUBLIC)
+            .setLocalOnly(true);
 
         // Pop-up Gigante via FullScreenIntent (só quando o app NÃO está em
         // primeiro plano). É o mecanismo oficial do Android para acordar a

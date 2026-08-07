@@ -2,6 +2,7 @@ import { Capacitor } from '@capacitor/core';
 import { LocalNotifications } from '@capacitor/local-notifications';
 import { Share } from '@capacitor/share';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
+import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
 import { registerPlugin } from '@capacitor/core';
 
 /**
@@ -434,6 +435,67 @@ export async function copyToClipboard(text: string): Promise<boolean> {
 // ============================================================
 // LOG DE RASTREIO (JS) — mesma língua do nativo
 // ============================================================
+
+// Exporta o JSON de diagnóstico como ARQUIVO REAL no Android:
+// 1. Grava o JSON em arquivo (Filesystem, diretório Cache)
+// 2. Abre o share sheet com o arquivo (Drive, Downloads, WhatsApp...)
+// Retorna true se conseguiu exportar/compartilhar.
+export async function exportDiagnosticoJson(dados: unknown): Promise<boolean> {
+  if (isNative()) {
+    try {
+      const json = JSON.stringify(dados, null, 2);
+      const nome = `diagnostico_luz_diaria_${new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')}.json`;
+      // 1. Grava em arquivo no diretório Cache do app
+      const result = await Filesystem.writeFile({
+        path: nome,
+        data: json,
+        directory: Directory.Cache,
+        encoding: Encoding.UTF8,
+      });
+      const uri = result.uri;
+      // 2. Abre o share sheet com o arquivo — o usuário salva onde quiser
+      //    (Drive, Downloads, Telegram, WhatsApp...) ou toca em "Salvar".
+      await Share.share({
+        title: 'Diagnóstico Luz Diária',
+        text: 'Arquivo de diagnóstico do app Luz Diária',
+        url: uri,
+        dialogTitle: 'Salvar / compartilhar diagnóstico',
+      });
+      return true;
+    } catch (e) {
+      console.error('Erro exportar JSON nativo:', e);
+      // Fallback: compartilha o texto puro
+      try {
+        await Share.share({
+          title: 'Diagnóstico Luz Diária',
+          text: JSON.stringify(dados, null, 2),
+          dialogTitle: 'Compartilhar diagnóstico',
+        });
+        return true;
+      } catch (e2) {
+        console.error('Erro fallback share:', e2);
+        return false;
+      }
+    }
+  } else {
+    // Web: download via blob (funciona em navegador)
+    try {
+      const blob = new Blob([JSON.stringify(dados, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `diagnostico_luz_diaria_${new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      return true;
+    } catch (e) {
+      console.error('Erro exportar JSON web:', e);
+      return false;
+    }
+  }
+}
 
 // Grava um evento de rastreio no MESMO formato do nativo (prefs
 // luzdiaria_eventos, via plugin). Assim o Exportar JSON tem TUDO

@@ -16,6 +16,7 @@ import {
   getDiagnostics,
   testAlarmInOneMinute,
   logEventJs,
+  exportDiagnosticoJson,
 } from '../capacitorCompat';
 
 interface SettingsProps {
@@ -587,16 +588,15 @@ export function Settings({ isOpen, onClose, settings, onSettingsChange, onTestPo
                             log_disparos: diag?.diagLog || '',
                             log_eventos: diag?.eventLog || '',
                           };
-                          const blob = new Blob([JSON.stringify(dados, null, 2)], { type: 'application/json' });
-                          const url = URL.createObjectURL(blob);
-                          const a = document.createElement('a');
-                          a.href = url;
-                          a.download = `diagnostico_luz_diaria_${new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')}.json`;
-                          document.body.appendChild(a);
-                          a.click();
-                          document.body.removeChild(a);
-                          URL.revokeObjectURL(url);
-                          if (onShowToast) onShowToast('success', '📄 JSON de diagnóstico exportado!');
+                          // Exporta via NATIVO (Filesystem + Share): grava o
+                          // arquivo e abre o share sheet. No web, baixa via blob.
+                          exportDiagnosticoJson(dados).then((ok) => {
+                            if (ok) {
+                              if (onShowToast) onShowToast('success', '📄 Diagnóstico exportado! Escolha onde salvar.');
+                            } else if (onShowToast) {
+                              onShowToast('error', 'Falha ao exportar JSON');
+                            }
+                          });
                         } catch (err) {
                           if (onShowToast) onShowToast('error', 'Falha ao exportar JSON');
                         }

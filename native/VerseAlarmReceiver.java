@@ -31,19 +31,46 @@ public class VerseAlarmReceiver extends BroadcastReceiver {
 
         // 1b. Lança o Pop-up Gigante NATIVO em tela cheia (acorda o dispositivo
         //     e mostra o versículo por cima de outros apps / tela de bloqueio)
-        try {
-            Intent popupIntent = new Intent(context, GiantVerseActivity.class);
-            popupIntent.putExtra("verseText", verseText);
-            popupIntent.putExtra("verseRef", verseRef);
-            popupIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            popupIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            context.startActivity(popupIntent);
-        } catch (Exception e) {
-            // Se falhar (ex: permissão negada), a notificação ainda dispara
+        //     SOMENTE se o app NÃO estiver em primeiro plano — se o usuário
+        //     está dentro do app, ele já vê o versículo na tela.
+        if (!isAppInForeground(context)) {
+            try {
+                Intent popupIntent = new Intent(context, GiantVerseActivity.class);
+                popupIntent.putExtra("verseText", verseText);
+                popupIntent.putExtra("verseRef", verseRef);
+                popupIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                popupIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                context.startActivity(popupIntent);
+            } catch (Exception e) {
+                // Se falhar (ex: permissão negada), a notificação ainda dispara
+            }
         }
 
         // 2. Dispara a notificação do versículo
         showVerseNotification(context, verseText, verseRef);
+    }
+
+    // Verifica se o app está em primeiro plano (visível na tela).
+    // Se o usuário está dentro do app, não precisa do pop-up gigante.
+    private boolean isAppInForeground(Context context) {
+        try {
+            android.app.ActivityManager am =
+                (android.app.ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+            if (am == null) return false;
+            java.util.List<android.app.ActivityManager.RunningAppProcessInfo> procs =
+                am.getRunningAppProcesses();
+            if (procs == null) return false;
+            for (android.app.ActivityManager.RunningAppProcessInfo p : procs) {
+                if (p.processName != null
+                        && p.processName.equals(context.getPackageName())
+                        && p.importance == android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND) {
+                    return true;
+                }
+            }
+        } catch (Exception e) {
+            // Se não conseguir verificar, assume que NÃO está em primeiro plano
+        }
+        return false;
     }
 
     private void wakeScreen(Context context) {

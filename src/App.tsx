@@ -507,6 +507,12 @@ export default function App() {
 
       if (isStartup) return;
 
+      // Se o usuário está DENTRO do aplicativo (aba visível), não dispara
+      // pop-up nem notificação — ele já está vendo o versículo na tela.
+      // Somente quando o app está em segundo plano o alerta é necessário.
+      const appVisible = typeof document !== 'undefined' && document.visibilityState === 'visible';
+      if (appVisible) return;
+
       if (currentSettings.flashLed) {
         let count = 0;
         const flashInterval = setInterval(() => {

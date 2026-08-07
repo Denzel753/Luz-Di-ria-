@@ -18,6 +18,8 @@ native_files = [
     'native/VerseAlarmReceiver.java',
     'native/BootReceiver.java',
     'native/GiantVerseActivity.java',
+    'native/VerseWidgetProvider.java',
+    'native/VerseWidgetConfigActivity.java',
 ]
 dest_dir = 'android/app/src/main/java/com/luzdiaria/versiculos'
 os.makedirs(dest_dir, exist_ok=True)
@@ -30,6 +32,32 @@ for src in native_files:
     with open(os.path.join(dest_dir, os.path.basename(src)), 'w') as f:
         f.write(content)
     print(f'Copiado: {os.path.basename(src)}')
+
+# 1c. Copiar layouts do widget para res/layout e res/xml
+step('1c. Copiando layouts do widget')
+os.makedirs('android/app/src/main/res/layout', exist_ok=True)
+os.makedirs('android/app/src/main/res/xml', exist_ok=True)
+for xml_src, xml_dest in [
+    ('native/widget_verse.xml', 'android/app/src/main/res/layout/widget_verse.xml'),
+    ('native/widget_verse_info.xml', 'android/app/src/main/res/xml/widget_verse_info.xml'),
+]:
+    if os.path.exists(xml_src):
+        with open(xml_src) as f:
+            data = f.read()
+        with open(xml_dest, 'w') as f:
+            f.write(data)
+        print(f'Layout copiado: {xml_dest}')
+
+# 1d. Adicionar string de descrição do widget
+step('1d. Adicionando string widget_description')
+strings_path = 'android/app/src/main/res/values/strings.xml'
+if os.path.exists(strings_path):
+    strings = open(strings_path).read()
+    if 'widget_description' not in strings:
+        strings = strings.replace('</resources>',
+            '    <string name="widget_description">Versículo do Dia na sua tela inicial</string>\n</resources>')
+        open(strings_path, 'w').write(strings)
+        print('String widget_description adicionada')
 
 # 1b. Copiar ícone de notificação (monocromático) para res/drawable
 step('1b. Copiando ícone de notificação')
@@ -130,6 +158,23 @@ service_block = '''
         android:theme="@android:style/Theme.NoDisplay"
         android:showWhenLocked="true"
         android:turnScreenOn="true" />
+
+    <activity
+        android:name="com.luzdiaria.versiculos.VerseWidgetConfigActivity"
+        android:exported="false"
+        android:theme="@android:style/Theme.Dialog" />
+
+    <receiver
+        android:name="com.luzdiaria.versiculos.VerseWidgetProvider"
+        android:exported="true">
+        <intent-filter>
+            <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            <action android:name="com.luzdiaria.versiculos.WIDGET_UPDATE" />
+        </intent-filter>
+        <meta-data
+            android:name="android.appwidget.provider"
+            android:resource="@xml/widget_verse_info" />
+    </receiver>
 '''
 
 if 'GiantVerseActivity' not in content:

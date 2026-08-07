@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="@android:color/transparent">
+
+    <ImageView
+        android:id="@+id/widget_icon"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:src="@mipmap/ic_launcher"
+        android:contentDescription="Luz Diária"
+        android:layout_marginBottom="8dp" />
+
+    <TextView
+        android:id="@+id/widget_verse_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="#FFFFFF"
+        android:textSize="14sp"
+        android:fontFamily="sans-serif"
+        android:textStyle="bold"
+        android:lineSpacingExtra="4dp"
+        android:maxLines="4"
+        android:ellipsize="end" />
+
+    <TextView
+        android:id="@+id/widget_verse_ref"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="#CCFFFFFF"
+        android:textSize="12sp"
+        android:fontFamily="sans-serif"
+        android:textStyle="bold"
+        android:letterSpacing="0.1"
+        android:layout_marginTop="6dp"
+        android:textAllCaps="true" />
+
+</LinearLayout>

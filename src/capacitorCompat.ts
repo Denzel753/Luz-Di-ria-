@@ -46,6 +46,8 @@ export interface VerseAlarmPlugin {
     diagLog: string;
     widgetCount: number;
     widgetVerse: string;
+    eventLog: string;
+    dispositivo: { fabricante: string; modelo: string; android: string; sdk: number; app: string };
   }>;
   testAlarmInOneMinute(): Promise<{ scheduled: boolean; fireAt: number }>;
   updateWidgetVerse(options: { verseText: string; verseRef: string }): Promise<{ updated: number }>;
@@ -216,7 +218,8 @@ export async function getDiagnostics() {
     return {
       serviceRunning: false, intervalMinutes: 0, startHour: 8, startMinute: 0,
       endHour: 23, endMinute: 59, configured: false, nextAlarm: 0, diagLog: '',
-      widgetCount: 0, widgetVerse: '', 
+      widgetCount: 0, widgetVerse: '', eventLog: '',
+      dispositivo: { fabricante: '', modelo: '', android: '', sdk: 0, app: '' }, 
     };
   }
   try {
@@ -226,7 +229,8 @@ export async function getDiagnostics() {
     return {
       serviceRunning: false, intervalMinutes: 0, startHour: 8, startMinute: 0,
       endHour: 23, endMinute: 59, configured: false, nextAlarm: 0, diagLog: '',
-      widgetCount: 0, widgetVerse: '', 
+      widgetCount: 0, widgetVerse: '', eventLog: '',
+      dispositivo: { fabricante: '', modelo: '', android: '', sdk: 0, app: '' }, 
     };
   }
 }

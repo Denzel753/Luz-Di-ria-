@@ -37,9 +37,13 @@ public class VerseAlarmReceiver extends BroadcastReceiver {
         logDiagnostic(context, "alarme_disparou", inWindow, forceShow);
         if (!inWindow && !forceShow) {
             logDiagnostic(context, "fora_da_janela_silencioso", false, false);
+            logEvent(context, "motor", "horario_bateu", "fora_janela",
+                "silêncio + reagenda", true, "janela soberana");
             rescheduleNext(context);
             return;
         }
+        logEvent(context, "motor", "horario_bateu", "na_janela",
+            "sorteia + notifica + popup + widget", true, "");
 
         String verseText = intent.getStringExtra("verseText");
         String verseRef = intent.getStringExtra("verseRef");
@@ -127,6 +131,8 @@ public class VerseAlarmReceiver extends BroadcastReceiver {
         boolean foreground = isAppInForeground(context);
         showVerseNotification(context, verseText, verseRef, !foreground);
         logDiagnostic(context, "notificacao_exibida", inWindow, forceShow);
+        logEvent(context, "motor", "notificacao", "push+popup",
+            "notificação exibida com som", true, foreground ? "app em 1º plano" : "com popup gigante");
 
         // 1d. Atualiza o widget da tela inicial com o versículo do momento
         try {
@@ -371,6 +377,43 @@ public class VerseAlarmReceiver extends BroadcastReceiver {
             prefs.edit().putString("log", sb.toString()).apply();
         } catch (Exception e) {
             // nunca quebra o fluxo por causa do log
+        }
+    }
+
+    // LOG DE RASTREIO ESTRUTURADO (plano teórico): grava cada interação do
+    // usuário com resultado esperado vs real. Formato JSON por linha:
+    // {"ts":"...","opcao":"intervalo","acao":"definir","valor":"60",
+    //  "esperado":"reagenda","resultado":"ok","detalhe":"..."}
+    public static void logEvent(Context context, String opcao, String acao,
+                                String valor, String esperado, boolean ok, String detalhe) {
+        try {
+            android.content.SharedPreferences prefs =
+                context.getSharedPreferences("luzdiaria_eventos", Context.MODE_PRIVATE);
+            String ts = new java.text.SimpleDateFormat("dd/MM HH:mm:ss", java.util.Locale.getDefault())
+                .format(new java.util.Date());
+            String entry = ts + " | " + opcao + " | " + acao + " | " + valor
+                + " | esperado:" + esperado + " | " + (ok ? "OK" : "ERRO")
+                + (detalhe.isEmpty() ? "" : " | " + detalhe);
+            String existing = prefs.getString("events", "");
+            existing = entry + "\n" + existing;
+            String[] lines = existing.split("\n");
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < Math.min(lines.length, 60); i++) {
+                if (!lines[i].isEmpty()) sb.append(lines[i]).append("\n");
+            }
+            prefs.edit().putString("events", sb.toString()).apply();
+        } catch (Exception e) {
+            // nunca quebra o fluxo por causa do log
+        }
+    }
+
+    public static String getEventLog(Context context) {
+        try {
+            android.content.SharedPreferences prefs =
+                context.getSharedPreferences("luzdiaria_eventos", Context.MODE_PRIVATE);
+            return prefs.getString("events", "");
+        } catch (Exception e) {
+            return "";
         }
     }
 

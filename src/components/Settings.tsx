@@ -50,6 +50,8 @@ export function Settings({ isOpen, onClose, settings, onSettingsChange, onTestPo
     diagLog: string;
     widgetCount: number;
     widgetVerse: string;
+    eventLog: string;
+    dispositivo: { fabricante: string; modelo: string; android: string; sdk: number; app: string };
   } | null>(null);
 
   const refreshDiag = () => {
@@ -534,6 +536,46 @@ export function Settings({ isOpen, onClose, settings, onSettingsChange, onTestPo
                       className="text-xs px-3 py-1.5 rounded-full font-medium bg-zinc-100 text-zinc-700 hover:bg-zinc-200"
                     >
                       ↻ Atualizar
+                    </button>
+                    <button
+                      onClick={() => {
+                        // EXPORTA JSON COMPLETO: checks + log + dispositivo
+                        try {
+                          const dados = {
+                            app: 'Luz Diária',
+                            exportado: new Date().toISOString(),
+                            dispositivo: diag?.dispositivo || {},
+                            checks: {
+                              servico: diag?.serviceRunning ? 'ok' : 'erro',
+                              alarme_configurado: diag?.configured ? 'ok' : 'erro',
+                              proximo_alarme: diag?.nextAlarm > 0 ? 'ok' : 'erro',
+                              widgets: (diag?.widgetCount || 0) > 0 ? 'ok' : 'erro',
+                            },
+                            config: {
+                              janela: `${String(diag?.startHour ?? 0).padStart(2, '0')}:${String(diag?.startMinute ?? 0).padStart(2, '0')} → ${String(diag?.endHour ?? 23).padStart(2, '0')}:${String(diag?.endMinute ?? 0).padStart(2, '0')}`,
+                              intervalo: diag?.intervalMinutes ?? 0,
+                              versiculo_widget: diag?.widgetVerse || '',
+                            },
+                            log_disparos: diag?.diagLog || '',
+                            log_eventos: diag?.eventLog || '',
+                          };
+                          const blob = new Blob([JSON.stringify(dados, null, 2)], { type: 'application/json' });
+                          const url = URL.createObjectURL(blob);
+                          const a = document.createElement('a');
+                          a.href = url;
+                          a.download = `diagnostico_luz_diaria_${new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')}.json`;
+                          document.body.appendChild(a);
+                          a.click();
+                          document.body.removeChild(a);
+                          URL.revokeObjectURL(url);
+                          if (onShowToast) onShowToast('success', '📄 JSON de diagnóstico exportado!');
+                        } catch (err) {
+                          if (onShowToast) onShowToast('error', 'Falha ao exportar JSON');
+                        }
+                      }}
+                      className="text-xs px-3 py-1.5 rounded-full font-medium bg-green-100 text-green-700 hover:bg-green-200"
+                    >
+                      📄 Exportar JSON
                     </button>
                   </div>
                 </div>

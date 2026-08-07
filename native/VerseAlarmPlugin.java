@@ -225,9 +225,16 @@ public class VerseAlarmPlugin extends Plugin {
                 } else {
                     vib.vibrate(pattern, -1);
                 }
+                VerseAlarmReceiver.logEvent(getContext(), "efeitos", "testar_vibrar", "",
+                    "vibração forte 2×", true, "");
+            } else {
+                VerseAlarmReceiver.logEvent(getContext(), "efeitos", "testar_vibrar", "",
+                    "vibração forte 2×", false, "aparelho sem vibrator");
             }
             call.resolve();
         } catch (Exception e) {
+            VerseAlarmReceiver.logEvent(getContext(), "efeitos", "testar_vibrar", "",
+                "vibração forte 2×", false, e.getMessage());
             call.reject("Falha ao vibrar", e);
         }
     }
@@ -317,6 +324,18 @@ public class VerseAlarmPlugin extends Plugin {
 
             // 4. Log de diagnóstico (últimos disparos)
             result.put("diagLog", diagPrefs.getString("log", ""));
+
+            // 4b. Log de RASTREIO de eventos (plano teórico — interações do usuário)
+            result.put("eventLog", VerseAlarmReceiver.getEventLog(ctx));
+
+            // 4c. Dados do dispositivo (para análise remota)
+            JSObject device = new JSObject();
+            device.put("fabricante", android.os.Build.MANUFACTURER);
+            device.put("modelo", android.os.Build.MODEL);
+            device.put("android", android.os.Build.VERSION.RELEASE);
+            device.put("sdk", android.os.Build.VERSION.SDK_INT);
+            device.put("app", ctx.getPackageName());
+            result.put("dispositivo", device);
 
             // 5. Estado do WIDGET: quantos instalados + último versículo salvo
             //    (o widget lê daqui — se o app salvou, o widget mostra).

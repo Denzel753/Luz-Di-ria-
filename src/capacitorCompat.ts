@@ -70,6 +70,7 @@ export interface NativeSettingsPlugin {
   requestBatteryOptimizationPermission(): Promise<void>;
   requestExactAlarmPermission(): Promise<void>;
   openNotificationSettings(): Promise<void>;
+  openFullScreenIntentSettings(): Promise<void>;
   getPermissionsStatus(): Promise<{
     notifications: boolean;
     battery: boolean;
@@ -119,6 +120,14 @@ export async function openNotificationSettings() {
   if (!isNative()) return;
   try { await NativeSettings.openNotificationSettings(); }
   catch (e) { console.error('Erro abrir configs:', e); }
+}
+
+// Android 14+: abre "Acesso especial > Notificações em tela cheia".
+// Sem isso ATIVO, o pop-up gigante é rebaixado para heads-up comum.
+export async function openFullScreenIntentSettings() {
+  if (!isNative()) return;
+  try { await NativeSettings.openFullScreenIntentSettings(); }
+  catch (e) { console.error('Erro abrir configs tela cheia:', e); }
 }
 
 export async function requestNotificationPermission() {

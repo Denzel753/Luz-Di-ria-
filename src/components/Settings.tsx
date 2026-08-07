@@ -17,6 +17,7 @@ import {
   testAlarmInOneMinute,
   logEventJs,
   exportDiagnosticoJson,
+  openFullScreenIntentSettings,
 } from '../capacitorCompat';
 
 interface SettingsProps {
@@ -530,6 +531,21 @@ export function Settings({ isOpen, onClose, settings, onSettingsChange, onTestPo
                       <p className="text-[10px] text-amber-500 mt-0.5 font-medium">
                         ⚠️ O widget da tela mostra exatamente este texto. Se não bate com o versículo atual, remova e adicione o widget de novo.
                       </p>
+                    </div>
+                  )}
+                  {/* Android 14+: aviso de "Notificações em tela cheia" —
+                      sem isso ATIVO, o pop-up gigante vira heads-up comum */}
+                  {diag.dispositivo?.sdk >= 34 && (
+                    <div className="mt-2 p-3 rounded-[14px] bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800">
+                      <p className="text-[11px] text-amber-800 dark:text-amber-300 font-medium mb-1.5">
+                        ⚠️ Android 14+: se o pop-up gigante não abrir com a tela bloqueada, verifique "Notificações em tela cheia" (Acesso especial).
+                      </p>
+                      <button
+                        onClick={() => openFullScreenIntentSettings()}
+                        className="text-[11px] px-3 py-1.5 rounded-full font-medium bg-amber-100 text-amber-700 hover:bg-amber-200"
+                      >
+                        Abrir configuração de tela cheia
+                      </button>
                     </div>
                   )}
                   <div className="mt-2">

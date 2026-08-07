@@ -164,4 +164,36 @@ public class NativeSettingsPlugin extends Plugin {
             call.reject("Failed to open notification settings", e);
         }
     }
+
+    // Android 14+ (API 34+): abre a tela "Acesso especial > Notificações em
+    // tela cheia" do app. Sem essa permissão ATIVA, o sistema rebaixa o
+    // setFullScreenIntent() para heads-up comum e o pop-up gigante NUNCA
+    // abre por cima da tela de bloqueio. Não existe API para FORÇAR a
+    // ativação — só abrir a tela para o usuário tocar em "Permitir".
+    @PluginMethod
+    public void openFullScreenIntentSettings(PluginCall call) {
+        try {
+            if (Build.VERSION.SDK_INT >= 34) {
+                // Android 14+: tela dedicada de notificações em tela cheia
+                Intent intent = new Intent(
+                    android.provider.Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT,
+                    Uri.parse("package:" + getContext().getPackageName())
+                );
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                getActivity().startActivity(intent);
+            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                // Android 10-13: a permissão vem do manifest, sem tela própria
+                // — abre os detalhes do app (o usuário pode conferir).
+                Intent intent = new Intent(
+                    Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                    Uri.parse("package:" + getContext().getPackageName())
+                );
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                getActivity().startActivity(intent);
+            }
+            call.resolve();
+        } catch (Exception e) {
+            call.reject("Falha ao abrir configs de tela cheia", e);
+        }
+    }
 }

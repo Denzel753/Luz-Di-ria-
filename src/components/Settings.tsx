@@ -54,38 +54,9 @@ export function Settings({ isOpen, onClose, settings, onSettingsChange, onTestPo
 
   
 
-  const [showResetConfirm, setShowResetConfirm] = useState(false);
-
   if (!isOpen) return null;
   return (
     <div className="fixed inset-0 bg-[var(--color-duo-bg-sec)] z-50 flex flex-col">
-      {showResetConfirm && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="duo-modal w-full max-w-sm p-6 shadow-2xl animate-in zoom-in-95 duration-200">
-            <h3 className="text-lg font-bold text-[var(--color-duo-text)] mb-2">Redefinir tudo?</h3>
-            <p className="text-sm text-[var(--color-duo-text-light)] mb-6 leading-relaxed">
-              Isso apagará todas as suas notas, favoritos e configurações permanentemente. Esta ação não pode ser desfeita.
-            </p>
-            <div className="flex gap-3">
-              <button 
-                onClick={() => setShowResetConfirm(false)}
-                className="btn-outline flex-1 py-4 px-4 gap-2"
-              >
-                Cancelar
-              </button>
-              <button 
-                onClick={() => {
-                  localStorage.clear();
-                  window.location.reload();
-                }}
-                className="btn-primary !bg-[var(--color-duo-red)] !border-[var(--color-duo-red)] !border-b-[var(--color-duo-red-dark)] flex-1 py-4 px-4 gap-2"
-              >
-                Sim, Limpar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
       <header className="bg-[var(--color-duo-bg)] h-16 flex items-center px-4 border-b-2 border-[var(--color-duo-border)] text-[var(--color-duo-text)] gap-4 shadow-sm z-10 shrink-0">
         <button onClick={onClose} className="btn-ghost">
           <ArrowLeft className="w-5 h-5 text-[var(--color-duo-text-light)]" />
@@ -492,26 +463,6 @@ export function Settings({ isOpen, onClose, settings, onSettingsChange, onTestPo
                   Exportar e enviar os logs de erro do aplicativo por e-mail para o desenvolvedor analisar.
                 </p>
               </div>
-            </div>
-          </section>
-
-          {/* Reset App */}
-          <section className="duo-card overflow-hidden p-0 mt-8 !border-[var(--color-duo-red)]">
-            <div className="px-5 py-3 bg-red-50/50 dark:bg-red-900/20 border-b border-red-100 dark:border-red-900/30 flex items-center gap-2">
-              <RefreshCw className="w-4 h-4 text-red-600" />
-              <h2 className="text-red-600 text-xs font-bold uppercase tracking-wider">Zona de Perigo</h2>
-            </div>
-            <div className="px-5 py-5">
-              <p className="text-[var(--color-duo-text)] text-[15px] font-medium mb-2">Redefinir Aplicativo</p>
-              <p className="text-xs text-[var(--color-duo-text-light)] mb-4 leading-relaxed">
-                Isso apagará todas as suas configurações, versículo atual, notas do diário e histórico. O aplicativo será reiniciado do zero.
-              </p>
-              <button 
-                onClick={() => setShowResetConfirm(true)}
-                className="btn-primary w-full py-3 !bg-[var(--color-duo-red)] !border-[var(--color-duo-red)] !border-b-[var(--color-duo-red-dark)]"
-              >
-                Limpar tudo e reiniciar
-              </button>
             </div>
           </section>
         </div>

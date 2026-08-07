@@ -162,7 +162,15 @@ public class VerseAlarmReceiver extends BroadcastReceiver {
 
             Calendar cal = Calendar.getInstance();
             if (intervalMinutes == 1440) {
-                // Diário: próximo dia no mesmo horário do primeiro agendamento
+                // Diário: AMANHÃ no horário configurado (início da janela),
+                // zerando segundos/milissegundos — não soma 1 dia ao horário
+                // atual (que carregava segundos e podia escorregar).
+                int startH = prefs.getInt("startHour", 8);
+                int startM = prefs.getInt("startMinute", 0);
+                cal.set(Calendar.HOUR_OF_DAY, startH);
+                cal.set(Calendar.MINUTE, startM);
+                cal.set(Calendar.SECOND, 0);
+                cal.set(Calendar.MILLISECOND, 0);
                 cal.add(Calendar.DAY_OF_YEAR, 1);
             } else {
                 // Intervalo ANCORADO no início da janela (regra do usuário):

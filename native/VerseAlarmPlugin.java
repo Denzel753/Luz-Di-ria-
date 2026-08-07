@@ -102,10 +102,15 @@ public class VerseAlarmPlugin extends Plugin {
                 .putInt("endMinute", call.getInt("endMinute", 0))
                 .apply();
 
-            // Calcula o próximo horário (agora + intervalo, ou diário no horário fixo)
+            // Calcula o próximo horário com a MESMA lógica do reagendamento
+            // (âncora no INÍCIO da janela — regra do usuário):
+            // Ex: janela 08:00-22:00 + 4h → 08:00, 12:00, 16:00, 20:00.
+            // Se o próximo slot cair fora da janela, recomeça amanhã no início.
+            int endHour = call.getInt("endHour", 22);
+            int endMinute = call.getInt("endMinute", 0);
             Calendar cal = Calendar.getInstance();
             if (intervalMinutes == 1440) {
-                // Diário: dispara no horário configurado
+                // Diário: dispara no horário configurado (início da janela)
                 cal.set(Calendar.HOUR_OF_DAY, hour);
                 cal.set(Calendar.MINUTE, minute);
                 cal.set(Calendar.SECOND, 0);
@@ -114,8 +119,36 @@ public class VerseAlarmPlugin extends Plugin {
                     cal.add(Calendar.DAY_OF_YEAR, 1);
                 }
             } else {
-                // Intervalo curto: dispara daqui a X minutos (teste rápido)
-                cal.add(Calendar.MINUTE, intervalMinutes);
+                // Intervalo ANCORADO no início da janela (regra do usuário)
+                long intervalMs = intervalMinutes * 60 * 1000L;
+
+                // Âncora: início da janela de hoje
+                Calendar anchor = Calendar.getInstance();
+                anchor.set(Calendar.HOUR_OF_DAY, hour);
+                anchor.set(Calendar.MINUTE, minute);
+                anchor.set(Calendar.SECOND, 0);
+                anchor.set(Calendar.MILLISECOND, 0);
+
+                // Próximo slot: âncora + k*intervalo (k = próximo inteiro)
+                long sinceAnchor = System.currentTimeMillis() - anchor.getTimeInMillis();
+                long k = Math.max(0, (long) Math.ceil((double) sinceAnchor / intervalMs));
+                cal.setTimeInMillis(anchor.getTimeInMillis() + k * intervalMs);
+
+                // Fim da janela de hoje
+                Calendar windowEnd = Calendar.getInstance();
+                windowEnd.set(Calendar.HOUR_OF_DAY, endHour);
+                windowEnd.set(Calendar.MINUTE, endMinute);
+                windowEnd.set(Calendar.SECOND, 59);
+                windowEnd.set(Calendar.MILLISECOND, 999);
+
+                // Slot passou do fim da janela → recomeça AMANHÃ no início
+                if (cal.getTimeInMillis() > windowEnd.getTimeInMillis()) {
+                    cal.add(Calendar.DAY_OF_YEAR, 1);
+                    cal.set(Calendar.HOUR_OF_DAY, hour);
+                    cal.set(Calendar.MINUTE, minute);
+                    cal.set(Calendar.SECOND, 0);
+                    cal.set(Calendar.MILLISECOND, 0);
+                }
             }
 
             Intent intent = new Intent(ctx, VerseAlarmReceiver.class);

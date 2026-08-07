@@ -25,6 +25,7 @@ public class VerseForegroundService extends Service {
     private static final int NOTIFICATION_ID = 1002;
     private static final String EXTRA_VERSE_TEXT = "verseText";
     private static final String EXTRA_VERSE_REF = "verseRef";
+    private static final String ACTION_RESTART = "com.luzdiaria.versiculos.RESTART_SERVICE";
 
     @Override
     public void onCreate() {
@@ -104,11 +105,62 @@ public class VerseForegroundService extends Service {
         } else {
             startForeground(NOTIFICATION_ID, notification);
         }
+
+        // CHAVE DA SOLUÇÃO (Motorola/Android): posta a MESMA notificação via
+        // NotificationManager.notify(). Notificações normais postadas
+        // SOBREVIVEM à morte do processo/serviço — quando o Motorola mata o
+        // serviço, a notificação fixa continua na barra. A do startForeground
+        // (que o sistema remove ao matar o serviço) é reposta por esta aqui.
+        NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        if (nm != null) {
+            nm.notify(NOTIFICATION_ID, notification);
+        }
+
+        // Agenda o HEARTBEAT: reinicia o serviço periodicamente se o sistema
+        // matou (Motorola/Samsung/Xiaomi são agressivos). Usa AlarmManager
+        // com alarme inexato (econômico) a cada 15 min.
+        scheduleHeartbeat();
+    }
+
+    // Heartbeat: alarme que re-inicia o serviço se o sistema o matou.
+    // Sem isso, fabricantes agressivas (Motorola, Xiaomi, Samsung) matam o
+    // serviço e a notificação fixa perde o "dono" que a mantém viva.
+    private void scheduleHeartbeat() {
+        try {
+            android.app.AlarmManager am =
+                (android.app.AlarmManager) getSystemService(ALARM_SERVICE);
+            if (am == null) return;
+
+            Intent intent = new Intent(this, VerseForegroundService.class);
+            intent.setAction(ACTION_RESTART);
+            android.app.PendingIntent pi = android.app.PendingIntent.getService(
+                this,
+                77,
+                intent,
+                android.app.PendingIntent.FLAG_UPDATE_CURRENT | android.app.PendingIntent.FLAG_IMMUTABLE
+            );
+
+            long interval = 15 * 60 * 1000L; // 15 minutos
+            long first = System.currentTimeMillis() + interval;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                am.setAndAllowWhileIdle(android.app.AlarmManager.RTC, first, pi);
+            } else {
+                am.set(android.app.AlarmManager.RTC, first, pi);
+            }
+        } catch (Exception e) {
+            // Falha silenciosa — o START_STICKY ainda ajuda
+        }
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (intent != null) {
+            // Heartbeat: re-inicia o serviço (já estava rodando, só garante)
+            if (ACTION_RESTART.equals(intent.getAction())) {
+                // Garante que a notificação fixa está postada
+                startAsForeground(null, null);
+                return START_STICKY;
+            }
             String verseText = intent.getStringExtra(EXTRA_VERSE_TEXT);
             String verseRef = intent.getStringExtra(EXTRA_VERSE_REF);
             if (verseText != null || verseRef != null) {
@@ -116,6 +168,33 @@ public class VerseForegroundService extends Service {
             }
         }
         return START_STICKY; // se o sistema matar, tenta reiniciar
+    }
+
+    // Quando o usuário desliza o app dos recentes (swipe), o Android tende a
+    // matar o serviço em seguida — relança imediatamente para a notificação
+    // fixa não sumir (comportamento de apps de música/relógio).
+    @Override
+    public void onTaskRemoved(Intent rootIntent) {
+        super.onTaskRemoved(rootIntent);
+        try {
+            Intent restart = new Intent(getApplicationContext(), VerseForegroundService.class);
+            restart.setAction(ACTION_RESTART);
+            android.app.PendingIntent pi = android.app.PendingIntent.getService(
+                this,
+                78,
+                restart,
+                android.app.PendingIntent.FLAG_ONE_SHOT | android.app.PendingIntent.FLAG_IMMUTABLE
+            );
+            android.app.AlarmManager am =
+                (android.app.AlarmManager) getSystemService(ALARM_SERVICE);
+            if (am != null) {
+                // Relança ~1s depois do swipe
+                am.set(android.app.AlarmManager.RTC,
+                    System.currentTimeMillis() + 1000, pi);
+            }
+        } catch (Exception e) {
+            // Falha silenciosa
+        }
     }
 
     @Override

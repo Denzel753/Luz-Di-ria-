@@ -9,15 +9,17 @@ import {
   checkOverlayPermission,
   openAppDetails,
   getPermissionsStatus,
+  copyToClipboard,
 } from '../capacitorCompat';
 
 interface PermissionModalProps {
   isOpen: boolean;
   onClose: () => void;
   onGrant: () => void;
+  onShowToast?: (type: 'success' | 'error' | 'info', message: string) => void;
 }
 
-export const PermissionModal = React.memo(function PermissionModal({ isOpen, onClose, onGrant }: PermissionModalProps) {
+export const PermissionModal = React.memo(function PermissionModal({ isOpen, onClose, onGrant, onShowToast }: PermissionModalProps) {
   const [notifGranted, setNotifGranted] = useState(false);
   const [batteryDone, setBatteryDone] = useState(false);
   const [overlayDone, setOverlayDone] = useState(false);
@@ -167,6 +169,15 @@ export const PermissionModal = React.memo(function PermissionModal({ isOpen, onC
                     className="text-xs px-3 py-2 rounded-full font-medium bg-red-100 text-red-700 hover:bg-red-200"
                   >
                     Abrir detalhes do app
+                  </button>
+                  <button
+                    onClick={async () => {
+                      await copyToClipboard("adb shell appops set com.luzdiaria.versiculos SYSTEM_ALERT_WINDOW allow");
+                      if (onShowToast) onShowToast('success', 'Comando ADB copiado');
+                    }}
+                    className="text-xs px-3 py-2 rounded-full font-medium bg-zinc-100 text-zinc-700 hover:bg-zinc-200 ml-2"
+                  >
+                    Copiar comando ADB
                   </button>
                 </div>
               )}

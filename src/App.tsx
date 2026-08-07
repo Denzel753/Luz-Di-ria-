@@ -1196,6 +1196,7 @@ const handleOpenYoutube = useCallback(() => {
         isOpen={isPermissionModalOpen}
         onClose={closePermissionModal}
         onGrant={handlePermissionsGranted}
+        onShowToast={addToast}
       />
 
       <ErrorPopup />

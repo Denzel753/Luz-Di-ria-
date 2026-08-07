@@ -39,9 +39,12 @@ for src in native_files:
 step('1c. Copiando layouts do widget')
 os.makedirs('android/app/src/main/res/layout', exist_ok=True)
 os.makedirs('android/app/src/main/res/xml', exist_ok=True)
+os.makedirs('android/app/src/main/res/drawable', exist_ok=True)
 for xml_src, xml_dest in [
     ('native/widget_verse.xml', 'android/app/src/main/res/layout/widget_verse.xml'),
     ('native/widget_verse_info.xml', 'android/app/src/main/res/xml/widget_verse_info.xml'),
+    ('native/drawable/widget_bg_dark.xml', 'android/app/src/main/res/drawable/widget_bg_dark.xml'),
+    ('native/drawable/widget_bg_gold.xml', 'android/app/src/main/res/drawable/widget_bg_gold.xml'),
 ]:
     if os.path.exists(xml_src):
         with open(xml_src) as f:

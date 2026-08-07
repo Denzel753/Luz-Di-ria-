@@ -92,7 +92,11 @@ public class VerseWidgetProvider extends AppWidgetProvider {
         views.setTextColor(R.id.widget_verse_text, textColor);
         views.setTextColor(R.id.widget_verse_ref, textColor & 0x99FFFFFF);
         views.setFloat(R.id.widget_verse_text, "setTextSize", textSize);
-        views.setInt(R.id.widget_root, "setBackgroundColor", bgColor);
+        // Fundo em card arredondado: dark (azul noite) ou gold (dourado escuro)
+        int bgRes = (bgColor == 0xE6334000)
+            ? R.drawable.widget_bg_gold
+            : R.drawable.widget_bg_dark;
+        views.setInt(R.id.widget_root, "setBackgroundResource", bgRes);
         views.setViewVisibility(R.id.widget_icon, showIcon ? android.view.View.VISIBLE : android.view.View.GONE);
 
         // Toque abre o app

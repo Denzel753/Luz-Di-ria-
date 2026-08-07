@@ -1,42 +1,83 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/widget_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="16dp"
-    android:background="@android:color/transparent">
+    android:background="@drawable/widget_bg_dark"
+    android:padding="18dp">
 
-    <ImageView
-        android:id="@+id/widget_icon"
-        android:layout_width="32dp"
-        android:layout_height="32dp"
-        android:src="@mipmap/ic_launcher"
-        android:contentDescription="Luz Diária"
-        android:layout_marginBottom="8dp" />
-
-    <TextView
-        android:id="@+id/widget_verse_text"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textColor="#FFFFFF"
-        android:textSize="14sp"
-        android:fontFamily="sans-serif"
-        android:textStyle="bold"
-        android:lineSpacingExtra="4dp"
-        android:maxLines="4"
-        android:ellipsize="end" />
+        android:orientation="vertical"
+        android:layout_gravity="center_vertical">
 
-    <TextView
-        android:id="@+id/widget_verse_ref"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textColor="#CCFFFFFF"
-        android:textSize="12sp"
-        android:fontFamily="sans-serif"
-        android:textStyle="bold"
-        android:letterSpacing="0.1"
-        android:layout_marginTop="6dp"
-        android:textAllCaps="true" />
+        <!-- Linha superior: ícone + nome -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="10dp">
 
-</LinearLayout>
+            <ImageView
+                android:id="@+id/widget_icon"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:src="@mipmap/ic_launcher"
+                android:contentDescription="Luz Diária"
+                android:scaleType="fitCenter" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="LUZ DIÁRIA"
+                android:textColor="#FBBF24"
+                android:textSize="10sp"
+                android:fontFamily="sans-serif"
+                android:textStyle="bold"
+                android:letterSpacing="0.15"
+                android:paddingStart="8dp"
+                android:paddingLeft="8dp" />
+        </LinearLayout>
+
+        <!-- Aspa decorativa -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="\u201C"
+            android:textColor="#FBBF24"
+            android:textSize="34sp"
+            android:fontFamily="serif"
+            android:includeFontPadding="false"
+            android:layout_marginTop="-8dp"
+            android:layout_marginBottom="-12dp"
+            android:alpha="0.55" />
+
+        <!-- Versículo -->
+        <TextView
+            android:id="@+id/widget_verse_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="#F8FAFC"
+            android:textSize="15sp"
+            android:fontFamily="sans-serif"
+            android:textStyle="bold"
+            android:lineSpacingExtra="4dp"
+            android:maxLines="4"
+            android:ellipsize="end" />
+
+        <!-- Referência -->
+        <TextView
+            android:id="@+id/widget_verse_ref"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="#94A3B8"
+            android:textSize="11sp"
+            android:fontFamily="sans-serif"
+            android:textStyle="bold"
+            android:letterSpacing="0.08"
+            android:layout_marginTop="8dp"
+            android:textAllCaps="true" />
+    </LinearLayout>
+</FrameLayout>

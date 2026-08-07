@@ -25,6 +25,17 @@ step('2. Adicionando permissões ao AndroidManifest.xml')
 manifest = 'android/app/src/main/AndroidManifest.xml'
 content = open(manifest).read()
 
+# Garante que o manifest usa os ícones gerados (não o padrão do Capacitor)
+if '@mipmap/ic_launcher' not in content:
+    content = content.replace(
+        'android:icon="@mipmap/ic_launcher"',
+        'android:icon="@mipmap/ic_launcher"'
+    )
+    content = content.replace(
+        'android:icon="@mipmap/ic_launcher_round"',
+        'android:icon="@mipmap/ic_launcher_round"'
+    )
+
 permissions = [
     'android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS',
     'android.permission.SYSTEM_ALERT_WINDOW',

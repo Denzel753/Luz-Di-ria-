@@ -9,7 +9,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="28dp">
+        android:padding="24dp">
 
         <!-- Título -->
         <TextView
@@ -17,7 +17,7 @@
             android:layout_height="wrap_content"
             android:text="Personalizar Widget"
             android:textColor="#FBBF24"
-            android:textSize="26sp"
+            android:textSize="24sp"
             android:fontFamily="sans-serif-black"
             android:textStyle="bold"
             android:gravity="center"
@@ -26,183 +26,186 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Deixe o versículo do jeito que você gosta na tela inicial"
+            android:text="Prévia ao vivo — ajuste e toque em OK"
             android:textColor="#94A3B8"
             android:textSize="14sp"
             android:gravity="center"
-            android:layout_marginTop="6dp"
-            android:layout_marginBottom="28dp" />
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="20dp" />
 
-        <!-- Card: Mostrar ícone -->
+        <!-- ===== PRÉVIA AO VIVO DO WIDGET (padrão Fossify) ===== -->
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp">
+
+            <ImageView
+                android:id="@+id/preview_background"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:adjustViewBounds="true"
+                android:src="@drawable/widget_bg_dark" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="18dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="8dp">
+
+                    <FrameLayout
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:background="@drawable/widget_icon_badge">
+
+                        <ImageView
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
+                            android:layout_gravity="center"
+                            android:src="@mipmap/ic_launcher" />
+                    </FrameLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="LUZ DIÁRIA"
+                        android:textColor="#FBBF24"
+                        android:textSize="10sp"
+                        android:fontFamily="sans-serif-medium"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.16"
+                        android:paddingStart="9dp"
+                        android:paddingLeft="9dp" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/preview_verse"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Porque Deus amou o mundo de tal maneira que deu o seu Filho unigênito, para que todo aquele que nele crê não pereça, mas tenha a vida eterna."
+                    android:textColor="#F8FAFC"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:lineSpacingExtra="3dp"
+                    android:maxLines="3"
+                    android:ellipsize="end" />
+
+                <TextView
+                    android:id="@+id/preview_ref"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="João 3:16"
+                    android:textColor="#FBBF24"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.08"
+                    android:layout_marginTop="6dp" />
+            </LinearLayout>
+        </RelativeLayout>
+
+        <!-- ===== COR DE FUNDO (padrão Fossify: quadrado de cor + seekbar) ===== -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:background="@drawable/widget_config_card"
-            android:padding="16dp"
             android:layout_marginBottom="14dp">
 
-            <CheckBox
-                android:id="@+id/chk_icon"
+            <ImageView
+                android:id="@+id/btn_bg_color"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:layout_marginEnd="12dp"
+                android:src="@drawable/widget_bg_dark" />
+
+            <SeekBar
+                android:id="@+id/seek_bg_alpha"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Mostrar ícone do app"
-                android:textColor="#FFFFFF"
-                android:textSize="15sp"
-                android:checked="true" />
+                android:max="100"
+                android:progress="100"
+                android:progressTint="#FBBF24"
+                android:thumbTint="#FBBF24"
+                android:splitTrack="false" />
         </LinearLayout>
 
-        <!-- Card: Tamanho do texto -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Toque na cor para alternar • Deslize para a transparência do fundo"
+            android:textColor="#94A3B8"
+            android:textSize="12sp"
+            android:layout_marginBottom="20dp" />
+
+        <!-- ===== COR DO TEXTO (padrão Fossify) ===== -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="24dp">
+
+            <ImageView
+                android:id="@+id/btn_text_color"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:layout_marginEnd="12dp"
+                android:background="@drawable/widget_config_color_swatch" />
+
+            <TextView
+                android:id="@+id/txt_text_color"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Branco"
+                android:textColor="#F8FAFC"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- ===== TAMANHO DO TEXTO (slider, padrão Fossify) ===== -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:background="@drawable/widget_config_card"
-            android:padding="16dp"
-            android:layout_marginBottom="14dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Tamanho do texto (10 a 30)"
-                android:textColor="#CBD5E1"
-                android:textSize="13sp"
-                android:layout_marginBottom="10dp" />
-
-            <EditText
-                android:id="@+id/edt_size"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="14"
-                android:textColor="#FFFFFF"
-                android:textSize="16sp"
-                android:background="@drawable/widget_config_input"
-                android:padding="12dp"
-                android:inputType="number"
-                android:singleLine="true" />
-        </LinearLayout>
-
-        <!-- Card: Cor do texto -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:background="@drawable/widget_config_card"
-            android:padding="16dp"
-            android:layout_marginBottom="14dp">
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Cor do texto"
-                    android:textColor="#FFFFFF"
-                    android:textSize="15sp" />
-
-                <TextView
-                    android:id="@+id/txt_color_preview"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Exemplo de texto (Branco)"
-                    android:textSize="14sp"
-                    android:textStyle="bold"
-                    android:layout_marginTop="8dp"
-                    android:padding="8dp"
-                    android:background="@drawable/widget_config_preview" />
-            </LinearLayout>
-
-            <Button
-                android:id="@+id/btn_color"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Mudar"
-                android:textColor="#FFFFFF"
-                android:textSize="14sp"
-                android:background="@drawable/widget_config_button"
-                android:paddingLeft="18dp"
-                android:paddingRight="18dp"
-                android:paddingTop="10dp"
-                android:paddingBottom="10dp" />
-        </LinearLayout>
-
-        <!-- Card: Cor de fundo -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:background="@drawable/widget_config_card"
-            android:padding="16dp"
             android:layout_marginBottom="28dp">
 
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Cor de fundo"
-                    android:textColor="#FFFFFF"
-                    android:textSize="15sp" />
-
-                <TextView
-                    android:id="@+id/txt_bg_preview"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Fundo: Azul noite"
-                    android:textSize="13sp"
-                    android:layout_marginTop="8dp"
-                    android:padding="10dp"
-                    android:background="@drawable/widget_bg_dark" />
-            </LinearLayout>
-
-            <Button
-                android:id="@+id/btn_bg"
+            <TextView
+                android:id="@+id/txt_size_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Mudar"
-                android:textColor="#FFFFFF"
-                android:textSize="14sp"
-                android:background="@drawable/widget_config_button"
-                android:paddingLeft="18dp"
-                android:paddingRight="18dp"
-                android:paddingTop="10dp"
-                android:paddingBottom="10dp" />
+                android:text="Tamanho do texto: 16"
+                android:textColor="#CBD5E1"
+                android:textSize="13sp"
+                android:layout_marginBottom="6dp" />
+
+            <SeekBar
+                android:id="@+id/seek_text_size"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:max="20"
+                android:progress="6"
+                android:progressTint="#FBBF24"
+                android:thumbTint="#FBBF24"
+                android:splitTrack="false" />
         </LinearLayout>
 
-        <!-- Botão Concluído -->
+        <!-- ===== BOTÃO OK (padrão Fossify) ===== -->
         <Button
-            android:id="@+id/btn_done"
+            android:id="@+id/btn_ok"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="✓ Concluído — Adicionar Widget"
+            android:text="OK"
             android:textColor="#FFFFFF"
             android:textSize="17sp"
             android:textStyle="bold"
             android:background="@drawable/widget_config_done"
-            android:paddingTop="16dp"
-            android:paddingBottom="16dp"
-            android:layout_marginBottom="10dp" />
-
-        <Button
-            android:id="@+id/btn_cancel"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Cancelar"
-            android:textColor="#94A3B8"
-            android:textSize="14sp"
-            android:background="@android:color/transparent"
-            android:paddingTop="8dp"
-            android:paddingBottom="8dp" />
+            android:paddingTop="15dp"
+            android:paddingBottom="15dp" />
     </LinearLayout>
 </ScrollView>

@@ -9,24 +9,44 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
-import android.widget.CheckBox;
-import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 /**
- * Tela de configuração do widget — abre quando o usuário adiciona o widget
- * na tela inicial. Usa o layout XML (widget_config.xml) com design do app:
- * cards escuros, botões laranja, prévia ao vivo das cores.
+ * Tela de configuração do widget — padrão Fossify Clock (app de relógio
+ * de referência): prévia ao vivo no topo + SeekBar de transparência do
+ * fundo + alternância de cores + botão OK. Cores do Luz Diária.
  */
 public class VerseWidgetConfigActivity extends Activity {
 
     private int widgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
-    private CheckBox chkIcon;
-    private EditText edtSize;
-    private TextView txtColorPreview;
-    private TextView txtBgPreview;
-    private int selectedTextColor = Color.WHITE;
-    private int selectedBgColor = 0xE61E293B;
+
+    // Elementos da prévia ao vivo
+    private ImageView previewBackground;
+    private TextView previewVerse;
+    private TextView previewRef;
+
+    // Elementos de controle
+    private ImageView btnBgColor;
+    private ImageView btnTextColor;
+    private TextView txtTextColor;
+    private SeekBar seekBgAlpha;
+    private SeekBar seekTextSize;
+    private TextView txtSizeLabel;
+
+    // Valores atuais
+    private int bgColor = 0xFF1E293B;        // azul noite (sem alpha)
+    private int textColor = Color.WHITE;
+    private float textSize = 16f;
+    private boolean useGoldBg = false;
+
+    // Paletas (nossas cores)
+    private static final int[] BG_PALETTE = { 0xFF1E293B, 0xFF451A03 }; // azul noite, dourado
+    private static final int[] TEXT_PALETTE = { Color.WHITE, 0xFFFBBF24, 0xFF93C5FD, Color.BLACK };
+    private static final String[] TEXT_NAMES = { "Branco", "Âmbar", "Azul claro", "Preto" };
+    private int bgIndex = 0;
+    private int textIndex = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,114 +67,117 @@ public class VerseWidgetConfigActivity extends Activity {
 
         setContentView(R.layout.widget_config);
 
-        // Liga os elementos do layout
-        chkIcon = findViewById(R.id.chk_icon);
-        edtSize = findViewById(R.id.edt_size);
-        txtColorPreview = findViewById(R.id.txt_color_preview);
-        txtBgPreview = findViewById(R.id.txt_bg_preview);
-        Button btnColor = findViewById(R.id.btn_color);
-        Button btnBg = findViewById(R.id.btn_bg);
-        Button btnDone = findViewById(R.id.btn_done);
-        Button btnCancel = findViewById(R.id.btn_cancel);
+        // Liga os elementos
+        previewBackground = findViewById(R.id.preview_background);
+        previewVerse = findViewById(R.id.preview_verse);
+        previewRef = findViewById(R.id.preview_ref);
+        btnBgColor = findViewById(R.id.btn_bg_color);
+        btnTextColor = findViewById(R.id.btn_text_color);
+        txtTextColor = findViewById(R.id.txt_text_color);
+        seekBgAlpha = findViewById(R.id.seek_bg_alpha);
+        seekTextSize = findViewById(R.id.seek_text_size);
+        txtSizeLabel = findViewById(R.id.txt_size_label);
+        Button btnOk = findViewById(R.id.btn_ok);
 
-        updateColorPreview();
-        updateBgPreview();
+        // Carrega configuração anterior (se houver) para prévia coerente
+        SharedPreferences prefs = getSharedPreferences(VerseWidgetProvider.PREFS_NAME, Context.MODE_MULTI_PROCESS);
+        int savedTextColor = prefs.getInt("textColor_" + widgetId, -1);
+        int savedBg = prefs.getInt("bgColor_" + widgetId, -1);
+        float savedSize = prefs.getFloat("textSize_" + widgetId, 16f);
+        if (savedTextColor != -1) textColor = savedTextColor;
+        if (savedSize >= 10 && savedSize <= 30) textSize = savedSize;
+        if (savedBg != -1) useGoldBg = (savedBg & 0xFFFFFF) == 0x451A03;
+        bgIndex = useGoldBg ? 1 : 0;
+        bgColor = BG_PALETTE[bgIndex];
+        for (int i = 0; i < TEXT_PALETTE.length; i++) {
+            if (TEXT_PALETTE[i] == textColor) textIndex = i;
+        }
 
-        btnColor.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                cycleTextColor();
+        applyPreview();
+
+        // SeekBar de transparência do fundo (padrão Fossify)
+        seekBgAlpha.setProgress(100);
+        seekBgAlpha.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override public void onProgressChanged(SeekBar sb, int progress, boolean fromUser) { applyPreview(); }
+            @Override public void onStartTrackingTouch(SeekBar sb) {}
+            @Override public void onStopTrackingTouch(SeekBar sb) {}
+        });
+
+        // SeekBar de tamanho do texto (10-30)
+        seekTextSize.setProgress(Math.round(textSize) - 10);
+        seekTextSize.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override public void onProgressChanged(SeekBar sb, int progress, boolean fromUser) {
+                textSize = 10 + progress;
+                txtSizeLabel.setText("Tamanho do texto: " + Math.round(textSize));
+                applyPreview();
+            }
+            @Override public void onStartTrackingTouch(SeekBar sb) {}
+            @Override public void onStopTrackingTouch(SeekBar sb) {}
+        });
+
+        // Alterna cor de fundo (azul noite ↔ dourado)
+        btnBgColor.setOnClickListener(new View.OnClickListener() {
+            @Override public void onClick(View v) {
+                bgIndex = (bgIndex + 1) % BG_PALETTE.length;
+                bgColor = BG_PALETTE[bgIndex];
+                useGoldBg = bgIndex == 1;
+                applyPreview();
             }
         });
 
-        btnBg.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                cycleBgColor();
+        // Alterna cor do texto (branco → âmbar → azul claro → preto)
+        btnTextColor.setOnClickListener(new View.OnClickListener() {
+            @Override public void onClick(View v) {
+                textIndex = (textIndex + 1) % TEXT_PALETTE.length;
+                textColor = TEXT_PALETTE[textIndex];
+                txtTextColor.setText(TEXT_NAMES[textIndex]);
+                applyPreview();
             }
         });
 
-        btnDone.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        // OK (padrão Fossify) — salva e retorna RESULT_OK
+        btnOk.setOnClickListener(new View.OnClickListener() {
+            @Override public void onClick(View v) {
                 saveAndFinish();
             }
         });
-
-        btnCancel.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finish(); // RESULT_CANCELED — launcher não adiciona
-            }
-        });
     }
 
-    private void cycleTextColor() {
-        if (selectedTextColor == Color.WHITE) {
-            selectedTextColor = Color.parseColor("#FBBF24");
-        } else if (selectedTextColor == Color.parseColor("#FBBF24")) {
-            selectedTextColor = Color.parseColor("#93C5FD");
-        } else if (selectedTextColor == Color.parseColor("#93C5FD")) {
-            selectedTextColor = Color.BLACK;
-        } else {
-            selectedTextColor = Color.WHITE;
-        }
-        updateColorPreview();
-    }
+    // Aplica os valores atuais na prévia ao vivo (padrão Fossify)
+    private void applyPreview() {
+        int alpha = (int) (seekBgAlpha.getProgress() / 100f * 255);
+        int bgWithAlpha = (alpha << 24) | (bgColor & 0xFFFFFF);
 
-    private void cycleBgColor() {
-        if (selectedBgColor == 0xE61E293B) {
-            selectedBgColor = 0xE6451A03;
-        } else if (selectedBgColor == 0xE6451A03) {
-            selectedBgColor = 0xE61E293B;
-        }
-        updateBgPreview();
-    }
+        // Fundo da prévia: cor sólida com alpha (setBackgroundColor com alpha)
+        previewBackground.setImageResource(useGoldBg ? R.drawable.widget_bg_gold : R.drawable.widget_bg_dark);
+        previewBackground.setImageAlpha(alpha);
+        btnBgColor.setImageResource(useGoldBg ? R.drawable.widget_bg_gold : R.drawable.widget_bg_dark);
 
-    private void updateColorPreview() {
-        if (txtColorPreview != null) {
-            txtColorPreview.setTextColor(selectedTextColor);
-            txtColorPreview.setText("Exemplo de texto (" + colorName(selectedTextColor) + ")");
-        }
-    }
+        previewVerse.setTextColor(textColor);
+        previewVerse.setTextSize(textSize);
+        previewRef.setTextColor(0xFFFBBF24); // referência sempre âmbar
 
-    private void updateBgPreview() {
-        if (txtBgPreview != null) {
-            txtBgPreview.setBackgroundResource(
-                selectedBgColor == 0xE6451A03 ? R.drawable.widget_bg_gold : R.drawable.widget_bg_dark);
-            txtBgPreview.setText("Fundo: " + (selectedBgColor == 0xE6451A03 ? "Dourado" : "Azul noite"));
-        }
-    }
-
-    private String colorName(int c) {
-        if (c == Color.WHITE) return "Branco";
-        if (c == Color.parseColor("#FBBF24")) return "Âmbar";
-        if (c == Color.parseColor("#93C5FD")) return "Azul claro";
-        return "Preto";
+        // Swatch da cor do texto
+        btnTextColor.setBackgroundColor(textColor);
+        txtTextColor.setText(TEXT_NAMES[textIndex]);
     }
 
     private void saveAndFinish() {
-        SharedPreferences prefs = getSharedPreferences(VerseWidgetProvider.PREFS_NAME, Context.MODE_PRIVATE);
-        float size;
-        try {
-            size = Float.parseFloat(edtSize.getText().toString());
-        } catch (Exception e) {
-            size = 14f;
-        }
-        if (size < 10) size = 10;
-        if (size > 30) size = 30;
+        int alpha = (int) (seekBgAlpha.getProgress() / 100f * 255);
+        int bgWithAlpha = (alpha << 24) | (bgColor & 0xFFFFFF);
 
+        SharedPreferences prefs = getSharedPreferences(VerseWidgetProvider.PREFS_NAME, Context.MODE_MULTI_PROCESS);
         prefs.edit()
-            .putInt("textColor_" + widgetId, selectedTextColor)
-            .putFloat("textSize_" + widgetId, size)
-            .putInt("bgColor_" + widgetId, selectedBgColor)
-            .putBoolean("showIcon_" + widgetId, chkIcon.isChecked())
+            .putInt("textColor_" + widgetId, textColor)
+            .putFloat("textSize_" + widgetId, textSize)
+            .putInt("bgColor_" + widgetId, bgWithAlpha)
+            .putBoolean("showIcon_" + widgetId, true)
             .putString("verse_" + widgetId,
                 prefs.getString("lastVerse",
                     "Porque Deus amou o mundo de tal maneira que deu o seu Filho unigênito, para que todo aquele que nele crê não pereça, mas tenha a vida eterna."))
             .putString("ref_" + widgetId,
                 prefs.getString("lastRef", "João 3:16"))
-            .apply();
+            .commit(); // síncrono: o widget (outro processo) lê na hora
 
         // Atualiza o widget imediatamente
         AppWidgetManager mgr = AppWidgetManager.getInstance(this);

@@ -75,7 +75,7 @@ public class VerseWidgetProvider extends AppWidgetProvider {
     private void updateWidget(Context context, AppWidgetManager mgr, int widgetId) {
         SharedPreferences prefs = getPrefs(context);
         int textColor = prefs.getInt("textColor_" + widgetId, 0xFFFFFFFF);
-        float textSize = prefs.getFloat("textSize_" + widgetId, 14f);
+        float textSize = prefs.getFloat("textSize_" + widgetId, 16f);
         int bgColor = prefs.getInt("bgColor_" + widgetId, 0xE60F172A);
         boolean showIcon = prefs.getBoolean("showIcon_" + widgetId, true);
 
@@ -97,8 +97,14 @@ public class VerseWidgetProvider extends AppWidgetProvider {
         views.setTextViewText(R.id.widget_verse_ref, ref);
         views.setTextColor(R.id.widget_verse_text, textColor);
         views.setTextColor(R.id.widget_verse_ref, textColor & 0x99FFFFFF);
-        // Fundo em card arredondado: dark (azul noite) ou gold (dourado escuro)
-        int bgRes = (bgColor == 0xE6334000)
+        // Tamanho do texto (configurado pelo usuário, padrão Fossify)
+        if (textSize >= 10 && textSize <= 30) {
+            views.setFloat(R.id.widget_verse_text, "setTextSize", textSize);
+        }
+        // Fundo em card arredondado: dark (azul noite) ou gold (dourado escuro).
+        // Detecta pelo RGB base (0x451A03 = dourado), ignorando o alpha.
+        int bgRgb = bgColor & 0xFFFFFF;
+        int bgRes = (bgRgb == 0x451A03)
             ? R.drawable.widget_bg_gold
             : R.drawable.widget_bg_dark;
         views.setInt(R.id.widget_background, "setImageResource", bgRes);

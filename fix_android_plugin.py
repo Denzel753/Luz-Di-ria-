@@ -50,6 +50,9 @@ for xml_src, xml_dest in [
     ('native/drawable/widget_config_preview.xml', 'android/app/src/main/res/drawable/widget_config_preview.xml'),
     ('native/drawable/widget_config_button.xml', 'android/app/src/main/res/drawable/widget_config_button.xml'),
     ('native/drawable/widget_config_done.xml', 'android/app/src/main/res/drawable/widget_config_done.xml'),
+    ('native/drawable/widget_config_seekbar_background.xml', 'android/app/src/main/res/drawable/widget_config_seekbar_background.xml'),
+    ('native/drawable/widget_config_seekbar_progress.xml', 'android/app/src/main/res/drawable/widget_config_seekbar_progress.xml'),
+    ('native/drawable/widget_config_color_swatch.xml', 'android/app/src/main/res/drawable/widget_config_color_swatch.xml'),
     ('native/layout/widget_config.xml', 'android/app/src/main/res/layout/widget_config.xml'),
 ]:
     if os.path.exists(xml_src):

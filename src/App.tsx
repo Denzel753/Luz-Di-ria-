@@ -182,7 +182,21 @@ export default function App() {
   const [settings, setSettings] = useState<AppSettings>(() => {
     try {
       const savedSettings = localStorage.getItem("appSettings");
-      if (savedSettings) return JSON.parse(savedSettings);
+      if (savedSettings) {
+        const parsed = JSON.parse(savedSettings);
+        // MIGRAÇÃO: APKs antigos salvaram a janela default como 08:00-22:00,
+        // o que TRAVA o motor fora desse horário sem o usuário perceber.
+        // Se os valores salvos são os antigos defaults (nunca tocados pelo
+        // usuário), migra para 24h (00:00-23:59).
+        if ((!parsed.notificationStartTime || parsed.notificationStartTime === "08:00")
+            && (!parsed.notificationEndTime || parsed.notificationEndTime === "22:00")) {
+          parsed.notificationStartTime = "00:00";
+          parsed.notificationEndTime = "23:59";
+          // persiste a migração
+          try { localStorage.setItem("appSettings", JSON.stringify(parsed)); } catch (e) {}
+        }
+        return parsed;
+      }
     } catch (e) {}
     return {
       dailyNotification: false,

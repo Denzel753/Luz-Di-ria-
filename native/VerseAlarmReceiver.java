@@ -202,14 +202,40 @@ public class VerseAlarmReceiver extends BroadcastReceiver {
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
             );
 
-            boolean exactOk = true;
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                exactOk = am.canScheduleExactAlarms();
-            }
-            if (exactOk) {
-                am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), pi);
-            } else {
-                am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), pi);
+            // ESTRATÉGIA DE AGENDAMENTO (padrão AMdroid/AlarmClock):
+            // setAlarmClock() é o mecanismo de alarme de RELÓGIO do Android:
+            // 1) NÃO exige a permissão SCHEDULE_EXACT_ALARM (dispara no
+            //    minuto exato mesmo sem ela — apps de alarme usam isso)
+            // 2) Sobrevive ao Doze de verdade (o sistema libera SEMPRE)
+            // 3) Mostra o próximo alarme no painel do sistema (transparência)
+            // Fallback: setExactAndAllowWhileIdle se setAlarmClock falhar.
+            try {
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+                    Intent showIntent = new Intent(context, MainActivity.class);
+                    showIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    PendingIntent showPi = PendingIntent.getActivity(
+                        context,
+                        9001,
+                        showIntent,
+                        PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+                    );
+                    AlarmManager.AlarmClockInfo clockInfo =
+                        new AlarmManager.AlarmClockInfo(cal.getTimeInMillis(), showPi);
+                    am.setAlarmClock(clockInfo, pi);
+                } else {
+                    am.setExact(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), pi);
+                }
+            } catch (Exception e) {
+                // Fallback: agendamento exato normal (requer permissão)
+                boolean exactOk = true;
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    exactOk = am.canScheduleExactAlarms();
+                }
+                if (exactOk) {
+                    am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), pi);
+                } else {
+                    am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), pi);
+                }
             }
         } catch (Exception e) {
             // Falha silenciosa — o alarme principal ainda existe
@@ -261,14 +287,34 @@ public class VerseAlarmReceiver extends BroadcastReceiver {
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
             );
 
-            boolean exactOk = true;
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                exactOk = am.canScheduleExactAlarms();
-            }
-            if (exactOk) {
-                am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), pi);
-            } else {
-                am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), pi);
+            // ESTRATÉGIA AMdroid: setAlarmClock (alarme de relógio — sem
+            // exigir permissão de alarme exato, sobrevive ao Doze).
+            try {
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+                    Intent showIntent = new Intent(context, MainActivity.class);
+                    showIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    PendingIntent showPi = PendingIntent.getActivity(
+                        context,
+                        9001,
+                        showIntent,
+                        PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+                    );
+                    AlarmManager.AlarmClockInfo clockInfo =
+                        new AlarmManager.AlarmClockInfo(cal.getTimeInMillis(), showPi);
+                    am.setAlarmClock(clockInfo, pi);
+                } else {
+                    am.setExact(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), pi);
+                }
+            } catch (Exception e) {
+                boolean exactOk = true;
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    exactOk = am.canScheduleExactAlarms();
+                }
+                if (exactOk) {
+                    am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), pi);
+                } else {
+                    am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), pi);
+                }
             }
         } catch (Exception e) {
             // Falha silenciosa — o app re-agenda ao abrir

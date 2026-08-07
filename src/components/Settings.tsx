@@ -15,6 +15,7 @@ import {
   testFlashLed,
   getDiagnostics,
   testAlarmInOneMinute,
+  logEventJs,
 } from '../capacitorCompat';
 
 interface SettingsProps {
@@ -29,6 +30,26 @@ interface SettingsProps {
 
 export function Settings({ isOpen, onClose, settings, onSettingsChange, onTestPopup, onShowToast }: SettingsProps) {
   const [isIntervalModalOpen, setIsIntervalModalOpen] = useState(false);
+
+  // RASTREIO DE CONFIGURAÇÕES: toda mudança de opção gera um evento no log
+  // (qual campo mudou + valor + expectativa). Detecta a diferença entre o
+  // estado anterior e o novo.
+  const trackedSettingsChange = (newSettings: AppSettings) => {
+    const diff: string[] = [];
+    const keys = Object.keys(newSettings) as (keyof AppSettings)[];
+    for (const k of keys) {
+      if (JSON.stringify(newSettings[k]) !== JSON.stringify(settings[k])) {
+        diff.push(`${String(k)}=${JSON.stringify(newSettings[k])}`);
+      }
+    }
+    if (diff.length > 0) {
+      const valor = diff.join(', ').slice(0, 120);
+      const campos = diff.map(d => d.split('=')[0]).join('+');
+      logEventJs('config', 'alterar', valor,
+        'config salva e aplicada', true, campos);
+    }
+    onSettingsChange(newSettings);
+  };
 
   // Status REAL das permissões do sistema (verde quando habilitada)
   const [permStatus, setPermStatus] = useState<{
@@ -97,7 +118,7 @@ export function Settings({ isOpen, onClose, settings, onSettingsChange, onTestPo
               <select 
                 className="duo-input cursor-pointer appearance-none"
                 value={settings.bibleVersion || 'NVI'}
-                onChange={(e) => onSettingsChange({...settings, bibleVersion: e.target.value})}
+                onChange={(e) => trackedSettingsChange({...settings, bibleVersion: e.target.value})}
               >
                 <option value="NVI">Nova Versão Internacional (NVI)</option>
                 <option value="ARC">Almeida Revista e Corrigida (ARC)</option>
@@ -126,7 +147,7 @@ export function Settings({ isOpen, onClose, settings, onSettingsChange, onTestPo
                       name="theme"
                       className="w-5 h-5 text-[var(--color-duo-orange)] focus:ring-amber-500 accent-amber-600 cursor-pointer"
                       checked={settings.theme === 'light'}
-                      onChange={() => onSettingsChange({...settings, theme: 'light'})}
+                      onChange={() => trackedSettingsChange({...settings, theme: 'light'})}
                     />
                     <span className="text-stone-700 dark:text-zinc-300 text-[15px] group-hover:text-stone-900 dark:group-hover:text-white transition-colors">Claro</span>
                   </label>
@@ -136,7 +157,7 @@ export function Settings({ isOpen, onClose, settings, onSettingsChange, onTestPo
                       name="theme"
                       className="w-5 h-5 text-[var(--color-duo-orange)] focus:ring-amber-500 accent-amber-600 cursor-pointer"
                       checked={settings.theme === 'dark'}
-                      onChange={() => onSettingsChange({...settings, theme: 'dark'})}
+                      onChange={() => trackedSettingsChange({...settings, theme: 'dark'})}
                     />
                     <span className="text-stone-700 dark:text-zinc-300 text-[15px] group-hover:text-stone-900 dark:group-hover:text-white transition-colors">Escuro</span>
                   </label>
@@ -146,7 +167,7 @@ export function Settings({ isOpen, onClose, settings, onSettingsChange, onTestPo
                       name="theme"
                       className="w-5 h-5 text-[var(--color-duo-orange)] focus:ring-amber-500 accent-amber-600 cursor-pointer"
                       checked={settings.theme === 'system'}
-                      onChange={() => onSettingsChange({...settings, theme: 'system'})}
+                      onChange={() => trackedSettingsChange({...settings, theme: 'system'})}
                     />
                     <span className="text-stone-700 dark:text-zinc-300 text-[15px] group-hover:text-stone-900 dark:group-hover:text-white transition-colors">Padrão do sistema</span>
                   </label>
@@ -158,7 +179,7 @@ export function Settings({ isOpen, onClose, settings, onSettingsChange, onTestPo
                 <select 
                   className="duo-input cursor-pointer appearance-none mb-4"
                   value={settings.appFontFamily || 'sans'}
-                  onChange={(e) => onSettingsChange({...settings, appFontFamily: e.target.value})}
+                  onChange={(e) => trackedSettingsChange({...settings, appFontFamily: e.target.value})}
                 >
                   <option value="sans">Sans Serif (Padrão)</option>
                   <option value="serif">Serif</option>
@@ -179,7 +200,7 @@ export function Settings({ isOpen, onClose, settings, onSettingsChange, onTestPo
                   type="range" 
                   min="50" max="200" step="10"
                   value={settings.appFontSize || 100}
-                  onChange={(e) => onSettingsChange({...settings, appFontSize: parseInt(e.target.value)})}
+                  onChange={(e) => trackedSettingsChange({...settings, appFontSize: parseInt(e.target.value)})}
                   className="w-full accent-amber-600"
                 />
                 <p className="text-xs text-[var(--color-duo-text-light)] mt-2 leading-relaxed">
@@ -192,7 +213,7 @@ export function Settings({ isOpen, onClose, settings, onSettingsChange, onTestPo
                 <select 
                   className="duo-input cursor-pointer appearance-none mb-4"
                   value={settings.verseFontFamily || 'sans'}
-                  onChange={(e) => onSettingsChange({...settings, verseFontFamily: e.target.value})}
+                  onChange={(e) => trackedSettingsChange({...settings, verseFontFamily: e.target.value})}
                 >
                   <option value="sans">Sans Serif (Padrão)</option>
                   <option value="serif">Serif</option>
@@ -213,7 +234,7 @@ export function Settings({ isOpen, onClose, settings, onSettingsChange, onTestPo
                   type="range" 
                   min="50" max="200" step="10"
                   value={settings.verseFontSize || 100}
-                  onChange={(e) => onSettingsChange({...settings, verseFontSize: parseInt(e.target.value)})}
+                  onChange={(e) => trackedSettingsChange({...settings, verseFontSize: parseInt(e.target.value)})}
                   className="w-full accent-amber-600 mb-6"
                 />
 
@@ -223,7 +244,7 @@ export function Settings({ isOpen, onClose, settings, onSettingsChange, onTestPo
                       type="checkbox"
                       className="w-5 h-5 text-[var(--color-duo-orange)] rounded border-[var(--color-duo-border)] focus:ring-amber-500 accent-amber-600 cursor-pointer"
                       checked={settings.verseFontWeight === 'bold'}
-                      onChange={(e) => onSettingsChange({...settings, verseFontWeight: e.target.checked ? 'bold' : 'normal'})}
+                      onChange={(e) => trackedSettingsChange({...settings, verseFontWeight: e.target.checked ? 'bold' : 'normal'})}
                     />
                     <span className="text-stone-700 dark:text-zinc-300 text-[15px] font-bold group-hover:text-stone-900 dark:group-hover:text-white transition-colors">Negrito</span>
                   </label>
@@ -233,7 +254,7 @@ export function Settings({ isOpen, onClose, settings, onSettingsChange, onTestPo
                       type="checkbox"
                       className="w-5 h-5 text-[var(--color-duo-orange)] rounded border-[var(--color-duo-border)] focus:ring-amber-500 accent-amber-600 cursor-pointer"
                       checked={settings.verseFontStyle === 'italic'}
-                      onChange={(e) => onSettingsChange({...settings, verseFontStyle: e.target.checked ? 'italic' : 'normal'})}
+                      onChange={(e) => trackedSettingsChange({...settings, verseFontStyle: e.target.checked ? 'italic' : 'normal'})}
                     />
                     <span className="text-stone-700 dark:text-zinc-300 text-[15px]  group-hover:text-stone-900 dark:group-hover:text-white transition-colors">Itálico</span>
                   </label>
@@ -284,7 +305,7 @@ export function Settings({ isOpen, onClose, settings, onSettingsChange, onTestPo
                     <input 
                       type="time" 
                       value={settings.notificationStartTime || '00:00'}
-                      onChange={(e) => onSettingsChange({...settings, notificationStartTime: e.target.value})}
+                      onChange={(e) => trackedSettingsChange({...settings, notificationStartTime: e.target.value})}
                       className="w-full bg-[var(--color-duo-bg-sec)] border border-[var(--color-duo-border)] text-[var(--color-duo-text)] rounded-[12px] px-3 py-1.5 text-sm focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
                     />
                   </div>
@@ -294,7 +315,7 @@ export function Settings({ isOpen, onClose, settings, onSettingsChange, onTestPo
                     <input 
                       type="time" 
                       value={settings.notificationEndTime || '23:59'}
-                      onChange={(e) => onSettingsChange({...settings, notificationEndTime: e.target.value})}
+                      onChange={(e) => trackedSettingsChange({...settings, notificationEndTime: e.target.value})}
                       className="w-full bg-[var(--color-duo-bg-sec)] border border-[var(--color-duo-border)] text-[var(--color-duo-text)] rounded-[12px] px-3 py-1.5 text-sm focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
                     />
                   </div>
@@ -302,7 +323,7 @@ export function Settings({ isOpen, onClose, settings, onSettingsChange, onTestPo
               </div>
 
               <div className="py-4 flex flex-col gap-3 border-b-2 border-[var(--color-duo-border)]">
-                <div className="flex items-center justify-between gap-4 cursor-pointer" onClick={() => onSettingsChange({...settings, showPopup: !settings.showPopup})}>
+                <div className="flex items-center justify-between gap-4 cursor-pointer" onClick={() => trackedSettingsChange({...settings, showPopup: !settings.showPopup})}>
                   <div className="flex-1 pr-2">
                     <p className="text-[var(--color-duo-text)] text-[15px] font-medium">Mostrar pop-up gigante na tela</p>
                     <p className="text-[var(--color-duo-text-light)] text-[13px] mt-0.5">A notificação padrão será recebida silenciosamente</p>
@@ -311,7 +332,7 @@ export function Settings({ isOpen, onClose, settings, onSettingsChange, onTestPo
                     type="checkbox" 
                     className="w-5 h-5 text-[var(--color-duo-orange)] rounded border-[var(--color-duo-border)] focus:ring-amber-500 accent-amber-600 cursor-pointer shrink-0"
                     checked={settings.showPopup}
-                    onChange={(e) => onSettingsChange({...settings, showPopup: e.target.checked})}
+                    onChange={(e) => trackedSettingsChange({...settings, showPopup: e.target.checked})}
                   />
                 </div>
                 {settings.showPopup && onTestPopup && (
@@ -334,7 +355,7 @@ export function Settings({ isOpen, onClose, settings, onSettingsChange, onTestPo
                   value={settings.sound}
                   onChange={(e) => {
                     const newSound = e.target.value;
-                    onSettingsChange({...settings, sound: newSound});
+                    trackedSettingsChange({...settings, sound: newSound});
                     if (newSound !== 'Silencioso') {
                       playNotificationSound(newSound);
                     }
@@ -363,7 +384,7 @@ export function Settings({ isOpen, onClose, settings, onSettingsChange, onTestPo
                     type="checkbox" 
                     className="w-5 h-5 text-[var(--color-duo-orange)] rounded border-[var(--color-duo-border)] focus:ring-amber-500 accent-amber-600 cursor-pointer shrink-0"
                     checked={settings.vibrate}
-                    onChange={(e) => onSettingsChange({...settings, vibrate: e.target.checked})}
+                    onChange={(e) => trackedSettingsChange({...settings, vibrate: e.target.checked})}
                   />
                 </div>
               </div>
@@ -384,7 +405,7 @@ export function Settings({ isOpen, onClose, settings, onSettingsChange, onTestPo
                     type="checkbox" 
                     className="w-5 h-5 text-[var(--color-duo-orange)] rounded border-[var(--color-duo-border)] focus:ring-amber-500 accent-amber-600 cursor-pointer shrink-0"
                     checked={settings.wakeDevice}
-                    onChange={(e) => onSettingsChange({...settings, wakeDevice: e.target.checked})}
+                    onChange={(e) => trackedSettingsChange({...settings, wakeDevice: e.target.checked})}
                   />
                 </div>
               </div>
@@ -405,7 +426,7 @@ export function Settings({ isOpen, onClose, settings, onSettingsChange, onTestPo
                     type="checkbox" 
                     className="w-5 h-5 text-[var(--color-duo-orange)] rounded border-[var(--color-duo-border)] focus:ring-amber-500 accent-amber-600 cursor-pointer shrink-0"
                     checked={settings.flashLed}
-                    onChange={(e) => onSettingsChange({...settings, flashLed: e.target.checked})}
+                    onChange={(e) => trackedSettingsChange({...settings, flashLed: e.target.checked})}
                   />
                 </div>
               </div>
@@ -597,7 +618,7 @@ export function Settings({ isOpen, onClose, settings, onSettingsChange, onTestPo
         isOpen={isIntervalModalOpen}
         onClose={() => setIsIntervalModalOpen(false)}
         settings={settings}
-        onSettingsChange={onSettingsChange}
+        onSettingsChange={trackedSettingsChange}
       />
     </div>
   );

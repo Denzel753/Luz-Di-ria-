@@ -282,8 +282,12 @@ public class VerseAlarmPlugin extends Plugin {
             intent.putExtra("verseRef", "Diagnóstico • Acordar");
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
             getContext().startActivity(intent);
+            VerseAlarmReceiver.logEvent(getContext(), "efeitos", "testar_acordar", "",
+                "pop-up acorda a tela", true, "");
             call.resolve();
         } catch (Exception e) {
+            VerseAlarmReceiver.logEvent(getContext(), "efeitos", "testar_acordar", "",
+                "pop-up acorda a tela", false, e.getMessage());
             call.reject("Falha ao acordar", e);
         }
     }
@@ -293,8 +297,12 @@ public class VerseAlarmPlugin extends Plugin {
     public void testFlashLed(PluginCall call) {
         try {
             FlashLightUtil.blinkFlash(getContext(), 5);
+            VerseAlarmReceiver.logEvent(getContext(), "efeitos", "testar_flash", "",
+                "flash pisca 5×", true, "");
             call.resolve();
         } catch (Exception e) {
+            VerseAlarmReceiver.logEvent(getContext(), "efeitos", "testar_flash", "",
+                "flash pisca 5×", false, e.getMessage());
             call.reject("Falha ao piscar flash", e);
         }
     }

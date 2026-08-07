@@ -811,12 +811,15 @@ export default function App() {
   }, []);
 
   const toggleFavorite = useCallback(() => {
+    const isFav = favoriteVerses.some((v) => v && v.id === currentVerse.id);
+    logEventJs('favoritos', isFav ? 'remover' : 'adicionar', currentVerse.reference,
+      'estrela alterna', true, '');
     setFavoriteVerses((prev) =>
       prev.some((v) => v && v.id === currentVerse.id)
         ? prev.filter((v) => v && v.id !== currentVerse.id)
         : [...prev, currentVerse],
     );
-  }, [currentVerse]);
+  }, [currentVerse, favoriteVerses]);
 
   const removeFavorite = useCallback((id: string) => {
     setFavoriteVerses((prev) => prev.filter((v) => v.id !== id));
@@ -828,6 +831,8 @@ export default function App() {
   }, []);
 
   const handleShareText = async () => {
+    logEventJs('acoes', 'compartilhar_texto', currentVerse.reference,
+      'share sheet abre', true, '');
     const shareContent = `"${currentVerse.text}"\n\n— ${currentVerse.reference}`;
     const shared = await shareText("Luz Diária", shareContent);
     if (!shared) {
@@ -864,6 +869,8 @@ export default function App() {
   };
 
   const handleShareImage = async () => {
+    logEventJs('acoes', 'gerar_imagem', currentVerse.reference,
+      'imagem gerada + share', true, '');
     const blob = await generateImageBlob();
     if (!blob) return;
 
@@ -1046,11 +1053,16 @@ export default function App() {
     }
     setIsCrossReferencesOpen(true);
   }, [currentVerse, addToast]);
-  const handleSwapRandom = useCallback(() => handleSetCurrentVerse(getNextRandomVerse('all', settings)), [settings, handleSetCurrentVerse, getNextRandomVerse]);
-  
+  const handleSwapRandom = useCallback(() => {
+    logEventJs('acoes', 'sortear', 'manual', 'versículo novo na tela', true, '');
+    handleSetCurrentVerse(getNextRandomVerse('all', settings));
+  }, [settings, handleSetCurrentVerse, getNextRandomVerse]);
+
   const handleCopy = useCallback(async () => {
     try {
       const ok = await copyToClipboard(`${currentVerse.text}\n\n— ${currentVerse.reference}`);
+      logEventJs('acoes', 'copiar', currentVerse.reference,
+        'clipboard + toast', ok, ok ? '' : 'falha ao copiar');
       if (ok) {
         setCopied(true);
         addToast('success', 'Versículo copiado para a área de transferência!');
@@ -1105,6 +1117,8 @@ const handleOpenYoutube = useCallback(() => {
 
   
   const handleTestPopup = useCallback(() => {
+    logEventJs('efeitos', 'testar_popup', 'web',
+      'pop-up gigante abre na tela', true, '');
     setIsSettingsOpen(false);
     setGiantPopupVerse(getNextRandomVerse("all", settingsRef.current));
     // Test flash

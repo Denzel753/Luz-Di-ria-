@@ -1,6 +1,12 @@
 import React from 'react';
 import { useState, useEffect } from 'react';
-import { Bell, Battery, AlertCircle } from 'lucide-react';
+import { Bell, Battery, Layers, Accessibility, AlertCircle, Check } from 'lucide-react';
+import {
+  requestNotificationPermission,
+  requestBatteryPermission,
+  requestOverlayPermission,
+  requestAccessibilityPermission,
+} from '../capacitorCompat';
 
 interface PermissionModalProps {
   isOpen: boolean;
@@ -10,26 +16,38 @@ interface PermissionModalProps {
 
 export const PermissionModal = React.memo(function PermissionModal({ isOpen, onClose, onGrant }: PermissionModalProps) {
   const [notifGranted, setNotifGranted] = useState(false);
-  const [batteryGranted, setBatteryGranted] = useState(false);
+  const [batteryDone, setBatteryDone] = useState(false);
+  const [overlayDone, setOverlayDone] = useState(false);
+  const [accessDone, setAccessDone] = useState(false);
 
   useEffect(() => {
-    if ('Notification' in window) {
+    if (isOpen && 'Notification' in window) {
       setNotifGranted(Notification.permission === 'granted');
     }
   }, [isOpen]);
 
-  
-
+  // 1. Notificações — permissão do sistema (Android 13+ exige)
   const handleRequestNotif = async () => {
-    if ('Notification' in window) {
-      const permission = await Notification.requestPermission();
-      setNotifGranted(permission === 'granted');
-    }
+    const granted = await requestNotificationPermission();
+    setNotifGranted(granted);
   };
 
+  // 2. Bateria — abre a tela "Ignorar otimização de bateria" do sistema
   const handleRequestBattery = () => {
-    // Mock for battery optimization since web can't do it directly
-    setBatteryGranted(true);
+    requestBatteryPermission();
+    setBatteryDone(true); // o usuário volta do sistema e confirma
+  };
+
+  // 3. Sobrepor outros apps — abre a tela SYSTEM_ALERT_WINDOW
+  const handleRequestOverlay = () => {
+    requestOverlayPermission();
+    setOverlayDone(true);
+  };
+
+  // 4. Acessibilidade — abre as configurações de acessibilidade
+  const handleRequestAccess = () => {
+    requestAccessibilityPermission();
+    setAccessDone(true);
   };
 
   const handleContinue = () => {
@@ -38,60 +56,90 @@ export const PermissionModal = React.memo(function PermissionModal({ isOpen, onC
   };
 
   if (!isOpen) return null;
+
+  const itemClass = "flex items-center justify-between p-4 bg-[var(--color-duo-bg-sec)] rounded-[20px] border border-[var(--color-duo-border)]";
+  const iconColor = (done: boolean) => done ? 'text-green-500' : 'text-stone-400 dark:text-zinc-500';
+  const btnClass = (done: boolean) =>
+    `text-xs px-3 py-1.5 rounded-full font-medium shrink-0 ${
+      done ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700 hover:bg-amber-200'
+    }`;
+
   return (
     <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-zinc-900 rounded-[20px] w-full max-w-sm overflow-hidden shadow-2xl">
+      <div className="bg-white dark:bg-zinc-900 rounded-[20px] w-full max-w-md overflow-hidden shadow-2xl">
         <div className="p-6">
           <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center mb-4 text-[var(--color-duo-orange)]">
             <AlertCircle className="w-6 h-6" />
           </div>
           <h2 className="text-xl font-bold text-[var(--color-duo-text)] mb-2">Permissões Necessárias</h2>
           <p className="text-sm text-[var(--color-duo-text-light)] mb-6">
-            Para que o versículo fique sempre visível na sua barra de notificações e o aplicativo funcione em segundo plano, precisamos de algumas permissões.
+            Para o versículo chegar até você mesmo com o app fechado, libere estas permissões. Cada botão abre a tela do próprio Android — toque e confirme.
           </p>
 
           <div className="space-y-4 mb-6">
-            <div className="flex items-center justify-between p-4 bg-[var(--color-duo-bg-sec)] rounded-[20px] border border-[var(--color-duo-border)]">
+            {/* 1. Notificações */}
+            <div className={itemClass}>
               <div className="flex items-center gap-3">
-                <Bell className={`w-5 h-5 ${notifGranted ? 'text-green-500' : 'text-stone-400 dark:text-zinc-500'}`} />
+                <Bell className={`w-5 h-5 ${iconColor(notifGranted)}`} />
                 <div className="text-left">
                   <p className="text-sm font-semibold text-[var(--color-duo-text)]">Notificações</p>
-                  <p className="text-xs text-[var(--color-duo-text-light)]">Notificação persistente</p>
+                  <p className="text-xs text-[var(--color-duo-text-light)]">Mostrar o versículo na barra</p>
                 </div>
               </div>
-              <button 
-                onClick={handleRequestNotif}
-                disabled={notifGranted}
-                className={`text-xs px-3 py-1.5 rounded-full font-medium ${notifGranted ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700 hover:bg-amber-200'}`}
-              >
-                {notifGranted ? 'Concedido' : 'Permitir'}
+              <button onClick={handleRequestNotif} disabled={notifGranted} className={btnClass(notifGranted)}>
+                {notifGranted ? <><Check className="w-3 h-3 inline" /> Concedido</> : 'Permitir'}
               </button>
             </div>
 
-            <div className="flex items-center justify-between p-4 bg-[var(--color-duo-bg-sec)] rounded-[20px] border border-[var(--color-duo-border)]">
+            {/* 2. Bateria */}
+            <div className={itemClass}>
               <div className="flex items-center gap-3">
-                <Battery className={`w-5 h-5 ${batteryGranted ? 'text-green-500' : 'text-stone-400 dark:text-zinc-500'}`} />
+                <Battery className={`w-5 h-5 ${iconColor(batteryDone)}`} />
                 <div className="text-left">
-                  <p className="text-sm font-semibold text-[var(--color-duo-text)]">Bateria</p>
-                  <p className="text-xs text-[var(--color-duo-text-light)]">Sem otimização</p>
+                  <p className="text-sm font-semibold text-[var(--color-duo-text)]">Otimização de Bateria</p>
+                  <p className="text-xs text-[var(--color-duo-text-light)]">Impedir que o app "morra" em 2º plano</p>
                 </div>
               </div>
-              <button 
-                onClick={handleRequestBattery}
-                disabled={batteryGranted}
-                className={`text-xs px-3 py-1.5 rounded-full font-medium ${batteryGranted ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700 hover:bg-amber-200'}`}
-              >
-                {batteryGranted ? 'Concedido' : 'Permitir'}
+              <button onClick={handleRequestBattery} disabled={batteryDone} className={btnClass(batteryDone)}>
+                {batteryDone ? <><Check className="w-3 h-3 inline" /> Feito</> : 'Abrir'}
+              </button>
+            </div>
+
+            {/* 3. Sobrepor outros apps */}
+            <div className={itemClass}>
+              <div className="flex items-center gap-3">
+                <Layers className={`w-5 h-5 ${iconColor(overlayDone)}`} />
+                <div className="text-left">
+                  <p className="text-sm font-semibold text-[var(--color-duo-text)]">Sobrepor outros apps</p>
+                  <p className="text-xs text-[var(--color-duo-text-light)]">Pop-up do versículo por cima de tudo</p>
+                </div>
+              </div>
+              <button onClick={handleRequestOverlay} disabled={overlayDone} className={btnClass(overlayDone)}>
+                {overlayDone ? <><Check className="w-3 h-3 inline" /> Feito</> : 'Abrir'}
+              </button>
+            </div>
+
+            {/* 4. Acessibilidade */}
+            <div className={itemClass}>
+              <div className="flex items-center gap-3">
+                <Accessibility className={`w-5 h-5 ${iconColor(accessDone)}`} />
+                <div className="text-left">
+                  <p className="text-sm font-semibold text-[var(--color-duo-text)]">Acessibilidade</p>
+                  <p className="text-xs text-[var(--color-duo-text-light)]">Controle ainda maior do sistema</p>
+                </div>
+              </div>
+              <button onClick={handleRequestAccess} disabled={accessDone} className={btnClass(accessDone)}>
+                {accessDone ? <><Check className="w-3 h-3 inline" /> Feito</> : 'Abrir'}
               </button>
             </div>
           </div>
 
-          <button 
-            onClick={handleContinue}
-            className="btn-primary w-full py-4 text-sm"
-          >
+          <button onClick={handleContinue} className="btn-primary w-full py-4 text-sm">
             Continuar
           </button>
+          <p className="text-[11px] text-center text-[var(--color-duo-text-light)] mt-3">
+            Pode liberar depois em Configurações também.
+          </p>
         </div>
       </div>
     </div>

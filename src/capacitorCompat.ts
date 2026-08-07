@@ -31,6 +31,61 @@ export interface VerseAlarmPlugin {
 
 const VerseAlarm = registerPlugin<VerseAlarmPlugin>('VerseAlarm');
 
+// ============================================================
+// PERMISSÕES NATIVAS (plugin NativeSettings)
+// Abre as telas do sistema para o usuário conceder permissão.
+// ============================================================
+
+export interface NativeSettingsPlugin {
+  requestBatteryOptimizationPermission(): Promise<void>;
+  requestOverlayPermission(): Promise<void>;
+  requestExactAlarmPermission(): Promise<void>;
+  requestAccessibilityPermission(): Promise<void>;
+  openNotificationSettings(): Promise<void>;
+}
+
+const NativeSettings = registerPlugin<NativeSettingsPlugin>('NativeSettings');
+
+export async function requestBatteryPermission() {
+  if (!isNative()) return;
+  try { await NativeSettings.requestBatteryOptimizationPermission(); }
+  catch (e) { console.error('Erro bateria:', e); }
+}
+
+export async function requestOverlayPermission() {
+  if (!isNative()) return;
+  try { await NativeSettings.requestOverlayPermission(); }
+  catch (e) { console.error('Erro sobreposição:', e); }
+}
+
+export async function requestExactAlarmPermission() {
+  if (!isNative()) return;
+  try { await NativeSettings.requestExactAlarmPermission(); }
+  catch (e) { console.error('Erro alarme exato:', e); }
+}
+
+export async function requestAccessibilityPermission() {
+  if (!isNative()) return;
+  try { await NativeSettings.requestAccessibilityPermission(); }
+  catch (e) { console.error('Erro acessibilidade:', e); }
+}
+
+export async function requestNotificationPermission() {
+  if (!isNative()) {
+    if ('Notification' in window) {
+      return (await Notification.requestPermission()) === 'granted';
+    }
+    return false;
+  }
+  try {
+    const perm = await LocalNotifications.requestPermissions();
+    return perm.display === 'granted';
+  } catch (e) {
+    console.error('Erro notificação:', e);
+    return false;
+  }
+}
+
 export async function startNativeService() {
   if (!isNative()) return;
   try {

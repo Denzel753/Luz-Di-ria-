@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { ArrowLeft, Bell, Clock, Smartphone, Zap, Palette, RefreshCw, BookOpen, Download, Bug, ShieldCheck, Battery, Layers, Accessibility,  } from 'lucide-react';
 import { AppSettings } from '../types';
 import { AndroidNative } from '../AndroidNative';
@@ -25,38 +25,11 @@ interface SettingsProps {
 
 export function Settings({ isOpen, onClose, settings, onSettingsChange, onTestPopup, onShowToast }: SettingsProps) {
   const [isIntervalModalOpen, setIsIntervalModalOpen] = useState(false);
-  const [permissionStatus, setPermissionStatus] = useState("default");
-
-  useEffect(() => {
-    if ('Notification' in window) {
-      setPermissionStatus(Notification.permission);
-    }
-  }, []);
-
 
   const handleExportLogs = () => {
     const logs = logger.exportLogs();
     const body = `Aqui estão os logs de erro do app Luz Diária:\n\n${logs}`;
     window.location.href = `mailto:victorjuca@proton.me?subject=Luz Diária - Logs de Erro&body=${encodeURIComponent(body)}`;
-  };
-
-  const handleToggleNotification = async (checked: boolean) => {
-    if (checked && 'Notification' in window) {
-      if (Notification.permission !== 'granted') {
-        const permission = await Notification.requestPermission();
-        setPermissionStatus(permission);
-        if (permission === 'granted') {
-           onSettingsChange({ ...settings, dailyNotification: true });
-        } else {
-           if (onShowToast) onShowToast('error', 'Permissão para notificações foi negada pelo navegador.');
-           else alert("Permissão para notificações foi negada pelo navegador.");
-        }
-      } else {
-         onSettingsChange({ ...settings, dailyNotification: true });
-      }
-    } else {
-      onSettingsChange({ ...settings, dailyNotification: false });
-    }
   };
 
   
@@ -105,22 +78,6 @@ export function Settings({ isOpen, onClose, settings, onSettingsChange, onTestPo
             </div>
             
             <div className="px-5">
-
-              <div className="py-4 flex flex-wrap items-center justify-between gap-4 border-b-2 border-[var(--color-duo-border)] cursor-pointer group" onClick={() => handleToggleNotification(!settings.dailyNotification)}>
-                <div className="flex items-center gap-3 flex-1">
-                  <Bell className="w-5 h-5 text-[var(--color-duo-text-light)] shrink-0" />
-                  <div>
-                    <p className="text-[var(--color-duo-text)] text-[15px] font-medium group-hover:text-[var(--color-duo-orange)] transition-colors">Notificações Diárias</p>
-                    <p className="text-[var(--color-duo-text-light)] text-[13px] mt-0.5">Status: {permissionStatus === 'granted' ? 'Ativo' : permissionStatus === 'denied' ? 'Bloqueado' : 'Não Solicitado'}</p>
-                  </div>
-                </div>
-                <input 
-                  type="checkbox" 
-                  className="w-5 h-5 text-[var(--color-duo-orange)] rounded border-[var(--color-duo-border)] focus:ring-amber-500 accent-amber-600 cursor-pointer shrink-0"
-                  checked={settings.dailyNotification}
-                  onChange={(e) => handleToggleNotification(e.target.checked)}
-                />
-              </div>
 
               <div className="py-4 border-b-2 border-[var(--color-duo-border)]">
                 <p className="text-[var(--color-duo-text)] text-[15px] font-medium mb-3">Tema do Aplicativo</p>

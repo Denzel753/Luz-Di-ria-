@@ -426,11 +426,11 @@ export default function App() {
 
   // Reagenda quando o usuário muda intervalo/horário/status nas configurações
   useEffect(() => {
-    if (localStorage.getItem("permissionsDone") && settings.dailyNotification) {
+    if (localStorage.getItem("permissionsDone")) {
       scheduleWithCurrentSettings();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [settings.updateInterval, settings.notificationStartTime, settings.enableQuotes, settings.dailyNotification, settings.vibrate, settings.flashLed, settings.wakeDevice]);
+  }, [settings.updateInterval, settings.notificationStartTime, settings.enableQuotes, settings.vibrate, settings.flashLed, settings.wakeDevice]);
 
   // Reagenda SEMPRE que o app abre/volta ao primeiro plano.
   // O Android pode cancelar alarmes ao matar o processo — abrir o app
@@ -439,15 +439,14 @@ export default function App() {
   useEffect(() => {
     const onVisibility = () => {
       if (document.visibilityState === "visible"
-          && localStorage.getItem("permissionsDone")
-          && settingsRef.current.dailyNotification) {
+          && localStorage.getItem("permissionsDone")) {
         startNativeService();
         scheduleWithCurrentSettings();
       }
     };
     // Roda ao montar (abertura do app)
     const t = setTimeout(() => {
-      if (localStorage.getItem("permissionsDone") && settingsRef.current.dailyNotification) {
+      if (localStorage.getItem("permissionsDone")) {
         startNativeService();
         scheduleWithCurrentSettings();
       }

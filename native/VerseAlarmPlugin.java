@@ -198,11 +198,13 @@ public class VerseAlarmPlugin extends Plugin {
                 long[] pattern = {0, 500, 500};
                 if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
                     int[] amplitudes = {0, 255, 255};
+                    // repeat -1: vibra UMA vez (repeat 0 = infinito, o
+                    // sistema pode cortar e parece que não funciona)
                     vib.vibrate(
-                        android.os.VibrationEffect.createWaveform(pattern, amplitudes, 0)
+                        android.os.VibrationEffect.createWaveform(pattern, amplitudes, -1)
                     );
                 } else {
-                    vib.vibrate(pattern, 0);
+                    vib.vibrate(pattern, -1);
                 }
             }
             call.resolve();
@@ -211,22 +213,19 @@ public class VerseAlarmPlugin extends Plugin {
         }
     }
 
-    // 6. TESTE: acende a tela imediatamente (confirma a opção)
+    // 6. TESTE: acende a tela imediatamente (confirma a opção).
+    // BUG CORRIGIDO: FULL_WAKE_LOCK é DESCONTINUADO desde o Android 10 —
+    // não acende mais a tela. A forma que funciona (padrão AMdroid) é abrir
+    // a GiantVerseActivity, que aplica os flags de acordar (TURN_SCREEN_ON,
+    // SHOW_WHEN_LOCKED, ALLOW_LOCK_WHILE_SCREEN_ON) na tela de verdade.
     @PluginMethod
     public void testWakeDevice(PluginCall call) {
         try {
-            android.os.PowerManager pm =
-                (android.os.PowerManager) getContext().getSystemService(Context.POWER_SERVICE);
-            if (pm != null) {
-                android.os.PowerManager.WakeLock wl = pm.newWakeLock(
-                    android.os.PowerManager.FULL_WAKE_LOCK |
-                    android.os.PowerManager.ACQUIRE_CAUSES_WAKEUP |
-                    android.os.PowerManager.ON_AFTER_RELEASE,
-                    "luzdiaria:testwake"
-                );
-                wl.acquire(3000);
-                if (wl.isHeld()) wl.release();
-            }
+            Intent intent = new Intent(getContext(), GiantVerseActivity.class);
+            intent.putExtra("verseText", "Teste: a tela acordou! Se você está vendo isto, o acordar do dispositivo funciona.");
+            intent.putExtra("verseRef", "Diagnóstico • Acordar");
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            getContext().startActivity(intent);
             call.resolve();
         } catch (Exception e) {
             call.reject("Falha ao acordar", e);

@@ -31,8 +31,28 @@ public class FlashLightUtil {
 
         String cameraId = null;
         try {
+            // BUG CORRIGIDO: a primeira câmera da lista geralmente é a
+            // FRONTAL (sem flash). Deve escolher a câmera que TEM flash
+            // (hasFlashUnit) — a traseira.
             for (String id : cam.getCameraIdList()) {
-                if (id != null) { cameraId = id; break; }
+                try {
+                    android.hardware.camera2.CameraCharacteristics chars =
+                        cam.getCameraCharacteristics(id);
+                    Boolean hasFlash = chars.get(
+                        android.hardware.camera2.CameraCharacteristics.FLASH_INFO_AVAILABLE);
+                    if (hasFlash != null && hasFlash) {
+                        cameraId = id;
+                        break;
+                    }
+                } catch (Exception ignore) {
+                    // tenta a próxima
+                }
+            }
+            // Fallback: primeira câmera disponível
+            if (cameraId == null) {
+                for (String id : cam.getCameraIdList()) {
+                    if (id != null) { cameraId = id; break; }
+                }
             }
         } catch (CameraAccessException e) {
             Log.e(TAG, "Erro ao listar câmeras", e);

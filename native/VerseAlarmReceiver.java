@@ -100,11 +100,12 @@ public class VerseAlarmReceiver extends BroadcastReceiver {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                         // Android 8+: vibração com amplitude de força máxima
                         int[] amplitudes = {0, 255, 255};
+                        // repeat -1: vibra UMA vez (repeat 0 = infinito)
                         vib.vibrate(
-                            android.os.VibrationEffect.createWaveform(pattern, amplitudes, 0)
+                            android.os.VibrationEffect.createWaveform(pattern, amplitudes, -1)
                         );
                     } else {
-                        vib.vibrate(pattern, 0);
+                        vib.vibrate(pattern, -1);
                     }
                 }
             } catch (Exception e) {

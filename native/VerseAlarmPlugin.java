@@ -154,15 +154,23 @@ public class VerseAlarmPlugin extends Plugin {
         }
     }
 
-    // 5. TESTE: vibra o dispositivo imediatamente (confirma a opção)
+    // 5. TESTE: vibra o dispositivo imediatamente (confirma a opção).
+    // Mesmo padrão do alerta real: amplitude máxima (AMdroid/AlarmClock).
     @PluginMethod
     public void testVibrate(PluginCall call) {
         try {
             android.os.Vibrator vib =
                 (android.os.Vibrator) getContext().getSystemService(Context.VIBRATOR_SERVICE);
             if (vib != null && vib.hasVibrator()) {
-                long[] pattern = {0, 200, 100, 200};
-                vib.vibrate(pattern, -1);
+                long[] pattern = {0, 500, 500};
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                    int[] amplitudes = {0, 255, 255};
+                    vib.vibrate(
+                        android.os.VibrationEffect.createWaveform(pattern, amplitudes, 0)
+                    );
+                } else {
+                    vib.vibrate(pattern, 0);
+                }
             }
             call.resolve();
         } catch (Exception e) {

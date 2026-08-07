@@ -80,17 +80,24 @@ public class VerseAlarmReceiver extends BroadcastReceiver {
             wakeScreen(context);
         }
 
-        // 1a. Vibração (configurável pelo usuário)
+        // 1a. Vibração (configurável pelo usuário) — padrão AMdroid/AlarmClock:
+        // VibrationEffect.createWaveform com AMPLITUDE máxima (255), padrão
+        // 500ms ligado / 500ms desligado. Vibração forte e perceptível, mesmo
+        // no Motorola (a vibração padrão é fraca e passa despercebida).
         if (wantVibrate) {
             try {
                 android.os.Vibrator vib =
                     (android.os.Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
                 if (vib != null && vib.hasVibrator()) {
-                    long[] pattern = {0, 200, 100, 200};
+                    long[] pattern = {0, 500, 500};
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        vib.vibrate(pattern, -1);
+                        // Android 8+: vibração com amplitude de força máxima
+                        int[] amplitudes = {0, 255, 255};
+                        vib.vibrate(
+                            android.os.VibrationEffect.createWaveform(pattern, amplitudes, 0)
+                        );
                     } else {
-                        vib.vibrate(pattern, -1);
+                        vib.vibrate(pattern, 0);
                     }
                 }
             } catch (Exception e) {

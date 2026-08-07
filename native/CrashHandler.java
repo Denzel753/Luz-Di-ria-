@@ -32,14 +32,15 @@ public class CrashHandler implements Thread.UncaughtExceptionHandler {
     public static synchronized void install(Context context) {
         if (installed) return;
         installed = true;
+        final Context appContext = context.getApplicationContext();
         Thread.UncaughtExceptionHandler defaultHandler =
             Thread.getDefaultUncaughtExceptionHandler();
         Thread.setDefaultUncaughtExceptionHandler(
-            new CrashHandler(context) {
+            new Thread.UncaughtExceptionHandler() {
                 @Override
                 public void uncaughtException(Thread thread, Throwable throwable) {
                     try {
-                        CrashHandler.this.writeCrash(context, thread, throwable);
+                        writeCrash(appContext, thread, throwable);
                     } catch (Exception ignored) {}
                     // Delega ao handler padrão (fecha o app normalmente)
                     if (defaultHandler != null) {
@@ -60,7 +61,7 @@ public class CrashHandler implements Thread.UncaughtExceptionHandler {
     }
 
     /** Grava o crash no log de eventos com stack trace + estado do app. */
-    private void writeCrash(Context ctx, Thread thread, Throwable throwable) {
+    private static void writeCrash(Context ctx, Thread thread, Throwable throwable) {
         try {
             StringWriter sw = new StringWriter();
             PrintWriter pw = new PrintWriter(sw);

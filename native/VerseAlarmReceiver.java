@@ -736,9 +736,10 @@ public class VerseAlarmReceiver extends BroadcastReceiver {
                 NotificationManager nm = (NotificationManager)
                     context.getSystemService(Context.NOTIFICATION_SERVICE);
                 if (nm != null) {
-                    Notification.StatusBarNotification[] active = nm.getActiveNotifications();
+                    android.service.notification.StatusBarNotification[] active =
+                        nm.getActiveNotifications();
                     if (active != null) {
-                        for (Notification.StatusBarNotification n : active) {
+                        for (android.service.notification.StatusBarNotification n : active) {
                             if (n.getId() == 999) { notifPresent = true; break; }
                         }
                     }

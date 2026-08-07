@@ -382,9 +382,6 @@ export function Settings({ isOpen, onClose, settings, onSettingsChange, onTestPo
               </div>
             </div>
           </section>
-
-
-          </section>
         </div>
       </div>
       <UpdateIntervalModal 

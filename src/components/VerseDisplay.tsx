@@ -68,7 +68,11 @@ export const VerseDisplay = React.memo(React.forwardRef<HTMLDivElement, VerseDis
   const bgImg = settings.backgroundImageUrl;
   
   const isImage = bgType === 'image' && Boolean(bgImg);
-  const isDark = isImage || (bgType === 'color' && isDarkColor(bgColor));
+  // Quando o fundo é transparente (default), segue o tema do app (classe dark no <html>)
+  const appIsDark = typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
+  const isDark = isImage 
+    || (bgType === 'color' && isDarkColor(bgColor))
+    || (bgType === 'color' && (bgColor === 'transparent' || !/^#[0-9a-fA-F]{6}$/.test(bgColor)) && appIsDark);
   
   const textStyle = isDark ? "text-white" : "text-neutral-800";
   const subTextStyle = isDark ? "text-neutral-100" : "text-neutral-600";

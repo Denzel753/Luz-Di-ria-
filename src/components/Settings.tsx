@@ -50,12 +50,6 @@ export function Settings({ isOpen, onClose, settings, onSettingsChange, onTestPo
     }, 300);
   }
 
-  const handleExportLogs = () => {
-    const logs = logger.exportLogs();
-    const body = `Aqui estão os logs de erro do app Luz Diária:\n\n${logs}`;
-    window.location.href = `mailto:victorjuca@proton.me?subject=Luz Diária - Logs de Erro&body=${encodeURIComponent(body)}`;
-  };
-
   
 
   if (!isOpen) return null;

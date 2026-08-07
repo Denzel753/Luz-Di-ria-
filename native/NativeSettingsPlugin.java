@@ -1,7 +1,6 @@
 package com.luzdiaria.versiculos;
 
 import android.content.ActivityNotFoundException;
-import android.content.ComponentName;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;

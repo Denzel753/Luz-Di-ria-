@@ -100,8 +100,16 @@ public class VerseForegroundService extends Service {
         // Garantia extra de permanência (padrão Android para notificações fixas)
         notification.flags |= Notification.FLAG_ONGOING_EVENT | Notification.FLAG_NO_CLEAR;
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            startForeground(NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC);
+        // Android 14+: DATA_SYNC tem timeout de 6h e restrições de início
+        // em background — o sistema mata o serviço e a notificação fixa
+        // some. SPECIAL_USE é o tipo oficial para apps com notificação
+        // informativa permanente (sem timeout, sem restrição de início).
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            startForeground(NOTIFICATION_ID, notification,
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE);
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            startForeground(NOTIFICATION_ID, notification,
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC);
         } else {
             startForeground(NOTIFICATION_ID, notification);
         }
@@ -133,12 +141,26 @@ public class VerseForegroundService extends Service {
 
             Intent intent = new Intent(this, VerseForegroundService.class);
             intent.setAction(ACTION_RESTART);
-            android.app.PendingIntent pi = android.app.PendingIntent.getService(
-                this,
-                77,
-                intent,
-                android.app.PendingIntent.FLAG_UPDATE_CURRENT | android.app.PendingIntent.FLAG_IMMUTABLE
-            );
+            // getForegroundService (não getService): no Android 8+, iniciar
+            // serviço em background com startService lança exceção se o
+            // serviço morreu — getForegroundService é o caminho correto e
+            // o serviço chama startForeground dentro de onStartCommand.
+            android.app.PendingIntent pi;
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                pi = android.app.PendingIntent.getForegroundService(
+                    this,
+                    77,
+                    intent,
+                    android.app.PendingIntent.FLAG_UPDATE_CURRENT | android.app.PendingIntent.FLAG_IMMUTABLE
+                );
+            } else {
+                pi = android.app.PendingIntent.getService(
+                    this,
+                    77,
+                    intent,
+                    android.app.PendingIntent.FLAG_UPDATE_CURRENT | android.app.PendingIntent.FLAG_IMMUTABLE
+                );
+            }
 
             long interval = 15 * 60 * 1000L; // 15 minutos
             long first = System.currentTimeMillis() + interval;
@@ -179,12 +201,22 @@ public class VerseForegroundService extends Service {
         try {
             Intent restart = new Intent(getApplicationContext(), VerseForegroundService.class);
             restart.setAction(ACTION_RESTART);
-            android.app.PendingIntent pi = android.app.PendingIntent.getService(
-                this,
-                78,
-                restart,
-                android.app.PendingIntent.FLAG_ONE_SHOT | android.app.PendingIntent.FLAG_IMMUTABLE
-            );
+            android.app.PendingIntent pi;
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                pi = android.app.PendingIntent.getForegroundService(
+                    this,
+                    78,
+                    restart,
+                    android.app.PendingIntent.FLAG_ONE_SHOT | android.app.PendingIntent.FLAG_IMMUTABLE
+                );
+            } else {
+                pi = android.app.PendingIntent.getService(
+                    this,
+                    78,
+                    restart,
+                    android.app.PendingIntent.FLAG_ONE_SHOT | android.app.PendingIntent.FLAG_IMMUTABLE
+                );
+            }
             android.app.AlarmManager am =
                 (android.app.AlarmManager) getSystemService(ALARM_SERVICE);
             if (am != null) {

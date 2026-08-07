@@ -107,7 +107,7 @@ permissions = [
     'android.permission.USE_EXACT_ALARM',
     'android.permission.USE_FULL_SCREEN_INTENT',
     'android.permission.FOREGROUND_SERVICE',
-    'android.permission.FOREGROUND_SERVICE_DATA_SYNC',
+    'android.permission.FOREGROUND_SERVICE_SPECIAL_USE',
     'android.permission.POST_NOTIFICATIONS',
     'android.permission.VIBRATE',
     'android.permission.CAMERA',
@@ -150,7 +150,11 @@ service_block = '''
     <service
         android:name="com.luzdiaria.versiculos.VerseForegroundService"
         android:exported="false"
-        android:foregroundServiceType="dataSync" />
+        android:foregroundServiceType="specialUse">
+        <property
+            android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+            android:value="Notificação fixa informativa do versículo diário" />
+    </service>
 
     <receiver
         android:name="com.luzdiaria.versiculos.VerseAlarmReceiver"

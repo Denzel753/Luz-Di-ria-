@@ -177,7 +177,7 @@ service_block = '''
     <activity
         android:name="com.luzdiaria.versiculos.VerseWidgetConfigActivity"
         android:exported="false"
-        android:theme="@android:style/Theme.Dialog" />
+        android:theme="@android:style/Theme.Material.Light.NoActionBar" />
 
     <receiver
         android:name="com.luzdiaria.versiculos.VerseWidgetProvider"

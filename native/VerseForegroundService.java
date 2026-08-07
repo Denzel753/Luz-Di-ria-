@@ -22,7 +22,11 @@ import android.os.IBinder;
 public class VerseForegroundService extends Service {
 
     private static final String CHANNEL_ID = "luz-diaria";
-    private static final int NOTIFICATION_ID = 1002;
+    // MESMO ID da notificação fixa do plugin (LocalNotifications id 999).
+    // Unificados: o plugin cria na hora (aparece imediatamente) e o serviço
+    // substitui a MESMA notificação com FLAG_NO_CLEAR (fica permanentíssima).
+    // Se fossem IDs diferentes, o usuário veria 2 notificações na barra.
+    private static final int NOTIFICATION_ID = 999;
     private static final String EXTRA_VERSE_TEXT = "verseText";
     private static final String EXTRA_VERSE_REF = "verseRef";
     private static final String ACTION_RESTART = "com.luzdiaria.versiculos.RESTART_SERVICE";

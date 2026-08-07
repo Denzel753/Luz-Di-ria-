@@ -39,6 +39,16 @@ public class VerseAlarmReceiver extends BroadcastReceiver {
         if (verseText == null) verseText = "Buscando o versículo do dia...";
         if (verseRef == null) verseRef = "";
 
+        // Se o alarme veio do reagendamento nativo (app fechado), ele carrega
+        // o MESMO versículo fixo — o widget nunca trocaria. Para garantir que
+        // o widget SEMPRE troque no horário, sorteia um versículo novo da
+        // lista embutida quando o texto veio vazio/placeholder.
+        if (verseText.startsWith("Buscando") || verseText.isEmpty()) {
+            String[] pick = pickRandomVerse();
+            verseText = pick[0];
+            verseRef = pick[1];
+        }
+
         // 1. Acorda a tela (requer WAKE_LOCK) — para o pop-up gigante aparecer
         android.content.SharedPreferences prefs =
             context.getSharedPreferences("luzdiaria_alarm", Context.MODE_PRIVATE);
@@ -184,6 +194,26 @@ public class VerseAlarmReceiver extends BroadcastReceiver {
         } catch (Exception e) {
             // Falha silenciosa — o alarme principal ainda existe
         }
+    }
+
+    // Sorteia um versículo da lista embutida (usado quando o alarme dispara
+    // com o app fechado — garante que widget/notificação SEMPRE trocam no
+    // horário, mesmo sem o app gerar um versículo novo).
+    private String[] pickRandomVerse() {
+        String[][] verses = {
+            {"Porque Deus amou o mundo de tal maneira que deu o seu Filho unigênito, para que todo aquele que nele crê não pereça, mas tenha a vida eterna.", "João 3:16"},
+            {"Tudo posso naquele que me fortalece.", "Filipenses 4:13"},
+            {"O Senhor é o meu pastor; nada me faltará.", "Salmos 23:1"},
+            {"Entrega o teu caminho ao Senhor; confia nele, e ele tudo fará.", "Salmos 37:5"},
+            {"Não temas, porque eu sou contigo; não te assombres, porque eu sou o teu Deus.", "Isaías 41:10"},
+            {"Buscai primeiro o reino de Deus e a sua justiça, e todas estas coisas vos serão acrescentadas.", "Mateus 6:33"},
+            {"Ora, a fé é o firme fundamento das coisas que se esperam, e a prova das coisas que se não veem.", "Hebreus 11:1"},
+            {"E conhecereis a verdade, e a verdade vos libertará.", "João 8:32"},
+            {"Em paz também me deitarei e dormirei, porque só tu, Senhor, me fazes habitar em segurança.", "Salmos 4:8"},
+            {"Todas as coisas contribuem juntamente para o bem daqueles que amam a Deus.", "Romanos 8:28"},
+        };
+        int i = (int) (Math.random() * verses.length);
+        return verses[i];
     }
 
     // Verifica se o horário atual está DENTRO da janela configurada pelo

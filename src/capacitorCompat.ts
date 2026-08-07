@@ -43,6 +43,8 @@ export interface NativeSettingsPlugin {
   requestExactAlarmPermission(): Promise<void>;
   requestAccessibilityPermission(): Promise<void>;
   openNotificationSettings(): Promise<void>;
+  canDrawOverlays(): Promise<{ canOverlay: boolean }>;
+  openAppDetails(): Promise<void>;
 }
 
 const NativeSettings = registerPlugin<NativeSettingsPlugin>('NativeSettings');
@@ -57,6 +59,25 @@ export async function requestOverlayPermission() {
   if (!isNative()) return;
   try { await NativeSettings.requestOverlayPermission(); }
   catch (e) { console.error('Erro sobreposição:', e); }
+}
+
+// Verifica o status REAL da sobreposição (Motorola/Android 13+ bloqueiam)
+export async function checkOverlayPermission(): Promise<boolean> {
+  if (!isNative()) return false;
+  try {
+    const res = await NativeSettings.canDrawOverlays();
+    return res.canOverlay;
+  } catch (e) {
+    console.error('Erro verificar sobreposição:', e);
+    return false;
+  }
+}
+
+// Abre os detalhes do app (onde o usuário desbloqueia permissões restritas)
+export async function openAppDetails() {
+  if (!isNative()) return;
+  try { await NativeSettings.openAppDetails(); }
+  catch (e) { console.error('Erro abrir detalhes:', e); }
 }
 
 export async function requestExactAlarmPermission() {

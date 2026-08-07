@@ -52,14 +52,49 @@ public class NativeSettingsPlugin extends Plugin {
             call.resolve();
         } catch (ActivityNotFoundException e) {
             try {
-                Intent fallback = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
-                getActivity().startActivity(fallback);
+                // Fallback: abre a página de detalhes do app (funciona em
+                // aparelhos como Motorola/Xiaomi que bloqueiam a tela de
+                // sobreposição para apps instalados via APK)
+                Intent details = new Intent(
+                    Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                    Uri.parse("package:" + getContext().getPackageName())
+                );
+                getActivity().startActivity(details);
                 call.resolve();
             } catch (Exception ex) {
                 call.reject("Overlay permission settings not available", ex);
             }
         } catch (Exception e) {
             call.reject("Failed to open overlay permission settings", e);
+        }
+    }
+
+    // Verifica se a permissão de sobreposição JÁ foi concedida (status real)
+    @PluginMethod
+    public void canDrawOverlays(PluginCall call) {
+        try {
+            boolean can = Settings.canDrawOverlays(getContext());
+            JSObject result = new JSObject();
+            result.put("canOverlay", can);
+            call.resolve(result);
+        } catch (Exception e) {
+            call.reject("Erro ao verificar overlay", e);
+        }
+    }
+
+    // Abre a página de detalhes do app (onde o usuário desbloqueia permissões
+    // restritas em Android 13+/fabricantes como Motorola)
+    @PluginMethod
+    public void openAppDetails(PluginCall call) {
+        try {
+            Intent details = new Intent(
+                Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                Uri.parse("package:" + getContext().getPackageName())
+            );
+            getActivity().startActivity(details);
+            call.resolve();
+        } catch (Exception e) {
+            call.reject("Falha ao abrir detalhes do app", e);
         }
     }
 

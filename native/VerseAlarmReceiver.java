@@ -120,7 +120,44 @@ public class VerseAlarmReceiver extends BroadcastReceiver {
                 // Diário: próximo dia no mesmo horário do primeiro agendamento
                 cal.add(Calendar.DAY_OF_YEAR, 1);
             } else {
-                cal.add(Calendar.MINUTE, intervalMinutes);
+                // Intervalo ANCORADO no início da janela (regra do usuário):
+                // a contagem começa no horário de INÍCIO definido. Ex:
+                // janela 08:00-22:00 + 4h → 08:00, 12:00, 16:00, 20:00.
+                // Se o próximo slot cair fora da janela, agenda para o
+                // PRÓXIMO DIA no horário de início (recomeça o ciclo).
+                int startH = prefs.getInt("startHour", 8);
+                int startM = prefs.getInt("startMinute", 0);
+                int endH = prefs.getInt("endHour", 22);
+                int endM = prefs.getInt("endMinute", 0);
+                long intervalMs = intervalMinutes * 60 * 1000L;
+
+                // Âncora: início da janela de hoje
+                Calendar anchor = Calendar.getInstance();
+                anchor.set(Calendar.HOUR_OF_DAY, startH);
+                anchor.set(Calendar.MINUTE, startM);
+                anchor.set(Calendar.SECOND, 0);
+                anchor.set(Calendar.MILLISECOND, 0);
+
+                // Próximo slot: âncora + k*intervalo (k = próximo inteiro)
+                long sinceAnchor = System.currentTimeMillis() - anchor.getTimeInMillis();
+                long k = Math.max(0, (long) Math.ceil((double) sinceAnchor / intervalMs));
+                cal.setTimeInMillis(anchor.getTimeInMillis() + k * intervalMs);
+
+                // Fim da janela de hoje
+                Calendar windowEnd = Calendar.getInstance();
+                windowEnd.set(Calendar.HOUR_OF_DAY, endH);
+                windowEnd.set(Calendar.MINUTE, endM);
+                windowEnd.set(Calendar.SECOND, 59);
+                windowEnd.set(Calendar.MILLISECOND, 999);
+
+                // Slot passou do fim da janela → recomeça AMANHÃ no início
+                if (cal.getTimeInMillis() > windowEnd.getTimeInMillis()) {
+                    cal.add(Calendar.DAY_OF_YEAR, 1);
+                    cal.set(Calendar.HOUR_OF_DAY, startH);
+                    cal.set(Calendar.MINUTE, startM);
+                    cal.set(Calendar.SECOND, 0);
+                    cal.set(Calendar.MILLISECOND, 0);
+                }
             }
 
             Intent intent = new Intent(context, VerseAlarmReceiver.class);

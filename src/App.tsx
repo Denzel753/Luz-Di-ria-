@@ -668,12 +668,33 @@ export default function App() {
             }
           }
         } else {
-          // Custom interval
+          // Intervalo personalizado (1min, 1h, 4h...) ANCORADO no início da
+          // janela: a contagem começa no horário de INÍCIO que o usuário
+          // definiu. Ex: janela 08:00-22:00 + intervalo 4h → disparos às
+          // 08:00, 12:00, 16:00, 20:00. Se o próximo cair fora da janela,
+          // não dispara e recomeça no dia seguinte no horário de início.
           const intervalMs = (currentSettings.updateInterval || 60) * 60 * 1000;
-          const timeSinceLast =
-            now.getTime() - currentSettings.lastVerseUpdateTimestamp;
 
-          if (timeSinceLast >= intervalMs) {
+          // Início da janela de HOJE (âncora)
+          const windowStart = new Date(now);
+          windowStart.setHours(startH, startM, 0, 0);
+
+          // Próximo disparo ancorado: windowStart + k*intervalo (k inteiro)
+          const sinceAnchor = now.getTime() - windowStart.getTime();
+          const k = Math.max(0, Math.ceil(sinceAnchor / intervalMs));
+          const nextFire = windowStart.getTime() + k * intervalMs;
+
+          // Fim da janela de hoje
+          const windowEnd = new Date(now);
+          windowEnd.setHours(endH, endM, 59, 999);
+
+          // Se o próximo disparo ancorado passou do fim da janela, hoje acabou
+          // — recomeça amanhã no horário de início (nada a fazer agora).
+          if (nextFire > windowEnd.getTime()) return;
+
+          // Dispara quando o relógio alcança o próximo slot ancorado
+          const last = currentSettings.lastVerseUpdateTimestamp || 0;
+          if (now.getTime() >= nextFire && last < nextFire) {
             if (isStartup) {
               const updated = {
                 ...currentSettings,

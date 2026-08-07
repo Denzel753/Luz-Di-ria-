@@ -588,7 +588,15 @@ export default function App() {
 
     const triggerUpdate = (isStartup: boolean = false) => {
       const currentSettings = settingsRef.current;
-      const newVerse = getNextRandomVerse("all", currentSettings); //
+      // Versículo OU frase aleatória (regra do usuário: cada horário sorteia
+      // um conteúdo novo). 50% frase quando habilitada, senão versículo.
+      const randomVerse = getNextRandomVerse("all", currentSettings);
+      const useQuote = currentSettings.enableQuotes && Math.random() < 0.5;
+      const content = useQuote ? getRandomQuote() : randomVerse;
+      const newVerse = {
+        ...(content as any),
+        reference: useQuote ? (content as any).author || "Luz Diária" : (content as any).reference,
+      };
 
       setCurrentVerse(newVerse);
 

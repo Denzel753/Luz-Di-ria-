@@ -392,6 +392,16 @@ export function Settings({ isOpen, onClose, settings, onSettingsChange, onTestPo
                         <p className={`text-[12px] ${granted ? 'text-green-600 dark:text-green-400 font-medium' : 'text-[var(--color-duo-text-light)]'}`}>
                           {granted ? '✓ Habilitado' : desc}
                         </p>
+                        {!granted && key === 'accessibility' && (
+                          <p className="text-[11px] text-red-500 dark:text-red-400 mt-0.5">
+                            Dica: se bloqueado, libere em Apps → Luz Diária → menu ⋮ → Permitir configurações restritas
+                          </p>
+                        )}
+                        {!granted && key === 'overlay' && (
+                          <p className="text-[11px] text-red-500 dark:text-red-400 mt-0.5">
+                            Dica: se bloqueado (Motorola/Xiaomi), procure "Permitir sobrepor" na tela que abriu
+                          </p>
+                        )}
                       </div>
                     </div>
                     <button

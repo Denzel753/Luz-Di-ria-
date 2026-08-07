@@ -44,6 +44,8 @@ export interface VerseAlarmPlugin {
     configured: boolean;
     nextAlarm: number;
     diagLog: string;
+    widgetCount: number;
+    widgetVerse: string;
   }>;
   testAlarmInOneMinute(): Promise<{ scheduled: boolean; fireAt: number }>;
   updateWidgetVerse(options: { verseText: string; verseRef: string }): Promise<{ updated: number }>;
@@ -214,6 +216,7 @@ export async function getDiagnostics() {
     return {
       serviceRunning: false, intervalMinutes: 0, startHour: 8, startMinute: 0,
       endHour: 23, endMinute: 59, configured: false, nextAlarm: 0, diagLog: '',
+      widgetCount: 0, widgetVerse: '', 
     };
   }
   try {
@@ -223,6 +226,7 @@ export async function getDiagnostics() {
     return {
       serviceRunning: false, intervalMinutes: 0, startHour: 8, startMinute: 0,
       endHour: 23, endMinute: 59, configured: false, nextAlarm: 0, diagLog: '',
+      widgetCount: 0, widgetVerse: '', 
     };
   }
 }

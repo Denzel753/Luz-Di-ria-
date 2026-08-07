@@ -48,6 +48,8 @@ export function Settings({ isOpen, onClose, settings, onSettingsChange, onTestPo
     configured: boolean;
     nextAlarm: number;
     diagLog: string;
+    widgetCount: number;
+    widgetVerse: string;
   } | null>(null);
 
   const refreshDiag = () => {
@@ -489,6 +491,23 @@ export function Settings({ isOpen, onClose, settings, onSettingsChange, onTestPo
                       {diag.nextAlarm > 0 ? new Date(diag.nextAlarm).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : 'NENHUM ✗'}
                     </span>
                   </div>
+                  <div className="flex justify-between">
+                    <span className="text-[var(--color-duo-text-light)]">Widgets instalados:</span>
+                    <span className={diag.widgetCount > 0 ? 'text-green-600 dark:text-green-400 font-bold' : 'text-red-500 font-bold'}>
+                      {diag.widgetCount > 0 ? `${diag.widgetCount} na tela inicial ✓` : 'NENHUM ✗'}
+                    </span>
+                  </div>
+                  {diag.widgetCount > 0 && (
+                    <div>
+                      <span className="text-[var(--color-duo-text-light)]">Versículo salvo p/ widget:</span>
+                      <p className="text-[10px] text-[var(--color-duo-text)] mt-0.5 leading-snug">
+                        "{diag.widgetVerse?.slice(0, 90)}{(diag.widgetVerse || '').length > 90 ? '...' : ''}"
+                      </p>
+                      <p className="text-[10px] text-amber-500 mt-0.5 font-medium">
+                        ⚠️ O widget da tela mostra exatamente este texto. Se não bate com o versículo atual, remova e adicione o widget de novo.
+                      </p>
+                    </div>
+                  )}
                   <div className="mt-2">
                     <p className="text-[var(--color-duo-text-light)] mb-1">Log de disparos:</p>
                     <pre className="bg-[var(--color-duo-bg-sec)] rounded-lg p-2 text-[10px] leading-relaxed max-h-32 overflow-y-auto whitespace-pre-wrap">

@@ -318,6 +318,23 @@ public class VerseAlarmPlugin extends Plugin {
             // 4. Log de diagnóstico (últimos disparos)
             result.put("diagLog", diagPrefs.getString("log", ""));
 
+            // 5. Estado do WIDGET: quantos instalados + último versículo salvo
+            //    (o widget lê daqui — se o app salvou, o widget mostra).
+            int widgetCount = 0;
+            String widgetVerse = "";
+            try {
+                android.appwidget.AppWidgetManager wm =
+                    android.appwidget.AppWidgetManager.getInstance(ctx);
+                widgetCount = wm.getAppWidgetIds(
+                    new android.content.ComponentName(ctx, VerseWidgetProvider.class)
+                ).length;
+                android.content.SharedPreferences wprefs =
+                    ctx.getSharedPreferences("luzdiaria_widget", Context.MODE_MULTI_PROCESS);
+                widgetVerse = wprefs.getString("lastVerse", "");
+            } catch (Exception e) { /* diagnóstico não falha */ }
+            result.put("widgetCount", widgetCount);
+            result.put("widgetVerse", widgetVerse);
+
             call.resolve(result);
         } catch (Exception e) {
             call.reject("Erro ao obter diagnóstico", e);

@@ -203,6 +203,36 @@ public class VerseAlarmPlugin extends Plugin {
         }
     }
 
+    // Verifica se o Foreground Service está rodando. Se o sistema/fabricante
+    // matou o app, o serviço para — o app pode avisar o usuário.
+    @PluginMethod
+    public void isServiceRunning(PluginCall call) {
+        try {
+            boolean running = false;
+            android.app.ActivityManager am =
+                (android.app.ActivityManager) getContext().getSystemService(Context.ACTIVITY_SERVICE);
+            if (am != null) {
+                java.util.List<android.app.ActivityManager.RunningServiceInfo> services =
+                    am.getRunningServices(100);
+                if (services != null) {
+                    for (android.app.ActivityManager.RunningServiceInfo s : services) {
+                        if (VerseForegroundService.class.getName().equals(s.service.getClassName())) {
+                            running = true;
+                            break;
+                        }
+                    }
+                }
+            }
+            JSObject result = new JSObject();
+            result.put("running", running);
+            call.resolve(result);
+        } catch (Exception e) {
+            JSObject result = new JSObject();
+            result.put("running", false);
+            call.resolve(result);
+        }
+    }
+
     // 8. Salva o versículo atual e ATUALIZA todos os widgets da tela inicial.
     //    Chamado pelo app sempre que o versículo/frase muda.
     @PluginMethod

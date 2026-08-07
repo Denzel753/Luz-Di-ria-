@@ -35,6 +35,7 @@ import {
   startNativeService,
   scheduleDailyVerse,
   updateWidgetVerse,
+  isServiceRunning,
 } from "./capacitorCompat";
 
 function useSessionState<T>(
@@ -469,6 +470,18 @@ export default function App() {
       if (localStorage.getItem("permissionsDone")) {
         startNativeService(currentVerse.text, currentVerse.reference);
         scheduleWithCurrentSettings();
+        // Detecta se o sistema/fabricante matou o serviço em primeiro plano.
+        // Se morreu, avisa o usuário UMA vez por sessão (não incomoda todo
+        // dia): liberar nas configurações de bateria da marca evita o problema.
+        isServiceRunning().then((running) => {
+          if (!running && !sessionStorage.getItem("serviceKillWarned")) {
+            sessionStorage.setItem("serviceKillWarned", "1");
+            addToast(
+              "error",
+              "⚠️ Seu celular fechou o Luz Diária em 2º plano. Para o versículo chegar no horário, libere o app na otimização de bateria (Configurações → Permissões do Sistema).",
+            );
+          }
+        });
       }
     }, 800);
     document.addEventListener("visibilitychange", onVisibility);

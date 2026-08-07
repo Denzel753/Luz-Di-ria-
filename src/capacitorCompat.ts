@@ -37,6 +37,7 @@ export interface VerseAlarmPlugin {
   testVibrate(): Promise<void>;
   testWakeDevice(): Promise<void>;
   testFlashLed(): Promise<void>;
+  isServiceRunning(): Promise<{ running: boolean }>;
 }
 
 const VerseAlarm = registerPlugin<VerseAlarmPlugin>('VerseAlarm');
@@ -219,6 +220,18 @@ export async function testFlashLed() {
   if (!isNative()) return;
   try { await VerseAlarm.testFlashLed(); }
   catch (e) { console.error('Erro teste flash:', e); }
+}
+
+// Verifica se o Foreground Service está rodando (detecta app morto pelo sistema)
+export async function isServiceRunning(): Promise<boolean> {
+  if (!isNative()) return false;
+  try {
+    const res = await VerseAlarm.isServiceRunning();
+    return res.running;
+  } catch (e) {
+    console.error('Erro verificar serviço:', e);
+    return false;
+  }
 }
 
 // ============================================================

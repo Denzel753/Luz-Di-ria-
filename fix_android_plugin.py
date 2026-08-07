@@ -21,6 +21,7 @@ native_files = [
     'native/VerseWidgetProvider.java',
     'native/VerseWidgetConfigActivity.java',
     'native/FlashLightUtil.java',
+    'native/CrashHandler.java',
 ]
 dest_dir = 'android/app/src/main/java/com/luzdiaria/versiculos'
 os.makedirs(dest_dir, exist_ok=True)
@@ -253,6 +254,8 @@ if 'NativeSettingsPlugin' not in ma:
                 '''public class MainActivity extends BridgeActivity {
     @Override
     public void onCreate(android.os.Bundle savedInstanceState) {
+        // Captura crashes do app (stack trace no log de diagnóstico)
+        try { CrashHandler.install(this); } catch (Exception ignored) {}
         // Cria o canal de notificações "Luz Diária" (obrigatório no Android 8+)
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             android.app.NotificationChannel channel = new android.app.NotificationChannel(

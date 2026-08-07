@@ -51,6 +51,7 @@ export interface VerseAlarmPlugin {
   }>;
   testAlarmInOneMinute(): Promise<{ scheduled: boolean; fireAt: number }>;
   updateWidgetVerse(options: { verseText: string; verseRef: string }): Promise<{ updated: number }>;
+  logEvent(options: { opcao: string; acao: string; valor: string; esperado: string; ok: boolean; detalhe: string }): Promise<void>;
   testVibrate(): Promise<void>;
   testWakeDevice(): Promise<void>;
   testFlashLed(): Promise<void>;
@@ -427,5 +428,49 @@ export async function copyToClipboard(text: string): Promise<boolean> {
   } catch (e) {
     console.error('Erro clipboard:', e);
     return false;
+  }
+}
+
+// ============================================================
+// LOG DE RASTREIO (JS) — mesma língua do nativo
+// ============================================================
+
+// Grava um evento de rastreio no MESMO formato do nativo (prefs
+// luzdiaria_eventos, via plugin). Assim o Exportar JSON tem TUDO
+// junto: eventos do motor nativo + interações/erros do JS.
+export async function logEventJs(opcao: string, acao: string, valor: string,
+                                 esperado: string, ok: boolean, detalhe: string = '') {
+  if (!isNative()) return;
+  try {
+    await VerseAlarm.logEvent({ opcao, acao, valor, esperado, ok, detalhe });
+  } catch (e) {
+    console.error('Erro logEvent:', e);
+  }
+}
+
+// CAPTURA DE ERROS JS (melhor prática): window.onerror + unhandledrejection
+// gravam QUALQUER erro de JavaScript no log de eventos — sem isso, erros
+// do React (render, handlers, async) são invisíveis no diagnóstico.
+let jsErrorHooksInstalled = false;
+export function installJsErrorHooks() {
+  if (jsErrorHooksInstalled) return;
+  jsErrorHooksInstalled = true;
+
+  if (typeof window !== 'undefined') {
+    // Erros síncronos e de handler (window.onerror)
+    window.addEventListener('error', (event) => {
+      const msg = event.message || 'erro desconhecido';
+      const loc = event.filename || '';
+      const line = event.lineno || 0;
+      logEventJs('js', 'erro_nao_tratado', `${msg} @ ${loc}:${line}`,
+        'app continua', false, 'window.onerror').catch(() => {});
+    });
+
+    // Promises rejeitadas não tratadas (erros async)
+    window.addEventListener('unhandledrejection', (event) => {
+      const reason = event.reason?.message || String(event.reason || 'promise rejeitada');
+      logEventJs('js', 'promise_rejeitada', reason,
+        'app continua', false, 'unhandledrejection').catch(() => {});
+    });
   }
 }

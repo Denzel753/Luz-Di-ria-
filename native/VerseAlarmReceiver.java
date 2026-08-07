@@ -391,8 +391,11 @@ public class VerseAlarmReceiver extends BroadcastReceiver {
                 context.getSharedPreferences("luzdiaria_eventos", Context.MODE_PRIVATE);
             String ts = new java.text.SimpleDateFormat("dd/MM HH:mm:ss", java.util.Locale.getDefault())
                 .format(new java.util.Date());
-            String entry = ts + " | " + opcao + " | " + acao + " | " + valor
-                + " | esperado:" + esperado + " | " + (ok ? "OK" : "ERRO")
+            // NÍVEL DE SEVERIDADE: [OK] / [AVISO] / [ERRO] — facilita a leitura
+            // do log e a busca por problemas no JSON exportado.
+            String nivel = ok ? "OK" : "ERRO";
+            String entry = ts + " [" + nivel + "] " + opcao + " | " + acao + " | " + valor
+                + " | esperado:" + esperado
                 + (detalhe.isEmpty() ? "" : " | " + detalhe);
             String existing = prefs.getString("events", "");
             existing = entry + "\n" + existing;

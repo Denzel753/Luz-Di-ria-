@@ -23,6 +23,16 @@ public class VerseAlarmPlugin extends Plugin {
 
     private static final String ACTION_START_SERVICE = "com.luzdiaria.versiculos.START_SERVICE";
 
+    @Override
+    public void load() {
+        super.load();
+        // Instala o capturador de crashes (exceções não tratadas) — grava o
+        // stack trace completo no log de eventos antes do app fechar.
+        try {
+            CrashHandler.install(getContext());
+        } catch (Exception ignored) {}
+    }
+
     // 1. Inicia o serviço em primeiro plano (notificação persistente na barra).
     //    Enquanto esse serviço roda, o Android NÃO mata o app em background.
     @PluginMethod
@@ -206,7 +216,25 @@ public class VerseAlarmPlugin extends Plugin {
         }
     }
 
-    // 5. TESTE: vibra o dispositivo imediatamente (confirma a opção).
+    // 5b. LOG DE EVENTO vindo do JS (erros React, interações web).
+    //     Mesmo formato do nativo — o Exportar JSON junta tudo.
+    @PluginMethod
+    public void logEvent(PluginCall call) {
+        try {
+            String opcao = call.getString("opcao", "js");
+            String acao = call.getString("acao", "");
+            String valor = call.getString("valor", "");
+            String esperado = call.getString("esperado", "");
+            boolean ok = call.getBoolean("ok", true);
+            String detalhe = call.getString("detalhe", "");
+            VerseAlarmReceiver.logEvent(getContext(), opcao, acao, valor, esperado, ok, detalhe);
+            call.resolve();
+        } catch (Exception e) {
+            call.reject("Falha ao gravar evento", e);
+        }
+    }
+
+    // 6. TESTE: vibra o dispositivo imediatamente (confirma a opção).
     // Mesmo padrão do alerta real: amplitude máxima (AMdroid/AlarmClock).
     @PluginMethod
     public void testVibrate(PluginCall call) {

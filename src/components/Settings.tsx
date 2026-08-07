@@ -541,8 +541,15 @@ export function Settings({ isOpen, onClose, settings, onSettingsChange, onTestPo
                       onClick={() => {
                         // EXPORTA JSON COMPLETO: checks + log + dispositivo
                         try {
+                          // ID de sessão único (persistido — correlaciona eventos entre si)
+                          let sessaoId = localStorage.getItem('diagSessaoId');
+                          if (!sessaoId) {
+                            sessaoId = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+                            localStorage.setItem('diagSessaoId', sessaoId);
+                          }
                           const dados = {
                             app: 'Luz Diária',
+                            sessao_id: sessaoId,
                             exportado: new Date().toISOString(),
                             dispositivo: diag?.dispositivo || {},
                             checks: {

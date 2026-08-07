@@ -36,6 +36,7 @@ import {
   scheduleDailyVerse,
   updateWidgetVerse,
   isServiceRunning,
+  installJsErrorHooks,
 } from "./capacitorCompat";
 
 function useSessionState<T>(
@@ -295,6 +296,9 @@ export default function App() {
 
   // Check permissions on mount
   useEffect(() => {
+    // Captura erros JS (window.onerror + promises rejeitadas) no log de rastreio
+    installJsErrorHooks();
+
     const permissionsDone = localStorage.getItem("permissionsDone");
     if (!permissionsDone) {
       setIsPermissionModalOpen(true);

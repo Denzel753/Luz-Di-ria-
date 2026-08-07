@@ -62,6 +62,11 @@ const NativeSettings = registerPlugin<NativeSettingsPlugin>('NativeSettings');
 
 export async function requestBatteryPermission() {
   if (!isNative()) return;
+  // Se já está ignorando otimização, não abre a tela de novo
+  try {
+    const status = await getPermissionsStatus();
+    if (status.battery) return;
+  } catch (e) { /* segue */ }
   try { await NativeSettings.requestBatteryOptimizationPermission(); }
   catch (e) { console.error('Erro bateria:', e); }
 }
@@ -130,6 +135,10 @@ export async function requestNotificationPermission() {
     return false;
   }
   try {
+    // Se já concedida (Android 13+), NÃO reabre o diálogo do sistema —
+    // evita a tela/faixa estranha que aparecia ao clicar de novo
+    const status = await getPermissionsStatus();
+    if (status.notifications) return true;
     const perm = await LocalNotifications.requestPermissions();
     return perm.display === 'granted';
   } catch (e) {

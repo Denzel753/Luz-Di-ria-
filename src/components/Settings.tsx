@@ -406,9 +406,12 @@ export function Settings({ isOpen, onClose, settings, onSettingsChange, onTestPo
                     </div>
                     <button
                       onClick={() => {
+                        if (granted) {
+                          // Já concedida: NÃO reabre a tela do sistema nem
+                          // dispara toast de topo (causava a "faixa preta")
+                          return;
+                        }
                         action();
-                        onShowToast(`Abrindo: ${label}`);
-                        // Re-checa o status após voltar do sistema
                         setTimeout(refreshPermStatus, 2500);
                       }}
                       className={`text-xs px-3 py-1.5 rounded-full font-medium shrink-0 ${

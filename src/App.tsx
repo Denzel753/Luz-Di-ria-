@@ -574,12 +574,12 @@ export default function App() {
 
       if (isStartup) return;
 
-      // Se o usuário está DENTRO do aplicativo (aba visível), não dispara
-      // pop-up nem notificação — ele já está vendo o versículo na tela.
-      // Somente quando o app está em segundo plano o alerta é necessário.
-      const appVisible = typeof document !== 'undefined' && document.visibilityState === 'visible';
-      if (appVisible) return;
-
+      // O triggerUpdate só é chamado pelo CHECK DO HORÁRIO (checkAndSchedule).
+      // O alerta DEVE acontecer sempre que o horário bater, com o app aberto
+      // ou fechado — é o princípio básico do app. Com o app visível, mostra
+      // o pop-up gigante na própria tela (se habilitado) + notificação;
+      // com o app em 2º plano, o alarme nativo assume. O sortear manual NÃO
+      // passa por aqui (usa outro caminho), então não gera alerta indevido.
       if (currentSettings.flashLed) {
         let count = 0;
         const flashInterval = setInterval(() => {
@@ -628,7 +628,12 @@ export default function App() {
           }
         };
 
-        if (!isTimeInWindow(now)) return;
+        // A janela de horário (início/fim) SÓ vale para o modo DIÁRIO.
+        // Se o usuário configurou intervalo personalizado (a cada X min/h),
+        // deve funcionar 24 horas — travar em 08:00-22:00 era um bug que
+        // impedia o alerta fora dessa janela.
+        const isDailyMode = currentSettings.updateInterval === 1440;
+        if (isDailyMode && !isTimeInWindow(now)) return;
 
         if (!currentSettings.lastVerseUpdateTimestamp) {
           const updated = {

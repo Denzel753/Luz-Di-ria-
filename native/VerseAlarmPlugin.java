@@ -154,7 +154,56 @@ public class VerseAlarmPlugin extends Plugin {
         }
     }
 
-    // 5. Salva o versículo atual e ATUALIZA todos os widgets da tela inicial.
+    // 5. TESTE: vibra o dispositivo imediatamente (confirma a opção)
+    @PluginMethod
+    public void testVibrate(PluginCall call) {
+        try {
+            android.os.Vibrator vib =
+                (android.os.Vibrator) getContext().getSystemService(Context.VIBRATOR_SERVICE);
+            if (vib != null && vib.hasVibrator()) {
+                long[] pattern = {0, 200, 100, 200};
+                vib.vibrate(pattern, -1);
+            }
+            call.resolve();
+        } catch (Exception e) {
+            call.reject("Falha ao vibrar", e);
+        }
+    }
+
+    // 6. TESTE: acende a tela imediatamente (confirma a opção)
+    @PluginMethod
+    public void testWakeDevice(PluginCall call) {
+        try {
+            android.os.PowerManager pm =
+                (android.os.PowerManager) getContext().getSystemService(Context.POWER_SERVICE);
+            if (pm != null) {
+                android.os.PowerManager.WakeLock wl = pm.newWakeLock(
+                    android.os.PowerManager.FULL_WAKE_LOCK |
+                    android.os.PowerManager.ACQUIRE_CAUSES_WAKEUP |
+                    android.os.PowerManager.ON_AFTER_RELEASE,
+                    "luzdiaria:testwake"
+                );
+                wl.acquire(3000);
+                if (wl.isHeld()) wl.release();
+            }
+            call.resolve();
+        } catch (Exception e) {
+            call.reject("Falha ao acordar", e);
+        }
+    }
+
+    // 7. TESTE: pisca o flash LED imediatamente (confirma a opção)
+    @PluginMethod
+    public void testFlashLed(PluginCall call) {
+        try {
+            FlashLightUtil.blinkFlash(getContext(), 5);
+            call.resolve();
+        } catch (Exception e) {
+            call.reject("Falha ao piscar flash", e);
+        }
+    }
+
+    // 8. Salva o versículo atual e ATUALIZA todos os widgets da tela inicial.
     //    Chamado pelo app sempre que o versículo/frase muda.
     @PluginMethod
     public void updateWidgetVerse(PluginCall call) {

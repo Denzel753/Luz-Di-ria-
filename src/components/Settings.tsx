@@ -12,6 +12,9 @@ import {
   requestAccessibilityPermission,
   requestExactAlarmPermission,
   getPermissionsStatus,
+  testVibrate,
+  testWakeDevice,
+  testFlashLed,
 } from '../capacitorCompat';
 
 interface SettingsProps {
@@ -330,40 +333,67 @@ export function Settings({ isOpen, onClose, settings, onSettingsChange, onTestPo
                 </select>
               </div>
 
-              <div className="py-4 flex items-center justify-between gap-4 border-b-2 border-[var(--color-duo-border)] cursor-pointer transition-transform active:scale-[0.98]" onClick={() => onSettingsChange({...settings, vibrate: !settings.vibrate})}>
-                <p className="text-[var(--color-duo-text)] text-[15px] font-medium flex-1">Vibrar o dispositivo</p>
-                <input 
-                  type="checkbox" 
-                  className="w-5 h-5 text-[var(--color-duo-orange)] rounded border-[var(--color-duo-border)] focus:ring-amber-500 accent-amber-600 cursor-pointer shrink-0"
-                  checked={settings.vibrate}
-                  onChange={(e) => onSettingsChange({...settings, vibrate: e.target.checked})}
-                />
+              <div className="py-4 flex items-center justify-between gap-4 border-b-2 border-[var(--color-duo-border)]">
+                <div className="flex items-center gap-3 flex-1">
+                  <Smartphone className="w-5 h-5 text-[var(--color-duo-text-light)] shrink-0" />
+                  <p className="text-[var(--color-duo-text)] text-[15px] font-medium">Vibrar o dispositivo</p>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    onClick={() => { testVibrate(); if (onShowToast) onShowToast('info', 'Testando vibração...'); }}
+                    className="text-xs px-3 py-1.5 rounded-full font-medium bg-amber-100 text-amber-700 hover:bg-amber-200"
+                  >
+                    Testar
+                  </button>
+                  <input 
+                    type="checkbox" 
+                    className="w-5 h-5 text-[var(--color-duo-orange)] rounded border-[var(--color-duo-border)] focus:ring-amber-500 accent-amber-600 cursor-pointer shrink-0"
+                    checked={settings.vibrate}
+                    onChange={(e) => onSettingsChange({...settings, vibrate: e.target.checked})}
+                  />
+                </div>
               </div>
 
-              <div className="py-4 flex items-center justify-between gap-4 border-b-2 border-[var(--color-duo-border)] cursor-pointer transition-transform active:scale-[0.98]" onClick={() => onSettingsChange({...settings, wakeDevice: !settings.wakeDevice})}>
+              <div className="py-4 flex items-center justify-between gap-4 border-b-2 border-[var(--color-duo-border)]">
                 <div className="flex items-center gap-3 flex-1">
                   <Smartphone className="w-5 h-5 text-[var(--color-duo-text-light)] shrink-0" />
                   <p className="text-[var(--color-duo-text)] text-[15px] font-medium">Acorde o dispositivo</p>
                 </div>
-                <input 
-                  type="checkbox" 
-                  className="w-5 h-5 text-[var(--color-duo-orange)] rounded border-[var(--color-duo-border)] focus:ring-amber-500 accent-amber-600 cursor-pointer shrink-0"
-                  checked={settings.wakeDevice}
-                  onChange={(e) => onSettingsChange({...settings, wakeDevice: e.target.checked})}
-                />
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    onClick={() => { testWakeDevice(); if (onShowToast) onShowToast('info', 'Testando acender a tela...'); }}
+                    className="text-xs px-3 py-1.5 rounded-full font-medium bg-amber-100 text-amber-700 hover:bg-amber-200"
+                  >
+                    Testar
+                  </button>
+                  <input 
+                    type="checkbox" 
+                    className="w-5 h-5 text-[var(--color-duo-orange)] rounded border-[var(--color-duo-border)] focus:ring-amber-500 accent-amber-600 cursor-pointer shrink-0"
+                    checked={settings.wakeDevice}
+                    onChange={(e) => onSettingsChange({...settings, wakeDevice: e.target.checked})}
+                  />
+                </div>
               </div>
 
-              <div className="py-4 flex items-center justify-between gap-4 cursor-pointer transition-transform active:scale-[0.98]" onClick={() => onSettingsChange({...settings, flashLed: !settings.flashLed})}>
+              <div className="py-4 flex items-center justify-between gap-4 border-b-2 border-[var(--color-duo-border)]">
                 <div className="flex items-center gap-3 flex-1">
                   <Zap className="w-5 h-5 text-[var(--color-duo-text-light)] shrink-0" />
                   <p className="text-[var(--color-duo-text)] text-[15px] font-medium">Flash o LED</p>
                 </div>
-                <input 
-                  type="checkbox" 
-                  className="w-5 h-5 text-[var(--color-duo-orange)] rounded border-[var(--color-duo-border)] focus:ring-amber-500 accent-amber-600 cursor-pointer shrink-0"
-                  checked={settings.flashLed}
-                  onChange={(e) => onSettingsChange({...settings, flashLed: e.target.checked})}
-                />
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    onClick={() => { testFlashLed(); if (onShowToast) onShowToast('info', 'Testando flash...'); }}
+                    className="text-xs px-3 py-1.5 rounded-full font-medium bg-amber-100 text-amber-700 hover:bg-amber-200"
+                  >
+                    Testar
+                  </button>
+                  <input 
+                    type="checkbox" 
+                    className="w-5 h-5 text-[var(--color-duo-orange)] rounded border-[var(--color-duo-border)] focus:ring-amber-500 accent-amber-600 cursor-pointer shrink-0"
+                    checked={settings.flashLed}
+                    onChange={(e) => onSettingsChange({...settings, flashLed: e.target.checked})}
+                  />
+                </div>
               </div>
 
             {/* Permissões do Sistema */}

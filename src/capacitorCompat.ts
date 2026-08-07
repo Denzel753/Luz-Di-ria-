@@ -34,6 +34,9 @@ export interface VerseAlarmPlugin {
   }): Promise<{ scheduled: boolean; nextFire: number; exact: boolean; intervalMinutes: number }>;
   cancelDailyAlarm(): Promise<void>;
   updateWidgetVerse(options: { verseText: string; verseRef: string }): Promise<{ updated: number }>;
+  testVibrate(): Promise<void>;
+  testWakeDevice(): Promise<void>;
+  testFlashLed(): Promise<void>;
 }
 
 const VerseAlarm = registerPlugin<VerseAlarmPlugin>('VerseAlarm');
@@ -195,6 +198,27 @@ export async function updateWidgetVerse(verseText: string, verseRef: string) {
   } catch (e) {
     console.error('Erro ao atualizar widget:', e);
   }
+}
+
+// TESTE imediato: vibra o dispositivo (confirma a opção "Vibrar")
+export async function testVibrate() {
+  if (!isNative()) return;
+  try { await VerseAlarm.testVibrate(); }
+  catch (e) { console.error('Erro teste vibrar:', e); }
+}
+
+// TESTE imediato: acende a tela (confirma a opção "Acorde o dispositivo")
+export async function testWakeDevice() {
+  if (!isNative()) return;
+  try { await VerseAlarm.testWakeDevice(); }
+  catch (e) { console.error('Erro teste acordar:', e); }
+}
+
+// TESTE imediato: pisca o flash LED (confirma a opção "Flash o LED")
+export async function testFlashLed() {
+  if (!isNative()) return;
+  try { await VerseAlarm.testFlashLed(); }
+  catch (e) { console.error('Erro teste flash:', e); }
 }
 
 // ============================================================

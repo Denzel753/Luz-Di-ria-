@@ -37,6 +37,8 @@ import {
   updateWidgetVerse,
   isServiceRunning,
   installJsErrorHooks,
+  getDiagnostics,
+  logEventJs,
 } from "./capacitorCompat";
 
 function useSessionState<T>(
@@ -771,8 +773,40 @@ export default function App() {
     // Checa com frequência o suficiente para o menor intervalo (1 min)
     timer = setInterval(checkAndSchedule, 30 * 1000); // 30 segundos
 
+    // WATCHDOG JS: 15s após abrir, verifica se o alarme NATIVO está
+    // agendado e o serviço rodando. Se saiu da rota → grava [ERRO] no
+    // log de rastreio e tenta corrigir (reagenda). Complementa o
+    // watchdog nativo (que cobre o app fechado).
+    const watchdogTimer = setTimeout(async () => {
+      try {
+        const s = settingsRef.current;
+        if (!localStorage.getItem('permissionsDone')) return;
+        if (!s.updateInterval) return;
+        const d = await getDiagnostics();
+        if (!d) return;
+        const servicoOk = d.serviceRunning;
+        const alarmeOk = d.configured && d.nextAlarm > 0;
+        if (!servicoOk) {
+          await logEventJs('watchdog_js', 'servico', d.serviceRunning ? 'rodando' : 'MORTO',
+            'serviço fixo ativo', false, 'app abriu e serviço não estava rodando');
+          try { await startNativeService(currentVerse?.text || '', currentVerse?.reference || ''); } catch {}
+        }
+        if (!alarmeOk) {
+          await logEventJs('watchdog_js', 'alarme', 'PERDIDO',
+            'alarme agendado no sistema', false, 'reagendando ao abrir o app');
+          scheduleWithCurrentSettings(false);
+        } else {
+          await logEventJs('watchdog_js', 'verificacao', 'ok',
+            'alarme + serviço funcionando', true, '');
+        }
+      } catch (e) {
+        console.error('Erro watchdog JS:', e);
+      }
+    }, 15000);
+
     return () => {
       clearInterval(timer);
+      clearTimeout(watchdogTimer);
     };
   }, []);
 

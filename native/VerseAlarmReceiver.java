@@ -23,8 +23,19 @@ public class VerseAlarmReceiver extends BroadcastReceiver {
     private static final String CHANNEL_ID_ALERT = "luz-diaria-alerta";
     private static final int NOTIFICATION_ID = 1001;
 
+    // AÇÃO DO WATCHDOG: alarme periódico que verifica a saúde do app.
+    public static final String ACTION_WATCHDOG_CHECK = "com.luzdiaria.versiculos.WATCHDOG_CHECK";
+    // Intervalo padrão do watchdog: 10 minutos (leve, econômico)
+    private static final long WATCHDOG_INTERVAL_MS = 10 * 60 * 1000L;
+
     @Override
     public void onReceive(Context context, Intent intent) {
+        // WATCHDOG: verificação periódica de saúde (sem notificar o usuário)
+        if (intent != null && ACTION_WATCHDOG_CHECK.equals(intent.getAction())) {
+            runWatchdog(context);
+            return;
+        }
+
         // A JANELA DE HORÁRIO é soberana: o usuário define início/fim e o
         // alerta só acontece DENTRO dela. Fora da janela, apenas reagenda
         // o próximo disparo sem notificar (o versículo não incomoda fora
@@ -349,6 +360,9 @@ public class VerseAlarmReceiver extends BroadcastReceiver {
         } catch (Exception e) {
             // Falha silenciosa — o app re-agenda ao abrir
         }
+
+        // Inicia o WATCHDOG VIVO (monitora a saúde do app a cada 10 min)
+        scheduleWatchdog(context);
     }
 
     // LOG DE DIAGNÓSTICO (Etapa 2 do plano): grava cada disparo do alarme
@@ -603,6 +617,161 @@ public class VerseAlarmReceiver extends BroadcastReceiver {
         NotificationManager nm = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         if (nm != null) {
             nm.notify(NOTIFICATION_ID, notification);
+        }
+    }
+
+    // ============================================================
+    // WATCHDOG VIVO — monitora o app SEM PARAR (a cada 10 min).
+    // Compara o estado REAL com o ESPERADO (mapa do funcionamento).
+    // Fora da rota = grava [ERRO] no log de eventos + tenta corrigir.
+    // ============================================================
+
+    /** Agenda o próximo check do watchdog (10 min, alarme inexato/econômico). */
+    public static void scheduleWatchdog(Context context) {
+        try {
+            AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+            if (am == null) return;
+            Intent intent = new Intent(context, VerseAlarmReceiver.class);
+            intent.setAction(ACTION_WATCHDOG_CHECK);
+            PendingIntent pi = PendingIntent.getBroadcast(
+                context,
+                777,
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+            );
+            long next = System.currentTimeMillis() + WATCHDOG_INTERVAL_MS;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, next, pi);
+            } else {
+                am.set(AlarmManager.RTC_WAKEUP, next, pi);
+            }
+        } catch (Exception e) {
+            // nunca quebra por causa do watchdog
+        }
+    }
+
+    /** Executa a verificação de saúde completa (chamado pelo alarme periódico). */
+    private void runWatchdog(Context context) {
+        try {
+            android.content.SharedPreferences alarmPrefs =
+                context.getSharedPreferences("luzdiaria_alarm", Context.MODE_PRIVATE);
+            int intervalMinutes = alarmPrefs.getInt("intervalMinutes", 0);
+            boolean configured = intervalMinutes > 0;
+
+            // Sem configuração = app nunca foi configurado — sem erros a reportar
+            if (!configured) {
+                logEvent(context, "watchdog", "verificacao", "sem_config",
+                    "app ainda não configurado", true, "nada a monitorar");
+                scheduleWatchdog(context);
+                return;
+            }
+
+            // CHECK 1: Serviço em primeiro plano rodando?
+            boolean serviceRunning = false;
+            try {
+                android.app.ActivityManager am = (android.app.ActivityManager)
+                    context.getSystemService(Context.ACTIVITY_SERVICE);
+                if (am != null) {
+                    java.util.List<android.app.ActivityManager.RunningServiceInfo> services =
+                        am.getRunningServices(100);
+                    if (services != null) {
+                        for (android.app.ActivityManager.RunningServiceInfo s : services) {
+                            if (VerseForegroundService.class.getName().equals(s.service.getClassName())) {
+                                serviceRunning = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+            } catch (Exception ignored) {}
+
+            if (serviceRunning) {
+                logEvent(context, "watchdog", "servico", "rodando",
+                    "serviço fixo ativo", true, "");
+            } else {
+                logEvent(context, "watchdog", "servico", "MORTO",
+                    "serviço fixo ativo", false, "tentando reiniciar...");
+                // AUTO-CORREÇÃO: reinicia o serviço (o log registra o que fez)
+                try {
+                    Intent si = new Intent(context, VerseForegroundService.class);
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        context.startForegroundService(si);
+                    } else {
+                        context.startService(si);
+                    }
+                } catch (Exception e) {
+                    logEvent(context, "watchdog", "servico", "MORTO",
+                        "reiniciar serviço", false, "falha ao reiniciar: " + e.getMessage());
+                }
+            }
+
+            // CHECK 2: Alarme do versículo agendado no sistema?
+            long nextAlarm = 0;
+            try {
+                AlarmManager am2 = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+                if (am2 != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    AlarmManager.AlarmClockInfo info = am2.getNextAlarmClock();
+                    if (info != null) nextAlarm = info.getTriggerTime();
+                }
+            } catch (Exception ignored) {}
+
+            if (nextAlarm > 0) {
+                logEvent(context, "watchdog", "alarme", "agendado",
+                    "alarme no sistema", true, "");
+            } else {
+                logEvent(context, "watchdog", "alarme", "PERDIDO",
+                    "alarme no sistema", false, "reagendando a partir das prefs...");
+                // AUTO-CORREÇÃO: reagenda com a âncora salva
+                try {
+                    rescheduleFromPrefs(context);
+                } catch (Exception e) {
+                    logEvent(context, "watchdog", "alarme", "PERDIDO",
+                        "reagendar", false, "falha: " + e.getMessage());
+                }
+            }
+
+            // CHECK 3: Notificação fixa (id 999) presente na barra?
+            boolean notifPresent = false;
+            try {
+                NotificationManager nm = (NotificationManager)
+                    context.getSystemService(Context.NOTIFICATION_SERVICE);
+                if (nm != null) {
+                    Notification.StatusBarNotification[] active = nm.getActiveNotifications();
+                    if (active != null) {
+                        for (Notification.StatusBarNotification n : active) {
+                            if (n.getId() == 999) { notifPresent = true; break; }
+                        }
+                    }
+                }
+            } catch (Exception ignored) {}
+
+            if (notifPresent) {
+                logEvent(context, "watchdog", "notificacao_fixa", "presente",
+                    "notificação 999 na barra", true, "");
+            } else {
+                logEvent(context, "watchdog", "notificacao_fixa", "SUMIDA",
+                    "notificação 999 na barra", false,
+                    serviceRunning ? "serviço ativo mas notificação ausente" : "serviço morto");
+            }
+
+            // CHECK 4: Versículo salvo para o widget existe? (dessincronização)
+            try {
+                android.content.SharedPreferences wprefs =
+                    context.getSharedPreferences("luzdiaria_widget", Context.MODE_MULTI_PROCESS);
+                String widgetVerse = wprefs.getString("lastVerse", "");
+                if (widgetVerse == null || widgetVerse.isEmpty()) {
+                    logEvent(context, "watchdog", "widget", "SEM_versiculo",
+                        "widget com versículo salvo", false, "widget pode mostrar texto padrão");
+                }
+            } catch (Exception ignored) {}
+
+            logEvent(context, "watchdog", "verificacao", "concluida",
+                "ciclo completo monitorado", true, "");
+            scheduleWatchdog(context);
+        } catch (Exception e) {
+            logEvent(context, "watchdog", "verificacao", "FALHA",
+                "executar watchdog", false, e.getMessage());
+            scheduleWatchdog(context);
         }
     }
 }

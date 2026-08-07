@@ -210,6 +210,8 @@ public class VerseAlarmPlugin extends Plugin {
             result.put("nextFire", cal.getTimeInMillis());
             result.put("exact", true);
             result.put("intervalMinutes", intervalMinutes);
+            // Inicia o WATCHDOG VIVO (monitora a saúde a cada 10 min)
+            try { VerseAlarmReceiver.scheduleWatchdog(ctx); } catch (Exception ignored) {}
             call.resolve(result);
         } catch (Exception e) {
             call.reject("Falha ao agendar alarme", e);

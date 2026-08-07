@@ -114,15 +114,27 @@ export function UpdateIntervalModal({ isOpen, onClose, settings, onSettingsChang
                     value={customValue}
                     onChange={(e) => setCustomValue(e.target.value === '' ? '' : parseInt(e.target.value) || '')}
                   />
-                  <select 
-                    className="duo-input flex-1 py-2 px-3"
-                    value={customUnit}
-                    onChange={(e) => setCustomUnit(e.target.value as 'minutes'|'hours'|'days')}
-                  >
-                    <option value="minutes">Minutos</option>
-                    <option value="hours">Horas</option>
-                    <option value="days">Dias</option>
-                  </select>
+                  {/* Seletor de unidade em botões segmentados (padrão do app) */}
+                  <div className="flex-1 bg-[var(--color-duo-bg-sec)] border-2 border-[var(--color-duo-border)] rounded-[16px] p-1 flex gap-1">
+                    {([
+                      { key: 'minutes', label: 'Min' },
+                      { key: 'hours', label: 'Horas' },
+                      { key: 'days', label: 'Dias' },
+                    ] as const).map((u) => (
+                      <button
+                        key={u.key}
+                        type="button"
+                        onClick={() => setCustomUnit(u.key)}
+                        className={`flex-1 py-2 rounded-[12px] text-[13px] font-bold transition-all ${
+                          customUnit === u.key
+                            ? 'bg-[var(--color-duo-orange)] text-white shadow-[0_3px_0_var(--color-duo-orange-dark)]'
+                            : 'text-[var(--color-duo-text-light)] hover:bg-[var(--color-duo-bg)]'
+                        }`}
+                      >
+                        {u.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
                 <button 
                   onClick={handleCustomSubmit}

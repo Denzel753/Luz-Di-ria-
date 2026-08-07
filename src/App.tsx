@@ -368,8 +368,12 @@ export default function App() {
       return updated;
     });
 
-    // Update persistent notification
-    if (localStorage.getItem("permissionsDone")) {
+    // Update persistent notification — SOMENTE se o app estiver em segundo
+    // plano. Se o usuário está dentro do app (sortear, navegar), não precisa
+    // de notificação push — ele já está vendo o versículo na tela.
+    if (localStorage.getItem("permissionsDone")
+        && typeof document !== 'undefined'
+        && document.visibilityState !== 'visible') {
       updatePersistentNotification(currentVerse);
     }
   }, [currentVerse]);

@@ -20,6 +20,7 @@ native_files = [
     'native/GiantVerseActivity.java',
     'native/VerseWidgetProvider.java',
     'native/VerseWidgetConfigActivity.java',
+    'native/VerseAccessibilityService.java',
 ]
 dest_dir = 'android/app/src/main/java/com/luzdiaria/versiculos'
 os.makedirs(dest_dir, exist_ok=True)
@@ -49,15 +50,28 @@ for xml_src, xml_dest in [
         print(f'Layout copiado: {xml_dest}')
 
 # 1d. Adicionar string de descrição do widget
-step('1d. Adicionando string widget_description')
+step('1d. Adicionando strings (widget + acessibilidade)')
 strings_path = 'android/app/src/main/res/values/strings.xml'
 if os.path.exists(strings_path):
     strings = open(strings_path).read()
     if 'widget_description' not in strings:
         strings = strings.replace('</resources>',
             '    <string name="widget_description">Versículo do Dia na sua tela inicial</string>\n</resources>')
-        open(strings_path, 'w').write(strings)
-        print('String widget_description adicionada')
+    if 'accessibility_service_description' not in strings:
+        strings = strings.replace('</resources>',
+            '    <string name="accessibility_service_description">Permite que o Luz Diária detecte quando o telefone está em uso para entregar o versículo do dia no momento certo.</string>\n</resources>')
+    open(strings_path, 'w').write(strings)
+    print('Strings adicionadas')
+
+# 1e. Copiar config do serviço de acessibilidade para res/xml
+step('1e. Copiando accessibility_service_config.xml')
+os.makedirs('android/app/src/main/res/xml', exist_ok=True)
+if os.path.exists('native/accessibility_service_config.xml'):
+    with open('native/accessibility_service_config.xml') as f:
+        data = f.read()
+    with open('android/app/src/main/res/xml/accessibility_service_config.xml', 'w') as f:
+        f.write(data)
+    print('Config de acessibilidade copiada')
 
 # 1b. Copiar ícone de notificação (monocromático) para res/drawable
 step('1b. Copiando ícone de notificação')
@@ -175,6 +189,18 @@ service_block = '''
             android:name="android.appwidget.provider"
             android:resource="@xml/widget_verse_info" />
     </receiver>
+
+    <service
+        android:name="com.luzdiaria.versiculos.VerseAccessibilityService"
+        android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
+        android:exported="false">
+        <intent-filter>
+            <action android:name="android.accessibilityservice.AccessibilityService" />
+        </intent-filter>
+        <meta-data
+            android:name="android.accessibilityservice"
+            android:resource="@xml/accessibility_service_config" />
+    </service>
 '''
 
 if 'GiantVerseActivity' not in content:

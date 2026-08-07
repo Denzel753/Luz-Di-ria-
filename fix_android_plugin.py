@@ -17,6 +17,7 @@ native_files = [
     'native/VerseForegroundService.java',
     'native/VerseAlarmReceiver.java',
     'native/BootReceiver.java',
+    'native/GiantVerseActivity.java',
 ]
 dest_dir = 'android/app/src/main/java/com/luzdiaria/versiculos'
 os.makedirs(dest_dir, exist_ok=True)
@@ -120,9 +121,18 @@ service_block = '''
             <action android:name="com.htc.intent.action.QUICKBOOT_POWERON" />
         </intent-filter>
     </receiver>
+
+    <activity
+        android:name="com.luzdiaria.versiculos.GiantVerseActivity"
+        android:exported="false"
+        android:excludeFromRecents="true"
+        android:launchMode="singleTask"
+        android:theme="@android:style/Theme.NoDisplay"
+        android:showWhenLocked="true"
+        android:turnScreenOn="true" />
 '''
 
-if 'VerseForegroundService' not in content:
+if 'GiantVerseActivity' not in content:
     # Insere antes do fechamento do <application>
     content = content.replace('</application>', service_block + '\n    </application>')
     open(manifest, 'w').write(content)

@@ -29,6 +29,19 @@ public class VerseAlarmReceiver extends BroadcastReceiver {
         // 1. Acorda a tela (requer WAKE_LOCK) — para o pop-up gigante aparecer
         wakeScreen(context);
 
+        // 1b. Lança o Pop-up Gigante NATIVO em tela cheia (acorda o dispositivo
+        //     e mostra o versículo por cima de outros apps / tela de bloqueio)
+        try {
+            Intent popupIntent = new Intent(context, GiantVerseActivity.class);
+            popupIntent.putExtra("verseText", verseText);
+            popupIntent.putExtra("verseRef", verseRef);
+            popupIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            popupIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            context.startActivity(popupIntent);
+        } catch (Exception e) {
+            // Se falhar (ex: permissão negada), a notificação ainda dispara
+        }
+
         // 2. Dispara a notificação do versículo
         showVerseNotification(context, verseText, verseRef);
     }

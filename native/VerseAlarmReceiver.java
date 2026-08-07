@@ -216,6 +216,65 @@ public class VerseAlarmReceiver extends BroadcastReceiver {
         }
     }
 
+    // Reagenda o alarme a partir das preferências salvas. Chamado pelo
+    // BootReceiver em eventos do sistema (boot, hora/fuso mudou, app
+    // atualizado, permissão de alarme exato concedida). Sem isso, o alarme
+    // morre silenciosamente e só volta quando o usuário abre o app.
+    public static void rescheduleFromPrefs(Context context) {
+        try {
+            android.content.SharedPreferences prefs =
+                context.getSharedPreferences("luzdiaria_alarm", Context.MODE_PRIVATE);
+            int intervalMinutes = prefs.getInt("intervalMinutes", 0);
+            if (intervalMinutes <= 0) return; // nunca foi agendado
+
+            int startH = prefs.getInt("startHour", 8);
+            int startM = prefs.getInt("startMinute", 0);
+            String verseText = prefs.getString("verseText", "");
+            String verseRef = prefs.getString("verseRef", "");
+
+            // Recalcula o próximo disparo (mesma lógica de agendamento)
+            AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+            if (am == null) return;
+
+            Calendar cal = Calendar.getInstance();
+            if (intervalMinutes == 1440) {
+                cal.set(Calendar.HOUR_OF_DAY, startH);
+                cal.set(Calendar.MINUTE, startM);
+                cal.set(Calendar.SECOND, 0);
+                cal.set(Calendar.MILLISECOND, 0);
+                if (cal.getTimeInMillis() <= System.currentTimeMillis()) {
+                    cal.add(Calendar.DAY_OF_YEAR, 1);
+                }
+            } else {
+                cal.add(Calendar.MINUTE, intervalMinutes);
+            }
+
+            Intent intent = new Intent(context, VerseAlarmReceiver.class);
+            intent.putExtra("verseText", verseText);
+            intent.putExtra("verseRef", verseRef);
+            intent.setAction("com.luzdiaria.versiculos.DAILY_VERSE_ALARM");
+
+            PendingIntent pi = PendingIntent.getBroadcast(
+                context,
+                1001,
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+            );
+
+            boolean exactOk = true;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                exactOk = am.canScheduleExactAlarms();
+            }
+            if (exactOk) {
+                am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), pi);
+            } else {
+                am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), pi);
+            }
+        } catch (Exception e) {
+            // Falha silenciosa — o app re-agenda ao abrir
+        }
+    }
+
     // Sorteia um versículo da lista embutida (usado quando o alarme dispara
     // com o app fechado — garante que widget/notificação SEMPRE trocam no
     // horário, mesmo sem o app gerar um versículo novo).

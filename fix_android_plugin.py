@@ -107,6 +107,7 @@ permissions = [
     'android.permission.SYSTEM_ALERT_WINDOW',
     'android.permission.SCHEDULE_EXACT_ALARM',
     'android.permission.USE_EXACT_ALARM',
+    'android.permission.USE_FULL_SCREEN_INTENT',
     'android.permission.POST_NOTIFICATIONS',
     'android.permission.VIBRATE',
     'android.permission.CAMERA',

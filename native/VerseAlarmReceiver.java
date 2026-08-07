@@ -63,25 +63,14 @@ public class VerseAlarmReceiver extends BroadcastReceiver {
             FlashLightUtil.blinkFlash(context, 5);
         }
 
-        // 1c. Lança o Pop-up Gigante NATIVO em tela cheia (acorda o dispositivo
-        //     e mostra o versículo por cima de outros apps / tela de bloqueio)
-        //     SOMENTE se o app NÃO estiver em primeiro plano — se o usuário
-        //     está dentro do app, ele já vê o versículo na tela.
-        if (!isAppInForeground(context)) {
-            try {
-                Intent popupIntent = new Intent(context, GiantVerseActivity.class);
-                popupIntent.putExtra("verseText", verseText);
-                popupIntent.putExtra("verseRef", verseRef);
-                popupIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                popupIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                context.startActivity(popupIntent);
-            } catch (Exception e) {
-                // Se falhar (ex: permissão negada), a notificação ainda dispara
-            }
-        }
-
-        // 2. Dispara a notificação do versículo
-        showVerseNotification(context, verseText, verseRef);
+        // 1c. Pop-up Gigante NATIVO: Android 10+ BLOQUEIA abrir Activities em
+        //     background via startActivity. A solução oficial é o
+        //     FullScreenIntent: a notificação carrega a GiantVerseActivity e o
+        //     sistema a abre na tela de bloqueio / por cima de outros apps
+        //     (é como apps de alarme funcionam). Se o app está em primeiro
+        //     plano, não precisa do pop-up — o usuário já vê o versículo.
+        boolean foreground = isAppInForeground(context);
+        showVerseNotification(context, verseText, verseRef, !foreground);
 
         // 3. Reagenda o próximo disparo (repetição contínua com o intervalo salvo)
         rescheduleNext(context);
@@ -176,7 +165,7 @@ public class VerseAlarmReceiver extends BroadcastReceiver {
         }
     }
 
-    private void showVerseNotification(Context context, String verseText, String verseRef) {
+    private void showVerseNotification(Context context, String verseText, String verseRef, boolean showPopup) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(
                 CHANNEL_ID,
@@ -184,6 +173,7 @@ public class VerseAlarmReceiver extends BroadcastReceiver {
                 NotificationManager.IMPORTANCE_HIGH
             );
             channel.setDescription("Versículos diários");
+            channel.enableVibration(false);
             NotificationManager nm = context.getSystemService(NotificationManager.class);
             if (nm != null) nm.createNotificationChannel(channel);
         }
@@ -203,7 +193,7 @@ public class VerseAlarmReceiver extends BroadcastReceiver {
             builder = new Notification.Builder(context);
         }
 
-        Notification notification = builder
+        builder
             .setContentTitle(verseRef)
             .setContentText(verseText)
             .setStyle(new Notification.BigTextStyle().bigText(verseText))
@@ -211,8 +201,27 @@ public class VerseAlarmReceiver extends BroadcastReceiver {
             .setContentIntent(contentIntent)
             .setAutoCancel(true)
             .setPriority(Notification.PRIORITY_HIGH)
-            .setCategory(Notification.CATEGORY_ALARM)
-            .build();
+            .setCategory(Notification.CATEGORY_ALARM);
+
+        // Pop-up Gigante via FullScreenIntent (só quando o app NÃO está em
+        // primeiro plano). É o mecanismo oficial do Android para acordar a
+        // tela e mostrar a Activity por cima de tudo — funciona com a tela
+        // bloqueada, desligada ou com outro app aberto.
+        if (showPopup) {
+            Intent popupIntent = new Intent(context, GiantVerseActivity.class);
+            popupIntent.putExtra("verseText", verseText);
+            popupIntent.putExtra("verseRef", verseRef);
+            popupIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            PendingIntent fullScreenIntent = PendingIntent.getActivity(
+                context,
+                1,
+                popupIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+            );
+            builder.setFullScreenIntent(fullScreenIntent, true);
+        }
+
+        Notification notification = builder.build();
 
         NotificationManager nm = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         if (nm != null) {

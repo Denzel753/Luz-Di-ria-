@@ -646,9 +646,14 @@ export default function App() {
         const now = new Date();
         const currentSettings = settingsRef.current;
         const isStartup = isStartupRef.current;
+        // RESET SEMPRE: só a PRIMEIRA chamada (montagem do app) é tratada
+        // como startup. Antes o reset ficava dentro de condicionais — se o
+        // primeiro check caía num return (fora da janela, horário não bateu),
+        // isStartup ficava true PARA SEMPRE e o motor nunca notificava.
+        if (isStartup) isStartupRef.current = false;
 
-        const startStr = currentSettings.notificationStartTime || "08:00";
-        const endStr = currentSettings.notificationEndTime || "22:00";
+        const startStr = currentSettings.notificationStartTime || "00:00";
+        const endStr = currentSettings.notificationEndTime || "23:59";
 
         const [startH, startM] = startStr.split(":").map(Number);
         const [endH, endM] = endStr.split(":").map(Number);
@@ -676,7 +681,6 @@ export default function App() {
           };
           settingsRef.current = updated;
           setSettings(updated);
-          if (isStartup) isStartupRef.current = false;
           return;
         }
 
@@ -739,7 +743,6 @@ export default function App() {
             }
           }
         }
-        if (isStartup) isStartupRef.current = false;
       } catch (e) {
         console.error("Error in checkAndSchedule:", e);
       }

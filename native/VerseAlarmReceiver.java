@@ -181,8 +181,8 @@ public class VerseAlarmReceiver extends BroadcastReceiver {
                 // PRÓXIMO DIA no horário de início (recomeça o ciclo).
                 int startH = prefs.getInt("startHour", 8);
                 int startM = prefs.getInt("startMinute", 0);
-                int endH = prefs.getInt("endHour", 22);
-                int endM = prefs.getInt("endMinute", 0);
+                int endH = prefs.getInt("endHour", 23);
+                int endM = prefs.getInt("endMinute", 59);
                 long intervalMs = intervalMinutes * 60 * 1000L;
 
                 // Âncora: início da janela de hoje
@@ -402,8 +402,8 @@ public class VerseAlarmReceiver extends BroadcastReceiver {
                 context.getSharedPreferences("luzdiaria_alarm", Context.MODE_PRIVATE);
             int startH = prefs.getInt("startHour", 8);
             int startM = prefs.getInt("startMinute", 0);
-            int endH = prefs.getInt("endHour", 22);
-            int endM = prefs.getInt("endMinute", 0);
+            int endH = prefs.getInt("endHour", 23);
+            int endM = prefs.getInt("endMinute", 59);
 
             java.util.Calendar now = java.util.Calendar.getInstance();
             int mins = now.get(java.util.Calendar.HOUR_OF_DAY) * 60

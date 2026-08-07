@@ -98,16 +98,16 @@ public class VerseAlarmPlugin extends Plugin {
                 .putBoolean("wakeDevice", wakeDevice)
                 .putInt("startHour", hour)
                 .putInt("startMinute", minute)
-                .putInt("endHour", call.getInt("endHour", 22))
-                .putInt("endMinute", call.getInt("endMinute", 0))
+                .putInt("endHour", call.getInt("endHour", 23))
+                .putInt("endMinute", call.getInt("endMinute", 59))
                 .apply();
 
             // Calcula o próximo horário com a MESMA lógica do reagendamento
             // (âncora no INÍCIO da janela — regra do usuário):
             // Ex: janela 08:00-22:00 + 4h → 08:00, 12:00, 16:00, 20:00.
             // Se o próximo slot cair fora da janela, recomeça amanhã no início.
-            int endHour = call.getInt("endHour", 22);
-            int endMinute = call.getInt("endMinute", 0);
+            int endHour = call.getInt("endHour", 23);
+            int endMinute = call.getInt("endMinute", 59);
             Calendar cal = Calendar.getInstance();
             if (intervalMinutes == 1440) {
                 // Diário: dispara no horário configurado (início da janela)
@@ -281,7 +281,7 @@ public class VerseAlarmPlugin extends Plugin {
             result.put("intervalMinutes", intervalMinutes);
             result.put("startHour", alarmPrefs.getInt("startHour", 8));
             result.put("startMinute", alarmPrefs.getInt("startMinute", 0));
-            result.put("endHour", alarmPrefs.getInt("endHour", 22));
+            result.put("endHour", alarmPrefs.getInt("endHour", 23));
             result.put("endMinute", alarmPrefs.getInt("endMinute", 0));
             result.put("configured", intervalMinutes > 0);
 

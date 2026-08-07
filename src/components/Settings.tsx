@@ -289,7 +289,7 @@ export function Settings({ isOpen, onClose, settings, onSettingsChange, onTestPo
                     <span className="text-xs font-medium text-[var(--color-duo-text-light)] uppercase tracking-wider">Término</span>
                     <input 
                       type="time" 
-                      value={settings.notificationEndTime || '22:00'}
+                      value={settings.notificationEndTime || '23:59'}
                       onChange={(e) => onSettingsChange({...settings, notificationEndTime: e.target.value})}
                       className="w-full bg-[var(--color-duo-bg-sec)] border border-[var(--color-duo-border)] text-[var(--color-duo-text)] rounded-[12px] px-3 py-1.5 text-sm focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
                     />

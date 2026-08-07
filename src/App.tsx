@@ -187,8 +187,8 @@ export default function App() {
     return {
       dailyNotification: false,
       notifyNewVerse: true,
-      notificationStartTime: "08:00",
-      notificationEndTime: "22:00",
+      notificationStartTime: "00:00",
+      notificationEndTime: "23:59",
       updateInterval: 1440,
       showPopup: false,
       sound: "Celeste",
@@ -410,8 +410,8 @@ export default function App() {
   // showConfirm=true mostra o aviso "Alarme agendado para HH:MM".
   const scheduleWithCurrentSettings = (showConfirm: boolean = false) => {
     const s = settingsRef.current;
-    const startTime = s.notificationStartTime || "08:00";
-    const endTime = s.notificationEndTime || "22:00";
+    const startTime = s.notificationStartTime || "00:00";
+    const endTime = s.notificationEndTime || "23:59";
     const [h, m] = startTime.split(":").map(Number);
     const [eh, em] = endTime.split(":").map(Number);
     const interval = s.updateInterval || 1440;
@@ -422,10 +422,10 @@ export default function App() {
     const ref = useQuote ? (content as any).author || "Luz Diária" : content.reference;
     // Passa as opções nativas: vibrar, flash LED, acordar tela + janela de horário
     scheduleDailyVerse(
-      h || 8,
-      m || 0,
-      eh || 22,
-      em || 0,
+      h ?? 0,
+      m ?? 0,
+      eh ?? 23,
+      em ?? 59,
       interval,
       content.text,
       ref,

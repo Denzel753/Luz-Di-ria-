@@ -213,7 +213,7 @@ export async function getDiagnostics() {
   if (!isNative()) {
     return {
       serviceRunning: false, intervalMinutes: 0, startHour: 8, startMinute: 0,
-      endHour: 22, endMinute: 0, configured: false, nextAlarm: 0, diagLog: '',
+      endHour: 23, endMinute: 59, configured: false, nextAlarm: 0, diagLog: '',
     };
   }
   try {
@@ -222,7 +222,7 @@ export async function getDiagnostics() {
     console.error('Erro ao obter diagnóstico:', e);
     return {
       serviceRunning: false, intervalMinutes: 0, startHour: 8, startMinute: 0,
-      endHour: 22, endMinute: 0, configured: false, nextAlarm: 0, diagLog: '',
+      endHour: 23, endMinute: 59, configured: false, nextAlarm: 0, diagLog: '',
     };
   }
 }

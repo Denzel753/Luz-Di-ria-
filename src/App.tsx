@@ -377,12 +377,8 @@ export default function App() {
   const updatePersistentNotification = (verse: Verse) => {
     try {
       showPersistentNotification(
-        "Luz Diária • " +
-          new Date().toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-          }),
-        `${verse.reference}\n\n${verse.text}`,
+        `Luz Diária • ${verse.reference}`,
+        verse.text,
       );
     } catch (e) {
       console.log("Error creating notification", e);
@@ -531,8 +527,8 @@ export default function App() {
       }
 
       showPersistentNotification(
-        "Novo Versículo",
-        `${newVerse.reference}\n${newVerse.text}`,
+        `Novo Versículo • ${newVerse.reference}`,
+        newVerse.text,
       );
     };
 

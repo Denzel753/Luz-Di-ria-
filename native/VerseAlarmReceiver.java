@@ -80,9 +80,9 @@ public class VerseAlarmReceiver extends BroadcastReceiver {
         }
 
         Notification notification = builder
-            .setContentTitle("Luz Diária • Versículo do Dia")
-            .setContentText(verseRef + "\n" + verseText)
-            .setStyle(new Notification.BigTextStyle().bigText(verseRef + "\n\n" + verseText))
+            .setContentTitle("Luz Diária • " + verseRef)
+            .setContentText(verseText)
+            .setStyle(new Notification.BigTextStyle().bigText(verseText))
             .setSmallIcon(R.drawable.ic_stat_notification)
             .setContentIntent(contentIntent)
             .setAutoCancel(true)
